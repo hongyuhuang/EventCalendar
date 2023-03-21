@@ -48,17 +48,24 @@ app.post("/event", (req, res) => {});
 /**
  * Performs a partial update on an event
  */
-app.patch("/event/:id", (req, res) => {});
+app.patch("/event/:eventId", (req, res) => {});
 
 /**
  * Assigns a user to a particular event
  */
-app.post("/event/assign", (req, res) => {});
+app.post("/event/:eventId/assign/:userId", (req, res) => {});
 
 /*
-Route to return all events for a given user
+ * Route to return all events for a given user
+ *
+ * Events can be filtered to come after a specific date-time
  */
 app.get("/user/:username/events", (req, res) => {});
+
+/**
+ * Creates a new user
+ */
+app.post("/user", (req, res) => {})
 
 /**
  * Returns a photo for a particular user.
