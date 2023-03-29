@@ -1,3 +1,10 @@
+:root {
+  --otago-blue: #00508e;
+  --otago-blue-light: #145d96;
+  --otago-yellow: #f9c003;
+  --otago-blue-dark: #123568;
+}
+
 .App {
   text-align: center;
 }
@@ -44,8 +51,4 @@ input {
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
-}
-
-.App-link {
-  color: #61dafb;
 }
