@@ -17,7 +17,7 @@ const Login = () => {
             <h1>Welcome to EventCalendar</h1>
             <h2>Please login</h2>
             <form id="login-form" onSubmit={formik.handleSubmit}>
-                <label>
+                <label className="login-label">
                     Username:
                     <input id="username" type="text" name="username" onChange={formik.handleChange} value={formik.values.username}/>
                 </label>
@@ -26,7 +26,7 @@ const Login = () => {
                     <input id="password" type="password" name="password" onChange={formik.handleChange}
                            value={formik.values.password}/>
                 </label>
-                <input type="submit" value="Submit"/>
+                <input type="submit" value="Submit" id="login-submit"/>
             </form>
         </div>
     );
