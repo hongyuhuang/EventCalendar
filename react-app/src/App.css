@@ -3,10 +3,31 @@
   --otago-blue-light: #145d96;
   --otago-yellow: #f9c003;
   --otago-blue-dark: #123568;
+  --otago-grey-light: #fcfcfa;
+  --otago-grey-dark: #dddddd;
 }
 
 .App {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Open Sans', sans-serif;
+}
+
+header {
+  background: var(--otago-blue-light);
+  color: white;
+  padding: 0.5em;
+  height: 2.5em;
+  font-size: 2em;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  justify-content: center;
 }
 
 #login-form {
@@ -15,6 +36,27 @@
   justify-content: center;
   align-items: center;
   gap: 10px
+}
+
+#login-div > h1 {
+  color: var(--otago-blue-dark);
+  font-size: 2em;
+}
+
+#login-div > h2 {
+  color: var(--otago-blue-dark);
+}
+
+#login-div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  background: var(--otago-grey-light);
+  border: 2px solid var(--otago-grey-dark);
+  border-radius: 5px;
+  padding: 10px;
 }
 
 .login-label {
@@ -35,20 +77,4 @@ input {
 
 .login-label> input {
   width: 200px;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
