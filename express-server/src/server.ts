@@ -1,8 +1,8 @@
-const dotenv = require("dotenv");
-const express = require("express");
-const path = require("path");
-const basicAuth = require("express-basic-auth");
-const mysql = require('mysql2');
+import dotenv from "dotenv";
+import express from "express";
+import basicAuth from "express-basic-auth";
+import mysql from 'mysql2';
+import { RowDataPacket } from 'mysql2/promise';
 
 dotenv.config();
 const app = express();
@@ -14,13 +14,26 @@ const pool = mysql.createPool({
   database: process.env.DB_DATABASE
 });
 
+interface User extends RowDataPacket {
+  id?: number;
+  firstName: string;
+  lastName: string;
+  isAdmin: Boolean;
+  email: String;
+  password: String;
+}
 
 app.get('/test', (req, res) => {
-  console.log(process.env.DB_HOST);
-  console.log(process.env.DB_USER);
-  console.log(process.env.DB_PASSWORD);
-  console.log(process.env.DB_DATABASE);
-  res.send('Environment variables loaded');
+  pool.query<User[]>(
+    'SELECT * FROM USER',
+    function(err, results, fields) {
+      res.send(results)
+      console.log(results[0])
+
+      for (const user of results) {
+        console.log(user.email);
+      }
+    })
 });
 
 app.get('/', (req, res) => {
