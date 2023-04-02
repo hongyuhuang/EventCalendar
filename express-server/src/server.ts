@@ -108,12 +108,32 @@ app.post("/event", (req, res) => {
 /**
  * Performs a partial update on an event
  */
-app.patch("/event/:eventId", (req, res) => { });
+app.patch("/event/:eventId", (req, res) => {
+    try {
+        const eventId = req.params.eventId;
+        const { title, location, startDate, endDate, description} = req.body;
+        const formattedStartDate = format(new Date(startDate), 'yyyy-MM-dd');
+        const formattedEndDate = format(new Date(endDate), 'yyyy-MM-dd');
+        
+        pool.query<Event[]>(
+            `UPDATE EVENT SET title = ${title}, location = ${location}, startDate = ${formattedStartDate}, endDate = ${formattedEndDate}, description = ${description} WHERE eventId = ${eventId}`,
+            function (err, results, fields) {
+                if (err) throw err;
+                res.send("Event updated successfully");
+            }
+        );
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while updating the event");
+    }
+});
 
 /**
  * Assigns a user to a particular event
  */
-app.post("/event/:eventId/assign/:userId", (req, res) => { });
+app.post("/event/:eventId/assign/:userId", (req, res) => {
+
+  });
 
 /*
  * Route to return all events for a given user
