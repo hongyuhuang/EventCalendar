@@ -132,7 +132,21 @@ app.patch("/event/:eventId", (req, res) => {
  * Assigns a user to a particular event
  */
 app.post("/event/:eventId/assign/:userId", (req, res) => {
-
+    try {
+        const eventId = req.params.eventId;
+        const userId = req.params.userId;
+  
+        pool.query(
+          `INSERT INTO ATTENDANCE_RECORD (userId, eventId) VALUES (${userId}, ${eventId})`,
+          function (err, results, fields) {
+            if (err) throw err;
+            res.send("User assigned to event successfully");
+          }
+        );
+      } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while assigning the user to the event");
+      }
   });
 
 /*
