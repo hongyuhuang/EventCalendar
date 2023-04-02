@@ -154,7 +154,29 @@ app.post("/event/:eventId/assign/:userId", (req, res) => {
  *
  * Events can be filtered to come after a specific date-time
  */
-app.get("/user/:username/events", (req, res) => { });
+app.get("/user/:userId/events", (req, res) => {
+    const userId = req.params.userId;
+    const afterDateTime = req.query.afterDateTime;
+  
+    let query = `SELECT e.eventId, e.title, e.location, e.startDate, e.endDate, e.description 
+                 FROM EVENT e 
+                 INNER JOIN ATTENDANCE_RECORD ar ON e.eventId = ar.eventId 
+                 WHERE ar.userId = ${userId}`;
+  
+    if (afterDateTime) {
+      query += ` AND e.startDate >= '${afterDateTime}'`;
+    }
+  
+    pool.query(query, function (err, results, fields) {
+      if (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while fetching events");
+      } else {
+        res.send(results);
+      }
+    });
+  });
+  
 
 /**
  * Creates a new user
@@ -175,6 +197,7 @@ app.post("/user", (req, res) => {
       res.status(500).send("An error occurred while creating the user");
     }
   });
+  
 /**
  * Returns a photo for a particular user.
  */
