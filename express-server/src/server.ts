@@ -159,8 +159,22 @@ app.get("/user/:username/events", (req, res) => { });
 /**
  * Creates a new user
  */
-app.post("/user", (req, res) => { })
-
+app.post("/user", (req, res) => {
+    try {
+      const { firstName, lastName, isAdmin, email, password } = req.body;
+  
+      pool.query<User[]>(
+        `INSERT INTO USER (firstName, lastName, isAdmin, email, password) VALUES (${firstName}, ${lastName}, ${isAdmin}, ${email}, ${password})`,
+        function (err, results, fields) {
+          if (err) throw err;
+          res.send(results);
+        }
+      );
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("An error occurred while creating the user");
+    }
+  });
 /**
  * Returns a photo for a particular user.
  */
