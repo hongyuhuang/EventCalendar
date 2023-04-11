@@ -1,20 +1,25 @@
-import { RowDataPacket } from 'mysql2/promise';
+import {RowDataPacket} from 'mysql2/promise';
 
-export interface User extends RowDataPacket {
-    id?: number;
-    firstName: string;
-    lastName: string;
-    isAdmin: Boolean;
-    email: String;
-    password: String;
+export interface User extends RowDataPacket, UserType {
 }
 
+export interface Event extends RowDataPacket, EventType {
+}
 
-export interface Event extends RowDataPacket {
+export type EventType = {
     eventId?: number;
     title: string;
     location: string;
     startDate: Date;
     endDate: Date;
     description: String;
+}
+
+export type UserType = {
+    id?: number;
+    firstName: string;
+    lastName: string;
+    isAdmin: Boolean;
+    email: String;
+    password: String;
 }
