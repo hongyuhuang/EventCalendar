@@ -4,13 +4,13 @@ import basicAuth from "express-basic-auth";
 import mysql from 'mysql2';
 import { RowDataPacket } from 'mysql2/promise';
 import { User, Event } from './entities';
-// import bodyParser from 'body-parser';  // for json inputs
+const bodyParser = require("body-parser") // for json inputs
 import multer from 'multer';  //for Form inputs
 import { format } from 'date-fns';
 
 dotenv.config();
 const app = express();
-// app.use(bodyParser.json());  //for json inputs
+app.use(bodyParser.json());  //for json inputs
 app.use(multer().none())  //for Form inputs
 
 const pool = mysql.createPool({
@@ -66,12 +66,13 @@ async function authorize(username: string, password: string): Promise<boolean> {
 /*
  * Route to return event with a given id
  */
-app.get("/event/:id", (req, res) => {
-    const eventId = req.params.id;
+app.get("/event/:eventId", (req, res) => {
+    const eventId = req.params.eventId;
 
     try {
         pool.query<Event[]>(
-            `SELECT * FROM EVENT WHERE eventId = ${eventId}`,
+            `SELECT * FROM EVENT WHERE eventId = ?`,
+            [eventId],
             function (err, results, fields) {
                 console.log(results)
 
@@ -89,6 +90,26 @@ app.get("/event/:id", (req, res) => {
 });
 
 /**
+ * Deletes a new event
+ */
+app.delete("/event/:eventId", (req, res) => {
+    try {
+        const eventId = req.params.eventId;
+        pool.query<Event[]>(
+            `DELETE FROM EVENT WHERE eventId = ?`,
+            [eventId],
+            function (err, results, fields) {
+                if (err) throw err;
+                res.status(204).send("Event deleted successfully");
+            }
+        );
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while deleting the event");
+    }
+})
+
+/**
  * Creates a new event
  */
 app.post("/event", (req, res) => {
@@ -97,11 +118,18 @@ app.post("/event", (req, res) => {
         startDate = format(new Date(startDate), 'yyyy-MM-dd');
         endDate = format(new Date(endDate), 'yyyy-MM-dd');
         pool.query<Event[]>(
-            `INSERT INTO EVENT (title, location, startDate, endDate, description) VALUES (${title}, ${location}, "${startDate}", "${endDate}", ${description})`,
-            function (err, results, fields) {}
+            `INSERT INTO EVENT (title, location, startDate, endDate, description) VALUES (?, ?, ?, ?, ?)`,
+            [title, location, startDate, endDate, description],
+            function (err, results, fields) {
+                if (err) throw err;
+                // @ts-ignore
+                res.status(201).send({eventId: results.insertId})
+            }
         )
-    }catch (err) {
+
+    } catch (err) {
         console.log(err);
+        res.status(500).send("An error occurred while creating the event");
     }
  });
 
@@ -116,12 +144,16 @@ app.patch("/event/:eventId", (req, res) => {
         const formattedEndDate = format(new Date(endDate), 'yyyy-MM-dd');
         
         pool.query<Event[]>(
-            `UPDATE EVENT SET title = ${title}, location = ${location}, startDate = ${formattedStartDate}, endDate = ${formattedEndDate}, description = ${description} WHERE eventId = ${eventId}`,
+            `UPDATE EVENT SET title = ?, location = ?, startDate = ?, endDate = ?, description = ? WHERE eventId = ?`,
+            [title, location, formattedStartDate, formattedEndDate, description, eventId],
             function (err, results, fields) {
                 if (err) throw err;
                 res.send("Event updated successfully");
             }
         );
+
+        res.status(204).send("Event updated successfully");
+
     } catch (err) {
         console.log(err);
         res.status(500).send("An error occurred while updating the event");
@@ -135,14 +167,19 @@ app.post("/event/:eventId/assign/:userId", (req, res) => {
     try {
         const eventId = req.params.eventId;
         const userId = req.params.userId;
-  
+
+        //  Convert the bellow to prepared statements
         pool.query(
-          `INSERT INTO ATTENDANCE_RECORD (userId, eventId) VALUES (${userId}, ${eventId})`,
+          `INSERT INTO ATTENDANCE_RECORD (userId, eventId) VALUES (?, ?)`,
+            [userId, eventId],
           function (err, results, fields) {
             if (err) throw err;
-            res.send("User assigned to event successfully");
+            // @ts-ignore
+              res.status(201).send({eventId: results.insertId});
           }
         );
+
+
       } catch (err) {
         console.log(err);
         res.status(500).send("An error occurred while assigning the user to the event");
@@ -157,6 +194,8 @@ app.post("/event/:eventId/assign/:userId", (req, res) => {
 app.get("/user/:userId/events", (req, res) => {
     const userId = req.params.userId;
     const afterDateTime = req.query.afterDateTime;
+
+    // TODO: use prepared statements
   
     let query = `SELECT e.eventId, e.title, e.location, e.startDate, e.endDate, e.description 
                  FROM EVENT e 
@@ -175,8 +214,47 @@ app.get("/user/:userId/events", (req, res) => {
         res.send(results);
       }
     });
-  });
-  
+});
+
+/**
+ * Gets a user
+ */
+app.get("/user/:userId", (req, res) => {
+    try {
+        const userId = req.params.userId;
+        pool.query<User[]>(
+            `SELECT * FROM USER WHERE userId = ?`,
+            [userId],
+            function (err, results, fields) {
+                if (err) throw err;
+                res.status(200).send(results[0]);
+            }
+        );
+    } catch (e) {
+        console.log(e);
+        res.status(500).send("An error occurred while fetching the user");
+    }
+})
+
+/**
+ * Deletes a user
+ */
+app.delete("/user/:userId", (req, res) => {
+    try {
+        const userId = req.params.userId;
+        pool.query<User[]>(
+            `DELETE FROM USER WHERE userId = ?`,
+            [userId],
+            function (err, results, fields) {
+                if (err) throw err;
+                res.status(204).send("User deleted successfully");
+            }
+        );
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while deleting the user");
+    }
+})
 
 /**
  * Creates a new user
@@ -184,14 +262,16 @@ app.get("/user/:userId/events", (req, res) => {
 app.post("/user", (req, res) => {
     try {
       const { firstName, lastName, isAdmin, email, password } = req.body;
-  
-      pool.query<User[]>(
-        `INSERT INTO USER (firstName, lastName, isAdmin, email, password) VALUES (${firstName}, ${lastName}, ${isAdmin}, ${email}, ${password})`,
+
+    pool.query<User[]>(
+        `INSERT INTO USER (firstName, lastName, isAdmin, email, password) VALUES (?, ?, ?, ?, ?)`,
+        [firstName, lastName, isAdmin, email, password],
         function (err, results, fields) {
-          if (err) throw err;
-          res.send(results);
+            if (err) throw err;
+            // @ts-ignore
+            res.status(201).send({userId : results.insertId});
         }
-      );
+    );
     } catch (err) {
       console.log(err);
       res.status(500).send("An error occurred while creating the user");
@@ -201,9 +281,13 @@ app.post("/user", (req, res) => {
 /**
  * Returns a photo for a particular user.
  */
-app.get("/user/:username/photo", (req, res) => { });
+app.get("/user/:userId/photo", (req, res) => { });
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
     console.log(`Server is running on port 3000: http://localhost:${PORT}`);
 });
+
+module.exports = {
+    app
+}
