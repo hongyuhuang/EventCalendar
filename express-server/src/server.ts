@@ -80,7 +80,7 @@ app.get("/event/:eventId", (req, res) => {
                     res.status(404).send('Event not found');
                 } else {
                     const event = results[0];
-                    res.json(event);
+                    res.status(200).json(event);
                 }
             });
     } catch (err) {
@@ -90,7 +90,35 @@ app.get("/event/:eventId", (req, res) => {
 });
 
 /**
- * Deletes a new event
+ * Performs a partial update on an event
+ */
+app.patch("/event/:eventId", (req, res) => {
+    try {
+        const eventId = req.params.eventId;
+        const { title, location, startDate, endDate, description} = req.body;
+        const formattedStartDate = format(new Date(startDate), 'yyyy-MM-dd');
+        const formattedEndDate = format(new Date(endDate), 'yyyy-MM-dd');
+
+        pool.query<Event[]>(
+            `UPDATE EVENT SET title = ?, location = ?, startDate = ?, endDate = ?, description = ? WHERE eventId = ?`,
+            [title, location, formattedStartDate, formattedEndDate, description, eventId],
+            function (err, results, fields) {
+                if (err) throw err;
+            }
+        );
+
+
+
+        res.status(204).send("Event updated successfully");
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while updating the event");
+    }
+});
+
+/**
+ * Deletes an event
  */
 app.delete("/event/:eventId", (req, res) => {
     try {
@@ -123,7 +151,7 @@ app.post("/event", (req, res) => {
             function (err, results, fields) {
                 if (err) throw err;
                 // @ts-ignore
-                res.status(201).send({eventId: results.insertId})
+                res.status(201).send({attendanceId: results.insertId})
             }
         )
 
@@ -132,33 +160,6 @@ app.post("/event", (req, res) => {
         res.status(500).send("An error occurred while creating the event");
     }
  });
-
-/**
- * Performs a partial update on an event
- */
-app.patch("/event/:eventId", (req, res) => {
-    try {
-        const eventId = req.params.eventId;
-        const { title, location, startDate, endDate, description} = req.body;
-        const formattedStartDate = format(new Date(startDate), 'yyyy-MM-dd');
-        const formattedEndDate = format(new Date(endDate), 'yyyy-MM-dd');
-        
-        pool.query<Event[]>(
-            `UPDATE EVENT SET title = ?, location = ?, startDate = ?, endDate = ?, description = ? WHERE eventId = ?`,
-            [title, location, formattedStartDate, formattedEndDate, description, eventId],
-            function (err, results, fields) {
-                if (err) throw err;
-                res.send("Event updated successfully");
-            }
-        );
-
-        res.status(204).send("Event updated successfully");
-
-    } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while updating the event");
-    }
-});
 
 /**
  * Assigns a user to a particular event
@@ -211,7 +212,7 @@ app.get("/user/:userId/events", (req, res) => {
         console.log(err);
         res.status(500).send("An error occurred while fetching events");
       } else {
-        res.send(results);
+        res.status(200).send(results);
       }
     });
 });
