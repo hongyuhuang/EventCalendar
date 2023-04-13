@@ -251,7 +251,7 @@ app.post("/user", (req, res) => {
         `SELECT * FROM USER WHERE id=${id}`,
         function (err, results, fields) {
           if (err) throw err;
-          if (typeof results === "undefined" || results.length === 0) {
+          if (typeof results === "undefined" || (results as RowDataPacket[]).length === 0) {
             res.status(404).send("User not found");
           } else {
             res.send(results[0]);
