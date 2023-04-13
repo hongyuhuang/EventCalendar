@@ -7,6 +7,7 @@ import { User, Event } from './entities';
 // import bodyParser from 'body-parser';  // for json inputs
 import multer from 'multer';  //for Form inputs
 import { format } from 'date-fns';
+import { OkPacket } from 'mysql2';
 
 dotenv.config();
 const app = express();
@@ -139,28 +140,42 @@ app.post("/event/:eventId/assign/:userId", (req, res) => {
 
     // Check if the event exists
     pool.query<Event[]>(
-      `SELECT * FROM EVENT WHERE id=${eventId}`,
+      `SELECT * FROM EVENT WHERE eventId=${eventId}`,
       function (err, eventResults, fields) {
         if (err) throw err;
-        if (eventResults.length === 0) {
+
+        if ((eventResults as RowDataPacket[]).length === 0) {
           return res.status(404).send("Event not found");
         }
 
         // Check if the user exists
         pool.query<User[]>(
-          `SELECT * FROM USER WHERE id=${userId}`,
+          `SELECT * FROM USER WHERE userId=${userId}`,
           function (err, userResults, fields) {
             if (err) throw err;
-            if (userResults.length === 0) {
+            if ((userResults as RowDataPacket[]).length === 0) {
               return res.status(404).send("User not found");
             }
 
-            // If both event and user exist, assign the user to the event
+            // If both event and user exist, check if attendance record already exists
             pool.query(
-              `INSERT INTO ATTENDANCE_RECORD (userId, eventId) VALUES (${userId}, ${eventId})`,
+              `SELECT * FROM ATTENDANCE_RECORD WHERE userId=${userId} AND eventId=${eventId}`,
               function (err, results, fields) {
                 if (err) throw err;
-                res.send("User assigned to event successfully");
+
+                // Check if attendance record already exists
+                if ((results as RowDataPacket[]).length > 0) {
+                  return res.send("User is already assigned to the event");
+                }
+
+                // Insert new attendance record
+                pool.query<OkPacket>(
+                  `INSERT INTO ATTENDANCE_RECORD (userId, eventId) VALUES (${userId}, ${eventId})`,
+                  function (err, results, fields) {
+                    if (err) throw err;
+                    res.send("User assigned to event successfully");
+                  }
+                );
               }
             );
           }
@@ -236,7 +251,7 @@ app.post("/user", (req, res) => {
         `SELECT * FROM USER WHERE id=${id}`,
         function (err, results, fields) {
           if (err) throw err;
-          if (results.length === 0) {
+          if (typeof results === "undefined" || results.length === 0) {
             res.status(404).send("User not found");
           } else {
             res.send(results[0]);
