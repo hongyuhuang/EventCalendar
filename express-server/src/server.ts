@@ -224,6 +224,30 @@ app.post("/user", (req, res) => {
   });
 
 
+
+  /**
+ * Get a user by ID
+ */
+  app.get("/user/:id", (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      pool.query<User[]>(
+        `SELECT * FROM USER WHERE id=${id}`,
+        function (err, results, fields) {
+          if (err) throw err;
+          if (results.length === 0) {
+            res.status(404).send("User not found");
+          } else {
+            res.send(results[0]);
+          }
+        }
+      );
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("An error occurred while getting the user");
+    }
+  });
   
 /**
  * Returns a photo for a particular user.
