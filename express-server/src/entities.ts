@@ -1,7 +1,7 @@
 import { RowDataPacket } from 'mysql2/promise';
 
 export interface User extends RowDataPacket {
-    id?: number;
+    userId?: number;
     firstName: string;
     lastName: string;
     isAdmin: Boolean;
@@ -18,3 +18,4 @@ export interface Event extends RowDataPacket {
     endDate: Date;
     description: String;
 }
+
