@@ -128,26 +128,51 @@ app.patch("/event/:eventId", (req, res) => {
     }
 });
 
+
 /**
  * Assigns a user to a particular event
  */
 app.post("/event/:eventId/assign/:userId", (req, res) => {
-    try {
-        const eventId = req.params.eventId;
-        const userId = req.params.userId;
-  
-        pool.query(
-          `INSERT INTO ATTENDANCE_RECORD (userId, eventId) VALUES (${userId}, ${eventId})`,
-          function (err, results, fields) {
+  try {
+    const eventId = req.params.eventId;
+    const userId = req.params.userId;
+
+    // Check if the event exists
+    pool.query<Event[]>(
+      `SELECT * FROM EVENT WHERE id=${eventId}`,
+      function (err, eventResults, fields) {
+        if (err) throw err;
+        if (eventResults.length === 0) {
+          return res.status(404).send("Event not found");
+        }
+
+        // Check if the user exists
+        pool.query<User[]>(
+          `SELECT * FROM USER WHERE id=${userId}`,
+          function (err, userResults, fields) {
             if (err) throw err;
-            res.send("User assigned to event successfully");
+            if (userResults.length === 0) {
+              return res.status(404).send("User not found");
+            }
+
+            // If both event and user exist, assign the user to the event
+            pool.query(
+              `INSERT INTO ATTENDANCE_RECORD (userId, eventId) VALUES (${userId}, ${eventId})`,
+              function (err, results, fields) {
+                if (err) throw err;
+                res.send("User assigned to event successfully");
+              }
+            );
           }
         );
-      } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while assigning the user to the event");
       }
-  });
+    );
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("An error occurred while assigning the user to the event");
+  }
+});
+
 
 /*
  * Route to return all events for a given user
@@ -197,6 +222,8 @@ app.post("/user", (req, res) => {
       res.status(500).send("An error occurred while creating the user");
     }
   });
+
+
   
 /**
  * Returns a photo for a particular user.
