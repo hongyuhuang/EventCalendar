@@ -14,7 +14,8 @@ CREATE TABLE EVENT(
     location VARCHAR(100) NOT NULL,
     startDate DATE NOT NULL,
     endDate DATE NOT NULL,
-    description VARCHAR(1000) NOT NULL
+    description VARCHAR(1000) NOT NULL,
+    PRIMARY KEY (eventId)
 );
 
 CREATE TABLE ATTENDANCE_RECORD(
