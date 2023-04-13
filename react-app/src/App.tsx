@@ -5,7 +5,12 @@ import Login from './Login';
 function App() {
   return (
     <div className="App">
-        <Login/>
+        <header>
+            EventCalendar
+        </header>
+        <main>
+            <Login/>
+        </main>
     </div>
   );
 }
