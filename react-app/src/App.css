@@ -7,6 +7,30 @@
   --otago-grey-dark: #dddddd;
 }
 
+#detail-div {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--otago-grey-dark);
+  flex-wrap: wrap;
+}
+
+.event-detail-fact {
+  display: flex;
+  flex-direction: row;
+}
+
+#event-description {
+  display: flex;
+    flex-direction: column;
+}
+
+.react-calendar {
+  border-radius: 10px;
+}
+
 .App {
   display: flex;
   flex-direction: column;
@@ -77,4 +101,20 @@ input {
 
 .login-label> input {
   width: 200px;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
 }
