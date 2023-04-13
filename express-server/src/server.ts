@@ -110,25 +110,35 @@ app.post("/event", (req, res) => {
  * Performs a partial update on an event
  */
 app.patch("/event/:eventId", (req, res) => {
-    try {
-        const eventId = req.params.eventId;
-        const { title, location, startDate, endDate, description} = req.body;
-        const formattedStartDate = format(new Date(startDate), 'yyyy-MM-dd');
-        const formattedEndDate = format(new Date(endDate), 'yyyy-MM-dd');
-        
-        pool.query<Event[]>(
-            `UPDATE EVENT SET title = ${title}, location = ${location}, startDate = ${formattedStartDate}, endDate = ${formattedEndDate}, description = ${description} WHERE eventId = ${eventId}`,
-            function (err, results, fields) {
-                if (err) throw err;
-                res.send("Event updated successfully");
-            }
-        );
-    } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while updating the event");
-    }
-});
+  try {
+    const eventId = req.params.eventId;
+    const { title, location, startDate, endDate, description } = req.body;
+    const formattedStartDate = format(new Date(startDate), "yyyy-MM-dd");
+    const formattedEndDate = format(new Date(endDate), "yyyy-MM-dd");
 
+    pool.query<Event[]>(
+      `SELECT * FROM EVENT WHERE eventId = ${eventId}`,
+      function (err, eventResults, fields) {
+        if (err) throw err;
+
+        if ((eventResults as RowDataPacket[]).length === 0) {
+          return res.status(404).send("Event not found");
+        }
+
+        pool.query<OkPacket>(
+          `UPDATE EVENT SET title = ${title}, location = ${location}, startDate = ${formattedStartDate}, endDate = ${formattedEndDate}, description = ${description} WHERE eventId = ${eventId}`,
+          function (err, results, fields) {
+            if (err) throw err;
+            res.send("Event updated successfully");
+          }
+        );
+      }
+    );
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("An error occurred while updating the event");
+  }
+});
 
 /**
  * Assigns a user to a particular event
