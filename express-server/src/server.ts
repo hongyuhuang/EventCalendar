@@ -3,6 +3,12 @@ const app = express();
 
 const basicAuth = require("express-basic-auth");
 
+const PORT = 3001;
+
+app.get("/test", (req, res) => {
+    res.send('Hello from express!')
+})
+
 app.use(
   basicAuth({
     authorizer: authorize,
@@ -72,6 +78,6 @@ app.post("/user", (req, res) => {})
  */
 app.get("/user/:username/photo", (req, res) => {});
 
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
