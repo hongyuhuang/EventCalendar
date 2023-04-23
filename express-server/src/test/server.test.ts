@@ -1,7 +1,7 @@
-import {EventType, UserType} from "../src/entities";
+import {EventType, UserType} from "../entities";
 
 let superTest = require('supertest');
-let app = require('../src/server').app;
+let app = require('../server').app;
 
 let request = superTest(app);
 
@@ -23,7 +23,7 @@ describe('Test POST /event/:eventId/assign/:userId', () => {
         const user: UserType = {
             firstName: "Morty",
             lastName: "Smith",
-            email: "",
+            email: "morty.smith@example.com",
             isAdmin: false,
             password: "123456"
         }
