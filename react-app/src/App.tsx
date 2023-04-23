@@ -2,8 +2,10 @@ import React from "react";
 import "./App.css";
 import Login from "./Login";
 import styled from "styled-components";
-import { Routes, Route, NavLink, useLocation } from "react-router-dom";
+import { Routes, Route, NavLink, useLocation, UNSAFE_useScrollRestoration } from "react-router-dom";
 import EventCalendar from "./Events";
+import SignupForm from "./AddUser";
+import UserList from "./UserList";
 
 const Wrapper = styled.div`
   display: flex;
@@ -53,9 +55,10 @@ const Nav = styled.nav`
 `;
 
 const NavItem = styled(NavLink)`
-  color: var(--otago-blue-dark);
+  color: var(--otago-blue);
   text-decoration: none;
   font-size: 15px;
+  padding: 10px;
   &.active {
     background-color: white;
     color: var(--otago-blue-dark);
@@ -66,7 +69,6 @@ const NavItem = styled(NavLink)`
   }
   height: 100%;
   float: left;
-  padding: 7px;
 `;
 
 const Main = styled.main`
@@ -79,6 +81,8 @@ const Main = styled.main`
   margin-top: 108.5px;
 `;
 
+
+
 const App: React.FC = () => {
   const location = useLocation();
   const currentPath = location.pathname;
@@ -88,6 +92,16 @@ const App: React.FC = () => {
       ? currentPath === linkPath
       : currentPath.startsWith(linkPath);
   };
+
+  // TODO: Link to back end
+  const users = [
+    { id: 1, firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com' },
+    { id: 2, firstName: 'Jane', lastName: 'Doe', email: 'jane.doe@example.com' },
+    { id: 3, firstName: 'Bob', lastName: 'Smith', email: 'bob.smith@example.com' },
+    { id: 4, firstName: 'Alice', lastName: 'Jones', email: 'alice.jones@example.com' },
+    { id: 5, firstName: 'Tom', lastName: 'Brown', email: 'tom.brown@example.com' },
+  ];
+  
   return (
     <Wrapper>
       <Header>
@@ -106,6 +120,18 @@ const App: React.FC = () => {
           >
             Events
           </NavItem>
+          <NavItem
+            to={"/add-user"}
+            className={isLinkActive("/add-user") ? "active" : ""}
+          >
+            Add User
+          </NavItem>
+          <NavItem
+            to={"/user-list"}
+            className={isLinkActive("/user-list") ? "active" : ""}
+          >
+            Manage Users
+          </NavItem>
         </Nav>
       </Header>
       <Main>
@@ -115,6 +141,15 @@ const App: React.FC = () => {
             path="/events"
             element={<EventCalendar events={undefined} />}
           />
+          <Route
+            path="/add-user"
+            element={<SignupForm />}
+          />
+          <Route
+            path="/user-list"
+            element={<UserList users={users} />}
+          />
+          UserList
         </Routes>
       </Main>
     </Wrapper>
