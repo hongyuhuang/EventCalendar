@@ -1,7 +1,6 @@
 import React from "react";
 import { CalendarEvent } from "./EventCalendar";
 import { useLocation } from "react-router-dom";
-import styled from "styled-components";
 
 function EventDetails() {
     const location = useLocation();

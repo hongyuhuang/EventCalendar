@@ -7,7 +7,6 @@ import {
   Route,
   NavLink,
   useLocation,
-  UNSAFE_useScrollRestoration,
 } from "react-router-dom";
 import EventCalendar, { CalendarEvent } from "./EventCalendar";
 import SignupForm from "./AddUser";
