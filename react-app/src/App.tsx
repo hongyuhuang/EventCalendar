@@ -2,10 +2,17 @@ import React from "react";
 import "./App.css";
 import Login from "./Login";
 import styled from "styled-components";
-import { Routes, Route, NavLink, useLocation, UNSAFE_useScrollRestoration } from "react-router-dom";
-import EventCalendar from "./Events";
+import {
+  Routes,
+  Route,
+  NavLink,
+  useLocation,
+  UNSAFE_useScrollRestoration,
+} from "react-router-dom";
+import EventCalendar, { CalendarEvent } from "./EventCalendar";
 import SignupForm from "./AddUser";
-import UserList from "./UserList";
+import UserList, { User } from "./UserList";
+import EventDetails from "./EventDetails";
 
 const Wrapper = styled.div`
   display: flex;
@@ -81,8 +88,6 @@ const Main = styled.main`
   margin-top: 108.5px;
 `;
 
-
-
 const App: React.FC = () => {
   const location = useLocation();
   const currentPath = location.pathname;
@@ -93,15 +98,73 @@ const App: React.FC = () => {
       : currentPath.startsWith(linkPath);
   };
 
-  // TODO: Link to back end
-  const users = [
-    { id: 1, firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com' },
-    { id: 2, firstName: 'Jane', lastName: 'Doe', email: 'jane.doe@example.com' },
-    { id: 3, firstName: 'Bob', lastName: 'Smith', email: 'bob.smith@example.com' },
-    { id: 4, firstName: 'Alice', lastName: 'Jones', email: 'alice.jones@example.com' },
-    { id: 5, firstName: 'Tom', lastName: 'Brown', email: 'tom.brown@example.com' },
+  const events: CalendarEvent[] = [
+    {
+      title: "Event 1",
+      start: new Date(2023, 3, 28, 10, 0),
+      end: new Date(2023, 3, 28, 12, 0),
+      location: "Room 1",
+    },
+    {
+      title: "Event 2",
+      start: new Date(2023, 3, 29, 14, 0),
+      end: new Date(2023, 3, 29, 16, 0),
+      location: "Room 2",
+    },
+    {
+      title: "Event 3",
+      start: new Date(2023, 3, 30, 9, 0),
+      end: new Date(2023, 3, 30, 11, 0),
+      location: "Room 3",
+    },
+    {
+      title: "Event 4",
+      start: new Date(2023, 4, 1, 13, 0),
+      end: new Date(2023, 4, 1, 15, 0),
+      location: "Room 4",
+    },
+    {
+      title: "Event 5",
+      start: new Date(2023, 4, 2, 16, 0),
+      end: new Date(2023, 4, 2, 18, 0),
+      location: "Room 5",
+    },
   ];
-  
+
+  // TODO: Link to back end
+  const users: User[] = [
+    {
+      id: 1,
+      firstName: "John",
+      lastName: "Doe",
+      email: "john.doe@example.com",
+    },
+    {
+      id: 2,
+      firstName: "Jane",
+      lastName: "Doe",
+      email: "jane.doe@example.com",
+    },
+    {
+      id: 3,
+      firstName: "Bob",
+      lastName: "Smith",
+      email: "bob.smith@example.com",
+    },
+    {
+      id: 4,
+      firstName: "Alice",
+      lastName: "Jones",
+      email: "alice.jones@example.com",
+    },
+    {
+      id: 5,
+      firstName: "Tom",
+      lastName: "Brown",
+      email: "tom.brown@example.com",
+    },
+  ];
+
   return (
     <Wrapper>
       <Header>
@@ -137,18 +200,10 @@ const App: React.FC = () => {
       <Main>
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route
-            path="/events"
-            element={<EventCalendar events={undefined} />}
-          />
-          <Route
-            path="/add-user"
-            element={<SignupForm />}
-          />
-          <Route
-            path="/user-list"
-            element={<UserList users={users} />}
-          />
+          <Route path="/events" element={<EventCalendar events={events} />} />
+          <Route path="/add-user" element={<SignupForm />} />
+          <Route path="/user-list" element={<UserList users={users} />} />
+          <Route path="/event-details" element={<EventDetails />}></Route>
           UserList
         </Routes>
       </Main>
