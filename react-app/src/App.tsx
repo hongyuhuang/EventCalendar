@@ -2,9 +2,8 @@ import React from "react";
 import "./App.css";
 import Login from "./Login";
 import styled from "styled-components";
-import { Routes, Route, Link } from "react-router-dom";
-import About from "./About";
-import Events from "./Events";
+import { Routes, Route, NavLink } from "react-router-dom";
+import EventCalendar from "./Events";
 
 const Wrapper = styled.div`
   display: flex;
@@ -33,6 +32,7 @@ const Header = styled.header`
   height: 70px;
   font-size: 24px;
   width: 100%;
+  z-index: 9999;
 `;
 
 const Logo = styled.img`
@@ -52,7 +52,7 @@ const NavBar = styled.nav`
   left: 0;
 `;
 
-const NavLink = styled(Link)`
+const NavItem = styled(NavLink)`
   color: var(--otago-blue-dark);
   text-decoration: none;
   font-size: 15px;
@@ -63,6 +63,10 @@ const NavLink = styled(Link)`
   height: 100%;
   float: left;
   padding: 7px;
+
+  &:active {
+  background-color: white;
+  }
 `;
 
 const Main = styled.main`
@@ -85,16 +89,14 @@ const App: React.FC = () => {
         />
         <Title>Event Calendar</Title>
         <NavBar>
-          <NavLink to={"/"}> Login </NavLink>
-          <NavLink to={"/events"}>Events </NavLink>
-          <NavLink to={"/about"}>About </NavLink>
+          <NavItem to={"/"}>Events</NavItem>
+          <NavItem to={"/login"}>Login</NavItem>
         </NavBar>
       </Header>
       <Main>
         <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/events" element={<Events />} />
-          <Route path="/about" element={<About />} />
+          <Route path="/" element={<EventCalendar events={undefined} />} />
+          <Route path="/login" element={<Login />} />
         </Routes>
       </Main>
     </Wrapper>
