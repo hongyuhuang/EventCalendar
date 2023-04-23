@@ -19,7 +19,8 @@ describe('Test POST /event/:eventId/assign/:userId', () => {
         5. Delete the event
         6. Delete the user
          */
-
+        
+        // 1. create user
         const user: UserType = {
             firstName: "Morty",
             lastName: "Smith",
@@ -27,31 +28,29 @@ describe('Test POST /event/:eventId/assign/:userId', () => {
             isAdmin: false,
             password: "123456"
         }
-
         const response = await request.post('/user').send(user)
-
         const userId = response.body.userId
 
+        // 2. create event
         const event: EventType = {
-            location: "",
-            startDate: new Date( "2020-01-01 00:00:00"),
-            title: "",
-            description: "",
-            endDate: new Date("2020-01-01 00:00:00")
+            title: "Drinks on Andrew",
+            location: "The Pub",
+            startDate: new Date( "2024-01-01 00:00:00"),
+            endDate: new Date("2024-01-02 01:00:00"),
+            description: "Bring your best fit"
         }
-
-
         const response2 = await request.post('/event').send(event)
         expect(response2.status).toBe(201)
-
         const eventId = response2.body.eventId
 
-        await request.post(`/event/${eventId}/assign/${userId}`).expect(201 )
-
+        // 3. assign event to user.
+        await request.post(`/event/${eventId}/assign/${userId}`).expect(201)
         const response3 = await request.get(`/user/${userId}/events`).expect(200)
 
+        // 4. check that event is assigned to user
         expect(response3.body[0].eventId).toBe(eventId)
 
+        // 5 & 6. delete user & event
         await request.delete(`/event/${eventId}`).expect(204)
         await request.delete(`/user/${userId}`).expect(204)
     })
@@ -83,15 +82,15 @@ describe('Test POST /event', () => {
             title: "A test title",
             location: "A test location",
             startDate: "2020-01-01 00:00:00",
-            endDate: "2020-01-01 00:01:00",
+            endDate: "2020-01-02 00:01:00",
             description: "A test description"
         }
 
-        const response = request.post('/event').send(event).expect(200)
+        const response = await request.post('/event').send(event).expect(201)
 
         const eventId = response.body.eventId
 
-        const response2 = request.get(`/event/${eventId}`).expect(200)
+        const response2 = await request.get(`/event/${eventId}`).expect(200)
 
         expect(response2.body.eventId).toBeTruthy()
 
@@ -99,9 +98,10 @@ describe('Test POST /event', () => {
     })
 })
 
+// note this assumes that the post works.
 describe("Test DELETE /event/:eventId", () => {
 
-    test("Test normally", () => {
+    test("Test normally", async () => {
 
         const event = {
             title: "A test title",
@@ -111,7 +111,7 @@ describe("Test DELETE /event/:eventId", () => {
             description: "A test description"
         }
 
-        const response = request.post('/event').send(event).expect(200)
+        const response = await request.post('/event').send(event).expect(201)
 
         const eventId = response.body.eventId
 
@@ -128,64 +128,84 @@ describe("Test DELETE /event/:eventId", () => {
 
 describe('Test GET /user/:userId/events', () => {
 
-    test("Test normally", () => {
+    test("Test normally", async () => {
+        //create user
         const user = {
-            firstName: "Morty",
-            lastName: "Smith",
-            email: "morty@earth.com",
-            isAdmin: false,
-            password: "123456"
+          firstName: "Morty",
+          lastName: "Smith",
+          email: "morty@earth.com",
+          isAdmin: false,
+          password: "123456"
         }
-
-        const response = request.post('/user').send(user).expect(200)
-
+        const response = await request.post('/user').send(user).expect(201)
         const userId = response.body.userId
-
+      
+        //setup events
         const event1: EventType = {
-            description: "",
-            endDate:  new Date("2020-01-01 00:00:00"),
-            location: "",
-            startDate:  new Date("2020-01-01 00:00:00"),
-            title: "Test event 1"
+            title: "Test event 1",
+            location: "test location",
+            startDate:  new Date("2020-01-01 01:00:00"),
+            endDate:  new Date("2020-01-01 02:00:00"),
+            description: "test description"
         }
-
         const event2: EventType = {
-            description: "",
-            endDate:  new Date("2020-01-01 00:00:00"),
-            location: "",
-            startDate:  new Date("2020-01-01 00:00:00"),
-            title: "Test event 2"
+            title: "Test event 2",
+            location: "test location",
+            startDate:  new Date("2020-01-01 01:00:00"),
+            endDate:  new Date("2020-01-01 02:00:00"),
+            description: "test description"
         }
-
         const event3: EventType = {
-            description: "",
-            endDate: new Date("2020-01-01 00:00:00"),
-            location: "",
-            startDate:  new Date("2020-01-01 00:00:00"),
             title: "Test event 3",
+            location: "test locat",
+            startDate:  new Date("2020-01-01 01:00:00"),
+            endDate: new Date("2020-01-01 02:00:00"),
+            description: "test descprion"
         }
-
-        const response2 = request.post('/event').send(event1).expect(200)
-        const response3 = request.post('/event').send(event2).expect(200)
-        const response4 = request.post('/event').send(event3).expect(200)
-
+      
+        //create events
+        const response2 = await request.post('/event').send(event1).expect(201)
+        const response3 = await request.post('/event').send(event2).expect(201)
+        const response4 = await request.post('/event').send(event3).expect(201)
         const eventId1 = response2.body.eventId
         const eventId2 = response3.body.eventId
         const eventId3 = response4.body.eventId
 
-        request.post(`/event/${eventId1}/assign/${userId}`).expect(204)
-        request.post(`/event/${eventId2}/assign/${userId}`).expect(204)
-        request.post(`/event/${eventId3}/assign/${userId}`).expect(204)
+        //assign user to events
+        await request.post(`/event/${eventId1}/assign/${userId}`).expect(201)
+        await request.post(`/event/${eventId2}/assign/${userId}`).expect(201)
+        await request.post(`/event/${eventId3}/assign/${userId}`).expect(201)
+        const response5 = await request.get(`/user/${userId}/events`).expect(200)
 
-        const response5 = request.get(`/user/${userId}/events`).expect(200)
-
-        expect(response5.body).toEqual([event1, event2, event3])
-
-        request.delete(`/event/${eventId1}`).expect(204)
-        request.delete(`/event/${eventId2}`).expect(204)
-        request.delete(`/event/${eventId3}`).expect(204)
-
-        request.delete(`/user/${userId}`).expect(204)
+        console.log("RESPONSE BODY FOR C"  + response5.body)
+      
+        //check valid
+        expect(response5.body).toEqual([
+          {
+            ...event1,
+            eventId: eventId1,
+            startDate: "2020-01-01T00:01:00.000Z",
+            endDate: "2020-01-01T00:02:00.000Z"
+          },
+          {
+            ...event2,
+            eventId: eventId2,
+            startDate: "2020-01-01T00:01:00.000Z",
+            endDate: "2020-01-01T00:02:00.000Z"
+          },
+          {
+            ...event3,
+            eventId: eventId3,
+            startDate: "2020-01-01T00:01:00.000Z",
+            endDate: "2020-01-01T00:02:00.000Z"
+          }
+        ])
+      
+        //delete user and events
+        await request.delete(`/event/${eventId1}`).expect(204)
+        await request.delete(`/event/${eventId2}`).expect(204)
+        await request.delete(`/event/${eventId3}`).expect(204)
+        await request.delete(`/user/${userId}`).expect(204)
     })
 
     test("Test for a user that does not exist", () => {

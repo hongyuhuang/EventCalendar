@@ -74,12 +74,16 @@ app.get("/event/:eventId", (req, res) => {
             `SELECT * FROM EVENT WHERE eventId = ?`,
             [eventId],
             function (err, results, fields) {
-                console.log(results)
+                // console.log(results)
 
                 if (results.length === 0) {
                     res.status(404).send('Event not found');
                 } else {
                     const event = results[0];
+
+                    console.log(event)
+                    
+
                     res.status(200).json(event);
                 }
             });
@@ -143,15 +147,19 @@ app.delete("/event/:eventId", (req, res) => {
 app.post("/event", (req, res) => {
     try {
         var { title, location, startDate, endDate, description} = req.body;
-        startDate = format(new Date(startDate), 'yyyy-MM-dd');
-        endDate = format(new Date(endDate), 'yyyy-MM-dd');
+        startDate = format(new Date(startDate), 'yyyy-MM-dd HH:mm:ss');
+        endDate = format(new Date(endDate), 'yyyy-MM-dd HH:mm:ss');
+        // console.log("StartDate")
+        // console.log(startDate)
+        // console.log("EndDate")
+        // console.log(endDate)
         pool.query<Event[]>(
             `INSERT INTO EVENT (title, location, startDate, endDate, description) VALUES (?, ?, ?, ?, ?)`,
             [title, location, startDate, endDate, description],
             function (err, results, fields) {
                 if (err) throw err;
                 // @ts-ignore
-                res.status(201).send({attendanceId: results.insertId})
+                res.status(201).send({eventId: results.insertId})
             }
         )
 
