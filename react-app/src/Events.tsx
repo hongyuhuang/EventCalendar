@@ -15,7 +15,7 @@ function EventCalendar(props: { events: any; }) {
         events={events}
         startAccessor="start"
         endAccessor="end"
-        style={{ height: window.innerHeight, width: '95vw'}}
+        style={{ height: window.innerHeight - 150, width: '95vw'}}
       />
     </div>
   );
