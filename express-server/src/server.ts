@@ -81,10 +81,12 @@ app.get("/event/:eventId", (req, res) => {
                 } else {
                     const event = results[0];
 
-                    console.log(event)
+                    console.log("!" + JSON.stringify(results))
+                    console.log("2: " + JSON.stringify(results[0]))
+                    res.status(200).send(results[0])
                     
 
-                    res.status(200).json(event);
+                    // res.status(200).json(event);
                 }
             });
     } catch (err) {
