@@ -14,6 +14,16 @@ const Wrapper = styled.div`
 `;
 
 const Header = styled.header`
+  &::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #f9c000;
+  }
   position: fixed;
   display: flex;
   align-items: center;
@@ -21,13 +31,21 @@ const Header = styled.header`
   left: 0;
   background: var(--otago-blue-dark);
   color: white;
-  height: 64px;
-  font-size: 2em;
+  height: 70px;
+  font-size: 24px;
   width: 100%;
 `;
 
+const Logo = styled.img`
+  height: 70px;
+`;
+
+const Title = styled.span`
+  padding-left: 10px;
+`;
+
 const Main = styled.main`
-  margin-top: 64px;
+  margin-top: 70px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -36,13 +54,15 @@ const Main = styled.main`
   justify-content: center;
 `;
 
-const NavBar = styled.nav``;
-
 const App: React.FC = () => {
   return (
-    <Wrapper className="App">
+    <Wrapper>
       <Header>
-        <span>Event Calendar</span>
+        <Logo
+          src={process.env.PUBLIC_URL + "/images/university-of-otago-logo.png"}
+          alt="University of Otago Logo"
+        />
+        <Title>Event Calendar</Title>
       </Header>
       <Main>
         <nav>
