@@ -8,9 +8,9 @@ INSERT INTO USER (firstName, lastName, isAdmin, email, password) VALUES
 
 -- Inserting data into the EVENT table
 INSERT INTO EVENT (title, location, startDate, endDate, description) VALUES
-('Company Picnic', 'Central Park', '2023-07-15', '2023-07-15', 'Annual company picnic for all employees.'),
-('Sales Conference', 'New York Marriott Marquis', '2023-09-12', '2023-09-14', 'Sales conference for all regional managers.'),
-('Product Launch', 'Jacob K. Javits Convention Center', '2024-03-01', '2024-03-02', 'Launch of new product line at the convention center.');
+('Company Picnic', 'Central Park', '2023-07-15 01:01:01', '2023-07-15 02:02:02', 'Annual company picnic for all employees.'),
+('Sales Conference', 'New York Marriott Marquis', '2023-09-12 01:01:01', '2023-09-14 02:02:02', 'Sales conference for all regional managers.'),
+('Product Launch', 'Jacob K. Javits Convention Center', '2024-03-01 01:01:01', '2024-03-02 02:02:02', 'Launch of new product line at the convention center.');
 
 -- Inserting data into the ATTENDANCE_RECORD table
 INSERT INTO ATTENDANCE_RECORD (userId, eventId) VALUES
