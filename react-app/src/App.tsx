@@ -2,7 +2,7 @@ import React from "react";
 import "./App.css";
 import Login from "./Login";
 import styled from "styled-components";
-import { Routes, Route, NavLink } from "react-router-dom";
+import { Routes, Route, NavLink, useLocation } from "react-router-dom";
 import EventCalendar from "./Events";
 
 const Wrapper = styled.div`
@@ -43,7 +43,7 @@ const Title = styled.span`
   padding-left: 10px;
 `;
 
-const NavBar = styled.nav`
+const Nav = styled.nav`
   position: absolute;
   background: var(--otago-grey-dark);
   width: 100%;
@@ -56,6 +56,10 @@ const NavItem = styled(NavLink)`
   color: var(--otago-blue-dark);
   text-decoration: none;
   font-size: 15px;
+  &.active {
+    background-color: white;
+    color: var(--otago-blue-dark);
+  }
   &:hover {
     background: var(--otago-blue);
     color: white;
@@ -63,10 +67,6 @@ const NavItem = styled(NavLink)`
   height: 100%;
   float: left;
   padding: 7px;
-
-  &:active {
-  background-color: white;
-  }
 `;
 
 const Main = styled.main`
@@ -80,6 +80,14 @@ const Main = styled.main`
 `;
 
 const App: React.FC = () => {
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  const isLinkActive = (linkPath: string) => {
+    return linkPath === "/"
+      ? currentPath === linkPath
+      : currentPath.startsWith(linkPath);
+  };
   return (
     <Wrapper>
       <Header>
@@ -88,15 +96,25 @@ const App: React.FC = () => {
           alt="University of Otago Logo"
         />
         <Title>Event Calendar</Title>
-        <NavBar>
-          <NavItem to={"/"}>Events</NavItem>
-          <NavItem to={"/login"}>Login</NavItem>
-        </NavBar>
+        <Nav>
+          <NavItem to={"/"} className={isLinkActive("/") ? "active" : ""}>
+            Login
+          </NavItem>
+          <NavItem
+            to={"/events"}
+            className={isLinkActive("/events") ? "active" : ""}
+          >
+            Events
+          </NavItem>
+        </Nav>
       </Header>
       <Main>
         <Routes>
-          <Route path="/" element={<EventCalendar events={undefined} />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Login />} />
+          <Route
+            path="/events"
+            element={<EventCalendar events={undefined} />}
+          />
         </Routes>
       </Main>
     </Wrapper>
