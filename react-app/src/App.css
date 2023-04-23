@@ -2,9 +2,13 @@
   --otago-blue: #00508e;
   --otago-blue-light: #145d96;
   --otago-yellow: #f9c003;
-  --otago-blue-dark: #123568;
+  --otago-blue-dark: #10428c;
   --otago-grey-light: #fcfcfa;
   --otago-grey-dark: #dddddd;
+}
+
+body {
+  overflow-x: hidden;
 }
 
 .react-calendar {
