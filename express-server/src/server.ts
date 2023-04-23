@@ -25,7 +25,7 @@ app.get('/test', (req, res) => {
         'SELECT * FROM USER',
         function (err, results, fields) {
             res.send(results)
-            console.log(results[0])
+            // console.log(results[0])
 
             for (const user of results) {
                 console.log(user.email);
@@ -81,8 +81,8 @@ app.get("/event/:eventId", (req, res) => {
                 } else {
                     const event = results[0];
 
-                    console.log("!" + JSON.stringify(results))
-                    console.log("2: " + JSON.stringify(results[0]))
+                    // console.log("!" + JSON.stringify(results))
+                    // console.log("2: " + JSON.stringify(results[0]))
                     res.status(200).send(results[0])
                     
 
@@ -149,12 +149,15 @@ app.delete("/event/:eventId", (req, res) => {
 app.post("/event", (req, res) => {
     try {
         var { title, location, startDate, endDate, description} = req.body;
-        startDate = format(new Date(startDate), 'yyyy-MM-dd HH:mm:ss');
-        endDate = format(new Date(endDate), 'yyyy-MM-dd HH:mm:ss');
-        // console.log("StartDate")
+        // startDate = format(new Date(startDate), 'yyyy-MM-dd HH:mm:ss');
+        // endDate = format(new Date(endDate), 'yyyy-MM-dd HH:mm:ss');
+
+        startDate = new Date(startDate).toISOString();
+        endDate = new Date(endDate).toISOString();
+
         // console.log(startDate)
-        // console.log("EndDate")
-        // console.log(endDate)
+        // console.log(typeof(endDate))
+
         pool.query<Event[]>(
             `INSERT INTO EVENT (title, location, startDate, endDate, description) VALUES (?, ?, ?, ?, ?)`,
             [title, location, startDate, endDate, description],
@@ -238,7 +241,13 @@ app.get("/user/:userId", (req, res) => {
             [userId],
             function (err, results, fields) {
                 if (err) throw err;
-                res.status(200).send(results[0]);
+                
+
+                if (results.length === 0) {
+                    res.status(404).send('Event not found');
+                } else {
+                    res.status(200).send(results[0]);
+                }
             }
         );
     } catch (e) {
@@ -258,6 +267,8 @@ app.delete("/user/:userId", (req, res) => {
             [userId],
             function (err, results, fields) {
                 if (err) throw err;
+
+                
                 res.status(204).send("User deleted successfully");
             }
         );

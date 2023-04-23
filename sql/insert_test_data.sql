@@ -1,5 +1,3 @@
--- lets go chatgpt
-
 -- Inserting data into the USER table
 INSERT INTO USER (firstName, lastName, isAdmin, email, password) VALUES
 ('John', 'Doe', true, 'johndoe@email.com', 'password123'),
@@ -8,9 +6,9 @@ INSERT INTO USER (firstName, lastName, isAdmin, email, password) VALUES
 
 -- Inserting data into the EVENT table
 INSERT INTO EVENT (title, location, startDate, endDate, description) VALUES
-('Company Picnic', 'Central Park', '2023-07-15 01:01:01', '2023-07-15 02:02:02', 'Annual company picnic for all employees.'),
-('Sales Conference', 'New York Marriott Marquis', '2023-09-12 01:01:01', '2023-09-14 02:02:02', 'Sales conference for all regional managers.'),
-('Product Launch', 'Jacob K. Javits Convention Center', '2024-03-01 01:01:01', '2024-03-02 02:02:02', 'Launch of new product line at the convention center.');
+('Company Picnic', 'Central Park', '2023-07-15T11:00:00.000Z', '2023-07-15T17:00:00.000Z', 'Annual company picnic for all employees.'),
+('Sales Conference', 'New York Marriott Marquis', '2023-09-12T09:00:00.000Z', '2023-09-14T17:00:00.000Z', 'Sales conference for all regional managers.'),
+('Product Launch', 'Jacob K. Javits Convention Center', '2024-03-01T09:00:00.000Z', '2024-03-02T17:00:00.000Z', 'Launch of new product line at the convention center.');
 
 -- Inserting data into the ATTENDANCE_RECORD table
 INSERT INTO ATTENDANCE_RECORD (userId, eventId) VALUES
@@ -23,9 +21,10 @@ INSERT INTO ATTENDANCE_RECORD (userId, eventId) VALUES
 
 -- Inserting data into the EVENT_SCHEDULE_ITEM table
 INSERT INTO EVENT_SCHEDULE_ITEM (eventId, startDate, endDate, activity, description) VALUES
-(1, '2023-07-15', '2023-07-15', 'Lunch', 'Enjoy food and drinks with colleagues.'),
-(1, '2023-07-15', '2023-07-15', 'Games', 'Play games and participate in team-building activities.'),
-(2, '2023-09-12', '2023-09-12', 'Keynote Speech', 'Hear from the CEO about the company vision.'),
-(2, '2023-09-13', '2023-09-13', 'Breakout Sessions', 'Participate in workshops and networking sessions.'),
-(3, '2024-03-01', '2024-03-01', 'Product Demo', 'Get a firsthand look at the new product line.'),
-(3, '2024-03-02', '2024-03-02', 'Q&A Session', 'Ask questions and provide feedback to the product development team.');
+(1, '2023-07-15T11:00:00.000Z', '2023-07-15T12:00:00.000Z', 'Lunch', 'Enjoy food and drinks with colleagues.'),
+(1, '2023-07-15T12:00:00.000Z', '2023-07-15T13:00:00.000Z', 'Games', 'Play games and participate in team-building activities.'),
+(2, '2023-09-12T09:00:00.000Z', '2023-09-12T10:30:00.000Z', 'Keynote Speech', 'Hear from the CEO about the company vision.'),
+(2, '2023-09-12T10:30:00.000Z', '2023-09-12T12:00:00.000Z', 'Breakout Sessions', 'Participate in workshops and networking sessions.'),
+(2, '2023-09-13T09:00:00.000Z', '2023-09-13T10:30:00.000Z', 'Keynote Speech', 'Hear from industry experts about the latest trends.'),
+(2, '2023-09-13T10:30:00.000Z', '2023-09-13T12:00:00.000Z', 'Breakout Sessions', 'Participate in workshops and networking sessions.'),
+(3, '2024-03-01T09:00:00.000Z', '2024-03-01T10:30:00.000Z', 'Product Demo', 'Get a firsthand look at the new product line.')
