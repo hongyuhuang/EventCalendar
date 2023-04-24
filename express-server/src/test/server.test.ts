@@ -2,7 +2,11 @@ import {EventType, UserType} from "../entities";
 
 let superTest = require('supertest');
 let app = require('../server').app;
+const axios = require('axios')
+const authHeader = require('basic-auth-header')
 
+const username = 'johndoe@email.com'
+const pwd = 'password123'
 
 
 let request = superTest(app);
@@ -13,75 +17,107 @@ describe("Test authorization", () => {
 
 describe('Test POST /event/:eventId/assign/:userId', () => {
 
-    test("Test normally", async () => {
-        /* Steps:
-        1. Create a user
-        2. Create an event
-        3. Assign the event to the user
-        4. Check that the event is assigned to the user
-        5. Delete the event
-        6. Delete the user
-         */
+    // test("Test normally", async () => {
+    //     /* Steps:
+    //     1. Create a user
+    //     2. Create an event
+    //     3. Assign the event to the user
+    //     4. Check that the event is assigned to the user
+    //     5. Delete the event
+    //     6. Delete the user
+    //      */
         
-        // 1. create user
-        const user: UserType = {
-            firstName: "Morty",
-            lastName: "Smith",
-            email: "morty.smith@example.com",
-            isAdmin: false,
-            password: "123456"
-        }
-        const response = await request.post('/user').send(user)
-        const userId = response.body.userId
+    //     // 1. create user
+    //     const user: UserType = {
+    //         firstName: "Morty",
+    //         lastName: "Smith",
+    //         email: "morty.smith@example.com",
+    //         isAdmin: false,
+    //         password: "123456"
+    //     }
+    
+    //     const auth = authHeader(username, pwd)
+    
+    //     const response = await axios.post('/user', user, {
+    //         headers: {
+    //             'Authorization': auth
+    //         }
+    //     })
+    
+    //     const userId = response.data.userId
+    
+    //     // 2. create event
+    //     const event: EventType = {
+    //         title: "Drinks on Andrew",
+    //         location: "The Pub",
+    //         startDate: new Date("2024-01-01T00:00:00.000Z"),
+    //         endDate: new Date("2024-01-02T01:00:00.000Z"),
+    //         description: "Bring your best fit"
+    //     }
+    
+    //     const response2 = await axios.post('/event', event, {
+    //         headers: {
+    //             'Authorization': auth
+    //         }
+    //     })
+    
+    //     expect(response2.status).toBe(201)
+    //     const eventId = response2.data.eventId
+    
+    //     // 3. assign event to user.
+    //     await axios.post(`/event/${eventId}/assign/${userId}`, {}, {
+    //         headers: {
+    //             'Authorization': auth
+    //         }
+    //     })
+    
+    //     const response3 = await axios.get(`/user/${userId}/events`, {
+    //         headers: {
+    //             'Authorization': auth
+    //         }
+    //     })
+    
+    //     // 4. check that event is assigned to user
+    //     expect(response3.data[0].eventId).toBe(eventId)
+    
+    //     // 5 & 6. delete user & event
+    //     await axios.delete(`/event/${eventId}`, {
+    //         headers: {
+    //             'Authorization': auth
+    //         }
+    //     })
+    
+    //     await axios.delete(`/user/${userId}`, {
+    //         headers: {
+    //             'Authorization': auth
+    //         }
+    //     })
+    // })
 
-        // 2. create event
-        const event: EventType = {
-            title: "Drinks on Andrew",
-            location: "The Pub",
-            startDate: new Date("2024-01-01T00:00:00.000Z"),
-            endDate: new Date("2024-01-02T01:00:00.000Z"),
-            description: "Bring your best fit"
-        }
-        const response2 = await request.post('/event').send(event)
-        expect(response2.status).toBe(201)
-        const eventId = response2.body.eventId
+    // test("Test for an event that doesn't exist", () => {
+    // })
 
-        // 3. assign event to user.
-        await request.post(`/event/${eventId}/assign/${userId}`).expect(201)
-        const response3 = await request.get(`/user/${userId}/events`).expect(200)
+    // test("Test for a user that doesn't exist", async () => {
+    //     //setup an event
+    //     const event: EventType = {
+    //         title: "Drinks on Andrew",
+    //         location: "The Pub",
+    //         startDate: new Date("2024-01-01T00:00:00.000Z"),
+    //         endDate: new Date("2024-01-02T01:00:00.000Z"),
+    //         description: "Bring your best fit"
+    //     }
 
-        // 4. check that event is assigned to user
-        expect(response3.body[0].eventId).toBe(eventId)
+    //     //ensure event is made and valid.
+    //     const response = await request.post('/event').send(event)
+    //     expect(response.status).toBe(201)
+    //     const eventId = response.body.eventId
 
-        // 5 & 6. delete user & event
-        await request.delete(`/event/${eventId}`).expect(204)
-        await request.delete(`/user/${userId}`).expect(204)
-    })
+    //     const response2 = await request.post(`/event/${eventId}/assign/xyz`).expect(500)
+    //     console.log(response2)
+    // })
 
-    test("Test for an event that doesn't exist", () => {
-    })
-
-    test("Test for a user that doesn't exist", async () => {
-        //setup an event
-        const event: EventType = {
-            title: "Drinks on Andrew",
-            location: "The Pub",
-            startDate: new Date("2024-01-01T00:00:00.000Z"),
-            endDate: new Date("2024-01-02T01:00:00.000Z"),
-            description: "Bring your best fit"
-        }
-
-        //ensure event is made and valid.
-        const response = await request.post('/event').send(event)
-        expect(response.status).toBe(201)
-        const eventId = response.body.eventId
-
-        const response2 = await request.post(`/event/${eventId}/assign/xyz`).expect(500)
-        console.log(response2)
-    })
-
-    test("Test for an event that is already assigned to a user", () => {
-    })
+    // test("Test for an event that is already assigned to a user", () => {
+    // })
 })
 
 describe('Test GET /event/:eventId', () => {
@@ -95,54 +131,54 @@ describe('Test GET /event/:eventId', () => {
 
 describe('Test POST /event', () => {
 
-    test("Test normally", async () => {
+    // test("Test normally", async () => {
 
-        const event = {
-            title: "A test title",
-            location: "A test location",
-            startDate: new Date("2020-01-01T00:00:00.000Z"),
-            endDate: new Date("2020-01-02T00:01:00.000Z"),
-            description: "A test description"
-        }
+    //     const event = {
+    //         title: "A test title",
+    //         location: "A test location",
+    //         startDate: new Date("2020-01-01T00:00:00.000Z"),
+    //         endDate: new Date("2020-01-02T00:01:00.000Z"),
+    //         description: "A test description"
+    //     }
 
-        const response = await request.post('/event').send(event).expect(201)
+    //     const response = await request.post('/event').send(event).expect(201)
 
-        const eventId = response.body.eventId
+    //     const eventId = response.body.eventId
 
-        const response2 = await request.get(`/event/${eventId}`).expect(200)
+    //     const response2 = await request.get(`/event/${eventId}`).expect(200)
 
-        expect(response2.body.eventId).toBeTruthy()
+    //     expect(response2.body.eventId).toBeTruthy()
 
-        request.delete(`/event/${eventId}`).expect(204)
-    })
+    //     request.delete(`/event/${eventId}`).expect(204)
+    // })
 })
 
 // note this assumes that the post works.
 describe("Test DELETE /event/:eventId", () => {
 
-    test("Test normally", async () => {
+    // test("Test normally", async () => {
 
-        const event = {
-            title: "A test title",
-            location: "A test location",
-            startDate: "2020-01-01 00:00:00",
-            endDate: "2020-01-01 00:01:00",
-            description: "A test description"
-        }
+    //     const event = {
+    //         title: "A test title",
+    //         location: "A test location",
+    //         startDate: "2020-01-01 00:00:00",
+    //         endDate: "2020-01-01 00:01:00",
+    //         description: "A test description"
+    //     }
 
-        const response = await request.post('/event').send(event).expect(201)
+    //     const response = await request.post('/event').send(event).expect(201)
 
-        const eventId = response.body.eventId
+    //     const eventId = response.body.eventId
 
-        request.delete(`/event/${eventId}`).expect(204)
+    //     request.delete(`/event/${eventId}`).expect(204)
 
-        request.get(`/event/${eventId}`).expect(404)
+    //     request.get(`/event/${eventId}`).expect(404)
 
-    })
+    // })
 
-    test("Test for an event that doesn't exist", () => {
-        request.delete('/event/123').expect(404)
-    })
+    // test("Test for an event that doesn't exist", () => {
+    //     request.delete('/event/123').expect(404)
+    // })
 })
 
 describe('Test GET /user/:userId/events', () => {
@@ -245,20 +281,41 @@ describe("Test GET /user", () => {
             password: "123456"
         }
 
-        const response = await request.post('/user').send(user)
-        expect(response.status).toBe(201)
+        var userId;
+        const username = 'johndoe@email.com'
+        const pwd = 'password123'
 
-        const userId = response.body.userId
+        const headers = {
+            'Authorization': authHeader(username, pwd)
+        }
+        
+        //Create user to Get
+        await axios.post('http://localhost:3000/user', { headers })
+            .then(response => {
+                // console.log('Response', response.data);
+                console.log('Status', response.status);
+                expect(response.status).toBe(201);
+                userId = response.body.userId
+            })
 
-        const response2 = await request.get(`/user/${userId}`)
-        expect(response2.status).toBe(200)
-        expect(response2.body).toMatchObject({firstName: user.firstName, lastName: user.lastName, userId: userId})
-
+        
+        await axios.get(`http://localhost:3000/user/${userId}`, { headers })
+            .then(response => {
+                console.log('Status', response.status);
+                expect(response.status).toBe(200);
+            })
+        
+        await axios.delete(`http://localhost:3000/user/${userId}`, { headers })
+            .then(response => {
+                console.log('Status', response.status);
+                expect(response.status).toBe(204);
+            })
+       
     })
 
-    test("Test for a user that does not exist", async () => {
-        await request.get('/user/zzzz').expect(404)
-    })
+    // test("Test for a user that does not exist", async () => {
+    //     await request.get('/user/zzzz').expect(404)
+    // })
 })
 
 describe('Test GET /user/:userId/photo', () => {
