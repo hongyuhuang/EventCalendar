@@ -38,7 +38,6 @@ app.get("/users", (req, res) => {
     });
 });
 
-
 // Adding in basic auth
 app.use(
     basicAuth({
@@ -183,8 +182,10 @@ app.post("/event", async (req, res) => {
              VALUES (?, ?, ?, ?, ?)`,
             [title, location, startDate, endDate, description]
         );
+        res.status(201).send("Event created");
     } catch (err) {
         console.log(err);
+        res.status(500).send("Internal server error");
     }
 });
 
@@ -397,6 +398,5 @@ app.get("/user", async (req, res) => {
 app.get("/user/:username/photo", (req, res) => {});
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
     console.log(`Server is running on port ${PORT}`);
 });
