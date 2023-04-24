@@ -26,6 +26,12 @@ app.use(bodyParser.json()); //for json inputs
 
 app.use(multer().none()); //for Form inputs
 
+const PORT = 3001;
+
+app.get("/test", (req, res) => {
+    res.send('Hello from express!')
+})
+
 app.use(
     basicAuth({
         authorizer: authorize,
@@ -294,7 +300,6 @@ app.get("/user/:id", (req, res) => {
  */
 app.get("/user/:username/photo", (req, res) => {});
 
-const PORT = process.env.PORT;
 app.listen(PORT, () => {
-    console.log(`Server is running on port 3000: http://localhost:${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

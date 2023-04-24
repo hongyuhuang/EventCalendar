@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/server.ts"
+    "start": "ts-node -T src/server.ts"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +23,6 @@
     "@types/mysql2": "github:types/mysql2",
     "nodemon": "^2.0.22",
     "tsc": "^2.0.4",
-    "typeorm": "^0.3.12"
+    "ts-node": "^10.9.1"
   }
 }
