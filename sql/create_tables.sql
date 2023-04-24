@@ -5,7 +5,8 @@ CREATE TABLE USER(
     isAdmin BOOLEAN NOT NULL,
     email VARCHAR(100) NOT NULL,
     password VARCHAR(100) NOT NULL,
-    PRIMARY KEY (userId)
+    PRIMARY KEY (userId),
+    UNIQUE (email)
 );
 
 CREATE TABLE EVENT(
