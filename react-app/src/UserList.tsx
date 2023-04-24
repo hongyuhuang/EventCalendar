@@ -16,7 +16,7 @@ const UserList: React.FC<Props> = () => {
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
-    axios.get("/test")
+    axios.get("/users")
       .then((response) => {
         console.log(response.data);
         setUsers(response.data);

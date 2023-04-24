@@ -32,9 +32,12 @@ app.get("/", (req, res) => {
     res.redirect("/test");
 });
 
-app.get("/test", (req, res) => {
-    res.send("Hello from express!");
+app.get("/users", (req, res) => {
+    pool.query<User[]>("SELECT * FROM USER", function (err, results, fields) {
+        res.json(results);
+    });
 });
+
 
 // Adding in basic auth
 app.use(
