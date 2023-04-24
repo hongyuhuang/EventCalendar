@@ -290,7 +290,7 @@ describe("Test GET /user", () => {
         }
         
         //Create user to Get
-        await axios.post('http://localhost:3000/user', { headers })
+        await axios.post('http://localhost:3000/user', {"headers": headers })
             .then(response => {
                 // console.log('Response', response.data);
                 console.log('Status', response.status);
@@ -299,13 +299,13 @@ describe("Test GET /user", () => {
             })
 
         
-        await axios.get(`http://localhost:3000/user/${userId}`, { headers })
+        await axios.get(`http://localhost:3000/user/${userId}`, {"headers": headers })
             .then(response => {
                 console.log('Status', response.status);
                 expect(response.status).toBe(200);
             })
         
-        await axios.delete(`http://localhost:3000/user/${userId}`, { headers })
+        await axios.delete(`http://localhost:3000/user/${userId}`, {"headers": headers })
             .then(response => {
                 console.log('Status', response.status);
                 expect(response.status).toBe(204);
