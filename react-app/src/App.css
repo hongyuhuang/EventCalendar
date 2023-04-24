@@ -2,105 +2,17 @@
   --otago-blue: #00508e;
   --otago-blue-light: #145d96;
   --otago-yellow: #f9c003;
-  --otago-blue-dark: #123568;
+  --otago-blue-dark: #10428c;
   --otago-grey-light: #fcfcfa;
   --otago-grey-dark: #dddddd;
 }
 
-#detail-div {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    background-color: var(--otago-grey-dark);
-  flex-wrap: wrap;
-}
-
-.event-detail-fact {
-  display: flex;
-  flex-direction: row;
-}
-
-#event-description {
-  display: flex;
-    flex-direction: column;
+body {
+  overflow-x: hidden;
 }
 
 .react-calendar {
   border-radius: 10px;
-}
-
-.App {
-  display: flex;
-  flex-direction: column;
-  font-family: 'Open Sans', sans-serif;
-}
-
-header {
-  background: var(--otago-blue-light);
-  color: white;
-  padding: 0.5em;
-  height: 2.5em;
-  font-size: 2em;
-}
-
-main {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-  justify-content: center;
-}
-
-#login-form {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 10px
-}
-
-#login-div > h1 {
-  color: var(--otago-blue-dark);
-  font-size: 2em;
-}
-
-#login-div > h2 {
-  color: var(--otago-blue-dark);
-}
-
-#login-div {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  background: var(--otago-grey-light);
-  border: 2px solid var(--otago-grey-dark);
-  border-radius: 5px;
-  padding: 10px;
-}
-
-.login-label {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  font-size: small;
-}
-
-
-input {
-  border-radius: 5px;
-}
-
-#login-submit {
-  border-radius: 5px;
-}
-
-.login-label> input {
-  width: 200px;
 }
 
 .App-logo {
@@ -118,3 +30,4 @@ input {
   font-size: calc(10px + 2vmin);
   color: white;
 }
+
