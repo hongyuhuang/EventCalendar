@@ -4,7 +4,6 @@ import basicAuth from "express-basic-auth";
 import mysql from "mysql2";
 import { RowDataPacket } from "mysql2/promise";
 import { User, Event } from "./entities";
-// import bodyParser from 'body-parser';  // for json inputs
 import multer from "multer"; //for Form inputs
 import { format } from "date-fns";
 import { OkPacket } from "mysql2";
@@ -12,8 +11,6 @@ import bodyParser from "body-parser"; // for json inputs
 
 dotenv.config();
 const app = express();
-// app.use(bodyParser.json());  //for json inputs
-app.use(multer().none()); //for Form inputs
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
@@ -27,10 +24,6 @@ app.use(bodyParser.json()); //for json inputs
 app.use(multer().none()); //for Form inputs
 
 const PORT = 3001;
-
-app.get("/test", (req, res) => {
-    res.send('Hello from express!')
-})
 
 app.use(
     basicAuth({
@@ -66,12 +59,7 @@ async function authorize(email: string, password: string): Promise<boolean> {
 
 app.get("/test", (req, res) => {
     pool.query<User[]>("SELECT * FROM USER", function (err, results, fields) {
-        res.send(results);
-        console.log(results[0]);
-
-        for (const user of results) {
-            console.log(user.email);
-        }
+        res.json(results);
     });
 });
 
@@ -157,7 +145,7 @@ app.patch("/event/:eventId", (req, res) => {
 });
 
 /**
- * Assigns a user to a particular event
+ * Assigns a user to a particular vent
  */
 app.post("/event/:eventId/assign/:userId", (req, res) => {
     try {
@@ -301,5 +289,5 @@ app.get("/user/:id", (req, res) => {
 app.get("/user/:username/photo", (req, res) => {});
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
