@@ -4,7 +4,6 @@ import basicAuth from "express-basic-auth";
 import mysql from "mysql2/promise";
 import { RowDataPacket } from "mysql2/promise";
 import { User, Event } from "./entities";
-// import bodyParser from 'body-parser';  // for json inputs
 import multer from "multer"; //for Form inputs
 import { format } from "date-fns";
 import { OkPacket } from "mysql2";
@@ -15,8 +14,6 @@ const acl = require("express-acl"); // For role based auth
 
 dotenv.config();
 const app = express();
-// app.use(bodyParser.json());  //for json inputs
-app.use(multer().none()); //for Form inputs
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
@@ -234,7 +231,7 @@ app.patch("/event/:eventId", async (req, res) => {
 });
 
 /**
- * Assigns a user to a particular event
+ * Assigns a user to a particular vent
  */
 app.post("/event/:eventId/assign/:userId", async (req, res) => {
     try {
@@ -376,5 +373,6 @@ app.get("/user/:id", async (req, res) => {
 app.get("/user/:username/photo", (req, res) => {});
 
 app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
     console.log(`Server is running on port ${PORT}`);
 });
