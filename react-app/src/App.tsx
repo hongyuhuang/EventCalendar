@@ -12,6 +12,7 @@ import EventCalendar, { CalendarEvent } from "./EventCalendar";
 import SignupForm from "./AddUser";
 import UserList, { User } from "./UserList";
 import EventDetails from "./EventDetails";
+import CreateEventForm from "./AddEvent";
 
 const Wrapper = styled.div`
   display: flex;
@@ -194,6 +195,12 @@ const App: React.FC = () => {
           >
             Manage Users
           </NavItem>
+          <NavItem
+            to={"/add-event"}
+            className={isLinkActive("/add-event") ? "active" : ""}
+          >
+            Add Event
+          </NavItem>
         </Nav>
       </Header>
       <Main>
@@ -203,6 +210,7 @@ const App: React.FC = () => {
           <Route path="/add-user" element={<SignupForm />} />
           <Route path="/user-list" element={<UserList users={users} />} />
           <Route path="/event-details" element={<EventDetails />}></Route>
+          <Route path="/add-event" element={<CreateEventForm />}></Route>
           UserList
         </Routes>
       </Main>

@@ -21,11 +21,13 @@ paths:
         - Event
       responses:
         '200':
-          description: Event found
+          description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Event'
+        '401':
+          $ref: '#/components/responses/401'
         '404':
           description: Event not found
       operationId: get-event-eventId
@@ -37,6 +39,8 @@ paths:
       responses:
         '204':
           description: Event updated
+        '401':
+          $ref: '#/components/responses/401'
         '404':
           description: Event not found
       description: Updates an event with the given ID
@@ -53,6 +57,8 @@ paths:
       responses:
         '204':
           description: Event deleted
+        '401':
+          $ref: '#/components/responses/401'
         '404':
           description: Event not found
       description: Deletes an event with the given ID
@@ -72,6 +78,8 @@ paths:
                 properties:
                   eventId:
                     type: string
+        '401':
+          $ref: '#/components/responses/401'
       description: |-
         Creates a new event.
 
@@ -116,6 +124,8 @@ paths:
                 properties:
                   attendanceId:
                     type: string
+        '401':
+          $ref: '#/components/responses/401'
         '404':
           description: Event or user not found
       operationId: get-event-eventId-assign-userId
@@ -136,6 +146,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/401'
         '404':
           description: User not found
       operationId: get-user-userId
@@ -148,6 +160,8 @@ paths:
       responses:
         '204':
           description: User deleted
+        '401':
+          $ref: '#/components/responses/401'
         '404':
           description: User not found
       description: Deletes a user with a given ID
@@ -174,6 +188,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Event'
+        '401':
+          $ref: '#/components/responses/401'
         '404':
           description: User not found
       operationId: get-user-userId-events
@@ -192,9 +208,37 @@ paths:
                 properties:
                   userId:
                     type: string
+        '401':
+          $ref: '#/components/responses/401'
       description: 'Creates a new user, returns an ID of the newly created user'
       tags:
         - User
+    get:
+      summary: Get all users
+      operationId: get-user
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/401'
+      description: |-
+        Gets all users
+
+        By default only returns users that aren't admins, can be specified in query params if needed
+      tags:
+        - User
+      parameters:
+        - schema:
+            type: boolean
+          in: query
+          name: includeAdmins
+          description: Whether system administrators should be included in results or not. Default is false
   '/user/{userId}/photo':
     parameters:
       - schema:
@@ -214,10 +258,40 @@ paths:
               schema:
                 type: object
                 properties: {}
+        '401':
+          $ref: '#/components/responses/401'
         '404':
           description: User not found
       operationId: get-user-userOId
       description: Finds the photo of a user with the given ID
+  /login:
+    get:
+      summary: Handle Login of user
+      tags: []
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isAdmin:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/401'
+      operationId: get-login
+      description: |-
+        Basically returns a body whether a user is an admin or not. If credentials are correct in auth header, then all it does is return body as specified below. 
+
+        However, to handle case where creds are incorrrect (e.g. user has entered wrong username, password combination), then a 401 will be returned. Hence on front end, will need to handle case where request is 401, or if request is 200 - then check if a user is an admin or not.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
 components:
   schemas:
     User:
@@ -262,5 +336,16 @@ components:
     Authorization:
       type: apiKey
       in: header
-      description: 'Authorization header. Base64 encode username:password'
+      description: 'Authorization header. "Basic base64(username:password)"'
       name: Auth
+  responses:
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: string
+            default: Unauthorized
+            example: Unauthorized
+security:
+  - Authorization: []
