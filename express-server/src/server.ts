@@ -86,7 +86,6 @@ async function getUserRole(email: string, password: string): Promise<string> {
             [email, password]
         );
         assert(results.length == 1, "There should be exactly one user found");
-        console.log(results);
         return Boolean(results[0].isAdmin) ? "admin" : "user";
     } catch (err) {
         console.error(err);
@@ -95,13 +94,18 @@ async function getUserRole(email: string, password: string): Promise<string> {
 }
 
 /**
- * Authorizes a user using a username and password combination
+ * Basic Auth authorizing function a user using a username and password combination
  *
  * @param email string for the email of the user
  * @param password string for a user's project
- * @return boolean for if a user is authorized or not
+ * @param callback used for async auth
+ * @return void, callback handles the result
  */
-async function authorize(email: string, password: string): Promise<boolean> {
+async function authorize(
+    email: string,
+    password: string,
+    callback: (err: Error | null, authorized: boolean) => void
+): Promise<void> {
     try {
         const [results] = await pool.query<User[]>(
             `SELECT *
@@ -110,10 +114,10 @@ async function authorize(email: string, password: string): Promise<boolean> {
                AND password = ?`,
             [email, password]
         );
-        return results.length === 1;
+        return callback(null, results.length === 1);
     } catch (err) {
         console.error(err);
-        return false;
+        return callback(err, false);
     }
 }
 
