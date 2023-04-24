@@ -1,14 +1,17 @@
 import dotenv from "dotenv";
 import express from "express";
 import basicAuth from "express-basic-auth";
-import mysql from "mysql2";
+import mysql from "mysql2/promise";
 import { RowDataPacket } from "mysql2/promise";
 import { User, Event } from "./entities";
 // import bodyParser from 'body-parser';  // for json inputs
 import multer from "multer"; //for Form inputs
 import { format } from "date-fns";
 import { OkPacket } from "mysql2";
-import bodyParser from "body-parser"; // for json inputs
+import bodyParser from "body-parser";
+const assert = require("assert");
+
+const acl = require("express-acl"); // For role based auth
 
 dotenv.config();
 const app = express();
@@ -28,77 +31,139 @@ app.use(multer().none()); //for Form inputs
 
 const PORT = 3001;
 
-app.get("/test", (req, res) => {
-    res.send('Hello from express!')
-})
+app.get("/", (req, res) => {
+    res.redirect("/test");
+});
 
+app.get("/test", (req, res) => {
+    res.send("Hello from express!");
+});
+
+// Adding in basic auth
 app.use(
     basicAuth({
         authorizer: authorize,
         authorizeAsync: true,
-    })
+        unauthorizedResponse: "Authentication failed",
+    }),
+    assignRequestRole
 );
 
 /**
- * Authorizes a user using a username and password combination
+ * Assigns a role to a request, used for role auth
  *
- * @param email string for the email of the user
- * @param password string for a user's project
- * @return boolean for if a user is authorized or not
+ * @param req
+ * @param res
+ * @param next
  */
-async function authorize(email: string, password: string): Promise<boolean> {
+async function assignRequestRole(req, res, next) {
+    // @ts-ignore
+    const role = await getUserRole(req.auth.user, req.auth.password);
+    if (role === null) {
+        res.status(500).send("Internal server error");
+    }
+    // @ts-ignore
+    req.role = role;
+    next();
+}
+
+/**
+ * Gets the role for a user.
+ *
+ * Used for role based authentication/authorization
+ *
+ * @param email string for the role of a user
+ * @param password string for the password of a user
+ * @return string for the role of a user
+ */
+async function getUserRole(email: string, password: string): Promise<string> {
     try {
-        pool.query<User[]>(
+        const [results] = await pool.query<User[]>(
             `SELECT *
              FROM USER
              WHERE email = ?
                AND password = ?`,
-            [email, password],
-            function (err, results, fields) {
-                return results.length == 1;
-            }
+            [email, password]
         );
+        assert(results.length == 1, "There should be exactly one user found");
+        return Boolean(results[0].isAdmin) ? "admin" : "user";
     } catch (err) {
         console.error(err);
-        return false;
+        return null;
     }
 }
 
-app.get("/test", (req, res) => {
-    pool.query<User[]>("SELECT * FROM USER", function (err, results, fields) {
-        res.send(results);
-        console.log(results[0]);
+/**
+ * Basic Auth authorizing function a user using a username and password combination
+ *
+ * @param email string for the email of the user
+ * @param password string for a user's project
+ * @param callback used for async auth
+ * @return void, callback handles the result
+ */
+async function authorize(
+    email: string,
+    password: string,
+    callback: (err: Error | null, authorized: boolean) => void
+): Promise<void> {
+    try {
+        const [results] = await pool.query<User[]>(
+            `SELECT *
+             FROM USER
+             WHERE email = ?
+               AND password = ?`,
+            [email, password]
+        );
+        return callback(null, results.length === 1);
+    } catch (err) {
+        console.error(err);
+        return callback(err, false);
+    }
+}
 
-        for (const user of results) {
-            console.log(user.email);
-        }
+// Adding in ACL
+acl.config(
+    {
+        roleSearchPath: "role",
+        baseUrl: "/",
+    },
+    {
+        status: "Access Denied",
+        message: "You do not have permission to access this resource",
+    }
+);
+
+app.use(acl.authorize);
+
+/**
+ * Handles login of the React app.
+ *
+ * Basically just returns whether a user is an admin or not that a user has, given the headers. It is already assumed that their credentials are valid.
+ */
+app.get("/login", (req, res) => {
+    res.status(200).json({
+        // @ts-ignore
+        isAdmin: req.role === "admin",
     });
-});
-
-app.get("/", (req, res) => {
-    res.redirect("/test");
 });
 
 /*
  * Route to return event with a given id
  */
-app.get("/event/:id", (req, res) => {
+app.get("/event/:id", async (req, res) => {
     const eventId = req.params.id;
 
     try {
-        pool.query<Event[]>(
-            `SELECT * FROM EVENT WHERE eventId = ${eventId}`,
-            function (err, results, fields) {
-                console.log(results);
-
-                if (results.length === 0) {
-                    res.status(404).send("Event not found");
-                } else {
-                    const event = results[0];
-                    res.json(event);
-                }
-            }
+        const [results] = await pool.query<Event[]>(
+            "SELECT * FROM EVENT WHERE eventId = ?",
+            [eventId]
         );
+        if (results.length === 0) {
+            res.status(404).send("Event not found");
+        } else {
+            const event = results[0];
+            res.json(event);
+        }
     } catch (err) {
         console.error(err);
         res.redirect("/404");
@@ -108,14 +173,15 @@ app.get("/event/:id", (req, res) => {
 /**
  * Creates a new event
  */
-app.post("/event", (req, res) => {
+app.post("/event", async (req, res) => {
     try {
-        var { title, location, startDate, endDate, description } = req.body;
+        let { title, location, startDate, endDate, description } = req.body;
         startDate = format(new Date(startDate), "yyyy-MM-dd");
         endDate = format(new Date(endDate), "yyyy-MM-dd");
-        pool.query<Event[]>(
-            `INSERT INTO EVENT (title, location, startDate, endDate, description) VALUES (${title}, ${location}, "${startDate}", "${endDate}", ${description})`,
-            function (err, results, fields) {}
+        await pool.query<Event[]>(
+            `INSERT INTO EVENT (title, location, startDate, endDate, description)
+             VALUES (?, ?, ?, ?, ?)`,
+            [title, location, startDate, endDate, description]
         );
     } catch (err) {
         console.log(err);
@@ -125,31 +191,42 @@ app.post("/event", (req, res) => {
 /**
  * Performs a partial update on an event
  */
-app.patch("/event/:eventId", (req, res) => {
+app.patch("/event/:eventId", async (req, res) => {
     try {
         const eventId = req.params.eventId;
         const { title, location, startDate, endDate, description } = req.body;
         const formattedStartDate = format(new Date(startDate), "yyyy-MM-dd");
         const formattedEndDate = format(new Date(endDate), "yyyy-MM-dd");
 
-        pool.query<Event[]>(
-            `SELECT * FROM EVENT WHERE eventId = ${eventId}`,
-            function (err, eventResults, fields) {
-                if (err) throw err;
-
-                if ((eventResults as RowDataPacket[]).length === 0) {
-                    return res.status(404).send("Event not found");
-                }
-
-                pool.query<OkPacket>(
-                    `UPDATE EVENT SET title = ${title}, location = ${location}, startDate = ${formattedStartDate}, endDate = ${formattedEndDate}, description = ${description} WHERE eventId = ${eventId}`,
-                    function (err, results, fields) {
-                        if (err) throw err;
-                        res.send("Event updated successfully");
-                    }
-                );
-            }
+        const findResults = await pool.query<Event[]>(
+            `SELECT *
+             FROM EVENT
+             WHERE eventId = ?`,
+            [eventId]
         );
+
+        if ((findResults as RowDataPacket[]).length === 0) {
+            return res.status(404).send("Event not found");
+        }
+
+        await pool.query<OkPacket>(
+            `UPDATE EVENT
+             SET title = ?,
+                 location = ?,
+                 startDate = ?,
+                 endDate = ?,
+                 description = ?
+             WHERE eventId = ?`,
+            [
+                title,
+                location,
+                formattedStartDate,
+                formattedEndDate,
+                description,
+                eventId,
+            ]
+        );
+        res.send("Event updated successfully");
     } catch (err) {
         console.log(err);
         res.status(500).send("An error occurred while updating the event");
@@ -159,59 +236,56 @@ app.patch("/event/:eventId", (req, res) => {
 /**
  * Assigns a user to a particular event
  */
-app.post("/event/:eventId/assign/:userId", (req, res) => {
+app.post("/event/:eventId/assign/:userId", async (req, res) => {
     try {
         const eventId = req.params.eventId;
         const userId = req.params.userId;
 
         // Check if the event exists
-        pool.query<Event[]>(
-            `SELECT * FROM EVENT WHERE eventId=${eventId}`,
-            function (err, eventResults, fields) {
-                if (err) throw err;
-
-                if ((eventResults as RowDataPacket[]).length === 0) {
-                    return res.status(404).send("Event not found");
-                }
-
-                // Check if the user exists
-                pool.query<User[]>(
-                    `SELECT * FROM USER WHERE userId=${userId}`,
-                    function (err, userResults, fields) {
-                        if (err) throw err;
-                        if ((userResults as RowDataPacket[]).length === 0) {
-                            return res.status(404).send("User not found");
-                        }
-
-                        // If both event and user exist, check if attendance record already exists
-                        pool.query(
-                            `SELECT * FROM ATTENDANCE_RECORD WHERE userId=${userId} AND eventId=${eventId}`,
-                            function (err, results, fields) {
-                                if (err) throw err;
-
-                                // Check if attendance record already exists
-                                if ((results as RowDataPacket[]).length > 0) {
-                                    return res.send(
-                                        "User is already assigned to the event"
-                                    );
-                                }
-
-                                // Insert new attendance record
-                                pool.query<OkPacket>(
-                                    `INSERT INTO ATTENDANCE_RECORD (userId, eventId) VALUES (${userId}, ${eventId})`,
-                                    function (err, results, fields) {
-                                        if (err) throw err;
-                                        res.send(
-                                            "User assigned to event successfully"
-                                        );
-                                    }
-                                );
-                            }
-                        );
-                    }
-                );
-            }
+        const eventResults = await pool.query<Event[]>(
+            `SELECT *
+             FROM EVENT
+             WHERE eventId = ?`,
+            [eventId]
         );
+
+        if ((eventResults as RowDataPacket[]).length === 0) {
+            return res.status(404).send("Event not found");
+        }
+
+        // Check if the user exists
+        const userResults = await pool.query<User[]>(
+            `SELECT *
+                     FROM USER
+                     WHERE userId = ?`,
+            [userId]
+        );
+
+        if ((userResults as RowDataPacket[]).length === 0) {
+            return res.status(404).send("User not found");
+        }
+
+        // If both event and user exist, check if attendance record already exists
+        const attendanceResults = await pool.query(
+            `SELECT *
+                             FROM ATTENDANCE_RECORD
+                             WHERE userId = ?
+                               AND eventId = ?`,
+            [userId, eventId]
+        );
+
+        // Check if attendance record already exists
+        if ((attendanceResults as RowDataPacket[]).length > 0) {
+            return res.send("User is already assigned to the event");
+        }
+
+        // Insert new attendance record
+        await pool.query<OkPacket>(
+            `INSERT INTO ATTENDANCE_RECORD (userId, eventId)
+                                     VALUES (?,?)`,
+            [userId, eventId]
+        );
+        res.send("User assigned to event successfully");
     } catch (err) {
         console.log(err);
         res.status(500).send(
@@ -225,43 +299,46 @@ app.post("/event/:eventId/assign/:userId", (req, res) => {
  *
  * Events can be filtered to come after a specific date-time
  */
-app.get("/user/:userId/events", (req, res) => {
+app.get("/user/:userId/events", async (req, res) => {
     const userId = req.params.userId;
-    const afterDateTime = req.query.afterDateTime;
+    const afterDateTime = req.query.afterDateTime as string;
 
-    let query = `SELECT e.eventId, e.title, e.location, e.startDate, e.endDate, e.description 
-                 FROM EVENT e 
-                 INNER JOIN ATTENDANCE_RECORD ar ON e.eventId = ar.eventId 
-                 WHERE ar.userId = ${userId}`;
+    let query = `SELECT e.eventId, e.title, e.location, e.startDate, e.endDate, e.description
+                 FROM EVENT e
+                          INNER JOIN ATTENDANCE_RECORD ar ON e.eventId = ar.eventId
+                 WHERE ar.userId = ?`;
+    let values = [userId];
 
     if (afterDateTime) {
-        query += ` AND e.startDate >= '${afterDateTime}'`;
+        query += ` AND e.startDate >= ?`;
+        values.push(afterDateTime);
     }
 
-    pool.query(query, function (err, results, fields) {
-        if (err) {
-            console.log(err);
-            res.status(500).send("An error occurred while fetching events");
+    try {
+        const [results] = await pool.query<[]>(query, values);
+
+        if (results.length === 0) {
+            res.status(404).send("Event not found");
         } else {
             res.send(results);
         }
-    });
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while fetching events");
+    }
 });
 
 /**
  * Creates a new user
  */
-app.post("/user", (req, res) => {
+app.post("/user", async (req, res) => {
     try {
         const { firstName, lastName, isAdmin, email, password } = req.body;
-
-        pool.query<User[]>(
-            `INSERT INTO USER (firstName, lastName, isAdmin, email, password) VALUES (${firstName}, ${lastName}, ${isAdmin}, ${email}, ${password})`,
-            function (err, results, fields) {
-                if (err) throw err;
-                res.send(results);
-            }
+        const [results] = await pool.query<User[]>(
+            "INSERT INTO USER (firstName, lastName, isAdmin, email, password) VALUES (?, ?, ?, ?, ?)",
+            [firstName, lastName, isAdmin, email, password]
         );
+        res.send(results);
     } catch (err) {
         console.log(err);
         res.status(500).send("An error occurred while creating the user");
@@ -271,24 +348,22 @@ app.post("/user", (req, res) => {
 /**
  * Get a user by ID
  */
-app.get("/user/:id", (req, res) => {
+app.get("/user/:id", async (req, res) => {
     try {
-        const { id } = req.params;
-
-        pool.query<User[]>(
-            `SELECT * FROM USER WHERE id=${id}`,
-            function (err, results, fields) {
-                if (err) throw err;
-                if (
-                    typeof results === "undefined" ||
-                    (results as RowDataPacket[]).length === 0
-                ) {
-                    res.status(404).send("User not found");
-                } else {
-                    res.send(results[0]);
-                }
-            }
+        const [results] = await pool.query<User[]>(
+            `SELECT *
+             FROM USER
+             WHERE userId = ?`,
+            [req.params.id]
         );
+        if (
+            typeof results === "undefined" ||
+            (results as RowDataPacket[]).length === 0
+        ) {
+            res.status(404).send("User not found");
+        } else {
+            res.send(results[0]);
+        }
     } catch (err) {
         console.log(err);
         res.status(500).send("An error occurred while getting the user");
@@ -301,5 +376,5 @@ app.get("/user/:id", (req, res) => {
 app.get("/user/:username/photo", (req, res) => {});
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
