@@ -74,7 +74,7 @@ paths:
                     type: string
       description: |-
         Creates a new event.
-        
+
         Returns the ID of the newly created event
       requestBody:
         content:
@@ -195,6 +195,30 @@ paths:
       description: 'Creates a new user, returns an ID of the newly created user'
       tags:
         - User
+    get:
+      summary: Get all users
+      operationId: get-user
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+      description: |-
+        Gets all users
+
+        By default only returns users that aren't admins, can be specified in query params if needed
+      tags:
+        - User
+      parameters:
+        - schema:
+            type: boolean
+          in: query
+          name: includeAdmins
+          description: Whether system administrators should be included in results or not. Default is false
   '/user/{userId}/photo':
     parameters:
       - schema:
@@ -262,5 +286,5 @@ components:
     Authorization:
       type: apiKey
       in: header
-      description: 'Authorization header. Base64 encode username:password'
+      description: 'Authorization header. "Basic base64(username:password)"'
       name: Auth
