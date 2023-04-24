@@ -375,10 +375,15 @@ app.get("/user/:id", async (req, res) => {
  */
 app.get("/user", async (req, res) => {
     try {
+        const includeAdmins = Boolean(req.query.includeAdmins);
+
         const [results] = await pool.query<User[]>(
             `SELECT *
-             FROM USER`
+             FROM USER
+             WHERE isAdmin = ? OR isAdmin = 0`,
+            [includeAdmins]
         );
+
         res.send(results);
     } catch (err) {
         console.log(err);
