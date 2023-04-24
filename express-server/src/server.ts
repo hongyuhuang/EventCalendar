@@ -371,6 +371,22 @@ app.get("/user/:id", async (req, res) => {
 });
 
 /**
+ * Route to get all users
+ */
+app.get("/user", async (req, res) => {
+    try {
+        const [results] = await pool.query<User[]>(
+            `SELECT *
+             FROM USER`
+        );
+        res.send(results);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while getting the users");
+    }
+});
+
+/**
  * Returns a photo for a particular user.
  */
 app.get("/user/:username/photo", (req, res) => {});
