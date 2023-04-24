@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "start": "node src/server.ts"
+    "start": "ts-node -T src/server.ts"
   },
   "keywords": [],
   "author": "",
@@ -30,6 +30,6 @@
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.0",
     "tsc": "^2.0.4",
-    "typeorm": "^0.3.12"
+    "ts-node": "^10.9.1"
   }
 }

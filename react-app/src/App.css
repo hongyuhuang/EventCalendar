@@ -2,39 +2,17 @@
   --otago-blue: #00508e;
   --otago-blue-light: #145d96;
   --otago-yellow: #f9c003;
-  --otago-blue-dark: #123568;
+  --otago-blue-dark: #10428c;
+  --otago-grey-light: #fcfcfa;
+  --otago-grey-dark: #dddddd;
 }
 
-.App {
-  text-align: center;
+body {
+  overflow-x: hidden;
 }
 
-#login-form {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 10px
-}
-
-.login-label {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  font-size: small;
-}
-
-
-input {
-  border-radius: 5px;
-}
-
-#login-submit {
-  border-radius: 5px;
-}
-
-.login-label> input {
-  width: 200px;
+.react-calendar {
+  border-radius: 10px;
 }
 
 .App-logo {
@@ -52,3 +30,4 @@ input {
   font-size: calc(10px + 2vmin);
   color: white;
 }
+

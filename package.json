@@ -1,11 +1,20 @@
 {
   "devDependencies": {
-    "@types/node": "^18.15.13"
+    "@types/node": "^18.15.5",
+    "concurrently": "^8.0.1"
+  },
+  "scripts": {
+    "format": "prettier --write .",
+    "react": "cd react-app && npm run start",
+    "server": "cd express-server && npm run start",
+    "start": "concurrently \"npm run server\" \"npm run react\"",
+    "install-deps": "npm install && cd react-app && npm install && cd ../express-server && npm install"
   },
   "dependencies": {
-    "@aws-sdk/client-rds": "^3.295.0",
     "dotenv": "^16.0.3",
-    "express-basic-auth": "^1.2.1",
     "prettier": "^2.8.5"
+  },
+  "prettier": {
+    "tabWidth": 4
   }
 }
