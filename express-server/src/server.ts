@@ -121,304 +121,304 @@ app.get("/users", (req, res) => {
     });
 });
 
-        /*
-         * Route to return event with a given id
-         */
-        app.get("/event/:eventId", async (req, res) => {
-            const eventId = req.params.eventId;
+/*
+ * Route to return event with a given id
+ */
+app.get("/event/:eventId", async (req, res) => {
+    const eventId = req.params.eventId;
 
-            try {
-                const [results] = await pool.query<Event[]>(
-                    "SELECT * FROM EVENT WHERE eventId = ?",
-                    [eventId]
-                );
-                if (results.length === 0) {
-                    res.status(404).send("Event not found");
-                } else {
-                    const event = results[0];
-                    res.json(event);
-                }
-            } catch (err) {
-                console.error(err);
-                res.redirect("/404");
-            }
-        });
+    try {
+        const [results] = await pool.query<Event[]>(
+            "SELECT * FROM EVENT WHERE eventId = ?",
+            [eventId]
+        );
+        if (results.length === 0) {
+            res.status(404).send("Event not found");
+        } else {
+            const event = results[0];
+            res.json(event);
+        }
+    } catch (err) {
+        console.error(err);
+        res.redirect("/404");
+    }
+});
 
-        /**
-         * Creates a new event
-         */
-        app.post("/event", async (req, res) => {
-            try {
-                let { title, location, startDate, endDate, description } = req.body;
-                startDate = format(new Date(startDate), "yyyy-MM-dd");
-                endDate = format(new Date(endDate), "yyyy-MM-dd");
-                await pool.query<Event[]>(
-                    `INSERT INTO EVENT (title, location, startDate, endDate, description)
+/**
+ * Creates a new event
+ */
+app.post("/event", async (req, res) => {
+    try {
+        let { title, location, startDate, endDate, description } = req.body;
+        startDate = format(new Date(startDate), "yyyy-MM-dd");
+        endDate = format(new Date(endDate), "yyyy-MM-dd");
+        await pool.query<Event[]>(
+            `INSERT INTO EVENT (title, location, startDate, endDate, description)
              VALUES (?, ?, ?, ?, ?)`,
-                    [title, location, startDate, endDate, description]
-                );
-                res.status(201).send("Event created");
-            } catch (err) {
-                console.log(err);
-                res.status(500).send("Internal server error");
-            }
-        });
+            [title, location, startDate, endDate, description]
+        );
+        res.status(201).send("Event created");
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Internal server error");
+    }
+});
 
-        /**
-         * Performs a partial update on an event
-         */
-        app.patch("/event/:eventId", async (req, res) => {
-            try {
-                const eventId = req.params.eventId;
-                const { title, location, startDate, endDate, description } = req.body;
-                const formattedStartDate = format(new Date(startDate), 'yyyy-MM-dd');
-                const formattedEndDate = format(new Date(endDate), 'yyyy-MM-dd');
+/**
+ * Performs a partial update on an event
+ */
+app.patch("/event/:eventId", async (req, res) => {
+    try {
+        const eventId = req.params.eventId;
+        const { title, location, startDate, endDate, description } = req.body;
+        const formattedStartDate = format(new Date(startDate), 'yyyy-MM-dd');
+        const formattedEndDate = format(new Date(endDate), 'yyyy-MM-dd');
 
-                const findResults = await pool.query<Event[]>(
-                    `SELECT *
+        const findResults = await pool.query<Event[]>(
+            `SELECT *
              FROM EVENT
              WHERE eventId = ?`,
-                    [eventId]
-                );
+            [eventId]
+        );
 
-                if ((findResults as RowDataPacket[]).length === 0) {
-                    return res.status(404).send("Event not found");
-                }
+        if ((findResults as RowDataPacket[]).length === 0) {
+            return res.status(404).send("Event not found");
+        }
 
-                await pool.query<OkPacket>(
-                    `UPDATE EVENT
+        await pool.query<OkPacket>(
+            `UPDATE EVENT
              SET title = ?,
                  location = ?,
                  startDate = ?,
                  endDate = ?,
                  description = ?
              WHERE eventId = ?`,
-                    [
-                        title,
-                        location,
-                        formattedStartDate,
-                        formattedEndDate,
-                        description,
-                        eventId,
-                    ]
-                );
-                res.send("Event updated successfully");
-            } catch (err) {
-                console.log(err);
-                res.status(500).send("An error occurred while updating the event");
-            }
-        });
+            [
+                title,
+                location,
+                formattedStartDate,
+                formattedEndDate,
+                description,
+                eventId,
+            ]
+        );
+        res.send("Event updated successfully");
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while updating the event");
+    }
+});
 
-        /**
-         * Assigns a user to a particular vent
-         */
-        app.post("/event/:eventId/assign/:userId", async (req, res) => {
-            try {
-                const eventId = req.params.eventId;
-                const userId = req.params.userId;
+/**
+ * Assigns a user to a particular vent
+ */
+app.post("/event/:eventId/assign/:userId", async (req, res) => {
+    try {
+        const eventId = req.params.eventId;
+        const userId = req.params.userId;
 
-                // Check if the event exists
-                const eventResults = await pool.query<Event[]>(
-                    `SELECT *
+        // Check if the event exists
+        const eventResults = await pool.query<Event[]>(
+            `SELECT *
              FROM EVENT
              WHERE eventId = ?`,
-                    [eventId]
-                );
+            [eventId]
+        );
 
-                if ((eventResults as RowDataPacket[]).length === 0) {
-                    return res.status(404).send("Event not found");
-                }
+        if ((eventResults as RowDataPacket[]).length === 0) {
+            return res.status(404).send("Event not found");
+        }
 
-                // Check if the user exists
-                const userResults = await pool.query<User[]>(
-                    `SELECT *
+        // Check if the user exists
+        const userResults = await pool.query<User[]>(
+            `SELECT *
                      FROM USER
                      WHERE userId = ?`,
-                    [userId]
-                );
+            [userId]
+        );
 
-                if ((userResults as RowDataPacket[]).length === 0) {
-                    return res.status(404).send("User not found");
-                }
+        if ((userResults as RowDataPacket[]).length === 0) {
+            return res.status(404).send("User not found");
+        }
 
-                // If both event and user exist, check if attendance record already exists
-                const attendanceResults = await pool.query(
-                    `SELECT *
+        // If both event and user exist, check if attendance record already exists
+        const attendanceResults = await pool.query(
+            `SELECT *
                              FROM ATTENDANCE_RECORD
                              WHERE userId = ?
                                AND eventId = ?`,
-                    [userId, eventId]
-                );
+            [userId, eventId]
+        );
 
-                // Check if attendance record already exists
-                if ((attendanceResults as RowDataPacket[]).length > 0) {
-                    return res.send("User is already assigned to the event");
-                }
+        // Check if attendance record already exists
+        if ((attendanceResults as RowDataPacket[]).length > 0) {
+            return res.send("User is already assigned to the event");
+        }
 
-                // Insert new attendance record
-                await pool.query<OkPacket>(
-                    `INSERT INTO ATTENDANCE_RECORD (userId, eventId)
+        // Insert new attendance record
+        await pool.query<OkPacket>(
+            `INSERT INTO ATTENDANCE_RECORD (userId, eventId)
                                      VALUES (?,?)`,
-                    [userId, eventId]
-                );
-                res.send("User assigned to event successfully");
-            } catch (err) {
-                console.log(err);
-                res.status(500).send(
-                    "An error occurred while assigning the user to the event"
-                );
-            }
-        });
+            [userId, eventId]
+        );
+        res.send("User assigned to event successfully");
+    } catch (err) {
+        console.log(err);
+        res.status(500).send(
+            "An error occurred while assigning the user to the event"
+        );
+    }
+});
 
-        /*
-         * Route to return all events for a given user
-         *
-         * Events can be filtered to come after a specific date-time
-         */
-        app.get("/user/:userId/events", async (req, res) => {
-            const userId = req.params.userId;
-            const afterDateTime = req.query.afterDateTime as string;
+/*
+ * Route to return all events for a given user
+ *
+ * Events can be filtered to come after a specific date-time
+ */
+app.get("/user/:userId/events", async (req, res) => {
+    const userId = req.params.userId;
+    const afterDateTime = req.query.afterDateTime as string;
 
-            let query = `SELECT e.eventId, e.title, e.location, e.startDate, e.endDate, e.description
+    let query = `SELECT e.eventId, e.title, e.location, e.startDate, e.endDate, e.description
                  FROM EVENT e
                           INNER JOIN ATTENDANCE_RECORD ar ON e.eventId = ar.eventId
                  WHERE ar.userId = ?`;
-            let values = [userId];
+    let values = [userId];
 
-            if (afterDateTime) {
-                query += ` AND e.startDate >= ?`;
-                values.push(afterDateTime);
-            }
+    if (afterDateTime) {
+        query += ` AND e.startDate >= ?`;
+        values.push(afterDateTime);
+    }
 
-            try {
-                const [results] = await pool.query<[]>(query, values);
+    try {
+        const [results] = await pool.query<[]>(query, values);
 
-                if (results.length === 0) {
-                    res.status(404).send("Event not found");
-                } else {
-                    res.send(results);
-                }
-            } catch (err) {
-                console.log(err);
-                res.status(500).send("An error occurred while fetching events");
-            }
-        });
+        if (results.length === 0) {
+            res.status(404).send("Event not found");
+        } else {
+            res.send(results);
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while fetching events");
+    }
+});
 
-        /**
-         * Gets a user
-         */
-        app.get("/user/:userId", async (req, res) => {
-            try {
-                const userId = req.params.userId;
-                const [results] = await pool.query<User[]>(
-                    `SELECT * FROM USER WHERE userId = ?`,
-                    [userId]
-                );
+/**
+ * Gets a user
+ */
+app.get("/user/:userId", async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const [results] = await pool.query<User[]>(
+            `SELECT * FROM USER WHERE userId = ?`,
+            [userId]
+        );
 
-                if (results.length === 0) {
-                    res.status(404).send("User not found");
-                } else {
-                    res.status(200).send(results[0]);
-                }
-            } catch (err) {
-                console.log(err);
-                res.status(500).send("An error occurred while fetching the user");
-            }
-        });
+        if (results.length === 0) {
+            res.status(404).send("User not found");
+        } else {
+            res.status(200).send(results[0]);
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while fetching the user");
+    }
+});
 
-        /**
-         * Deletes a user
-         */
-        app.delete("/user/:userId", async (req, res) => {
-            try {
-                const userId = req.params.userId;
-                const [results] = await pool.query<User[]>(
-                    `DELETE FROM USER WHERE userId = ?`,
-                    [userId]
-                );
+/**
+ * Deletes a user
+ */
+app.delete("/user/:userId", async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const [results] = await pool.query<User[]>(
+            `DELETE FROM USER WHERE userId = ?`,
+            [userId]
+        );
 
-                res.status(204).send("User deleted successfully");
-            } catch (err) {
-                console.log(err);
-                res.status(500).send("An error occurred while deleting the user");
-            }
-        });
+        res.status(204).send("User deleted successfully");
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while deleting the user");
+    }
+});
 
-        /**
-         * Creates a new user
-         */
-        app.post("/user", async (req, res) => {
-            try {
-                const { firstName, lastName, isAdmin, email, password } = req.body;
-                const [results] = await pool.query<User[]>(
-                    "INSERT INTO USER (firstName, lastName, isAdmin, email, password) VALUES (?, ?, ?, ?, ?)",
-                    [firstName, lastName, isAdmin, email, password]
-                );
+/**
+ * Creates a new user
+ */
+app.post("/user", async (req, res) => {
+    try {
+        const { firstName, lastName, isAdmin, email, password } = req.body;
+        const [results] = await pool.query<User[]>(
+            "INSERT INTO USER (firstName, lastName, isAdmin, email, password) VALUES (?, ?, ?, ?, ?)",
+            [firstName, lastName, isAdmin, email, password]
+        );
 
-                res.send(results);
-            } catch (err) {
-                console.log(err);
-                res.status(500).send("An error occurred while creating the user");
-            }
-        });
+        res.send(results);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while creating the user");
+    }
+});
 
 
-        /**
-         * Get a user by ID
-         */
-        app.get("/user/:id", async (req, res) => {
-            try {
-                const [results] = await pool.query<User[]>(
-                    `SELECT *
+/**
+ * Get a user by ID
+ */
+app.get("/user/:id", async (req, res) => {
+    try {
+        const [results] = await pool.query<User[]>(
+            `SELECT *
              FROM USER
              WHERE userId = ?`,
-                    [req.params.id]
-                );
-                if (
-                    typeof results === "undefined" ||
-                    (results as RowDataPacket[]).length === 0
-                ) {
-                    res.status(404).send("User not found");
-                } else {
-                    res.send(results[0]);
-                }
-            } catch (err) {
-                console.log(err);
-                res.status(500).send("An error occurred while getting the user");
-            }
-        });
+            [req.params.id]
+        );
+        if (
+            typeof results === "undefined" ||
+            (results as RowDataPacket[]).length === 0
+        ) {
+            res.status(404).send("User not found");
+        } else {
+            res.send(results[0]);
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while getting the user");
+    }
+});
 
-        /**
-         * Route to get all users
-         */
-        app.get("/user", async (req, res) => {
-            try {
-                const includeAdmins = Boolean(req.query.includeAdmins);
+/**
+ * Route to get all users
+ */
+app.get("/user", async (req, res) => {
+    try {
+        const includeAdmins = Boolean(req.query.includeAdmins);
 
-                const [results] = await pool.query<User[]>(
-                    `SELECT *
+        const [results] = await pool.query<User[]>(
+            `SELECT *
              FROM USER
              WHERE isAdmin = ? OR isAdmin = 0`,
-                    [includeAdmins]
-                );
+            [includeAdmins]
+        );
 
-                res.send(results);
-            } catch (err) {
-                console.log(err);
-                res.status(500).send("An error occurred while getting the users");
-            }
-        });
+        res.send(results);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while getting the users");
+    }
+});
 
-        /**
-         * Returns a photo for a particular user.
-         */
-        app.get("/user/:userId/photo", (req, res) => { });
+/**
+ * Returns a photo for a particular user.
+ */
+app.get("/user/:userId/photo", (req, res) => { });
 
-        const PORT = process.env.PORT;
-        app.listen(PORT, () => {
-            console.log(`Server is running on port ${PORT}`);
-        });
+const PORT = process.env.PORT;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
 
-        module.exports = {
-            app
-        }
+module.exports = {
+    app
+}
