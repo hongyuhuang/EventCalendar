@@ -61,7 +61,23 @@ describe('Test POST /event/:eventId/assign/:userId', () => {
     test("Test for an event that doesn't exist", () => {
     })
 
-    test("Test for a user that doesn't exist", () => {
+    test("Test for a user that doesn't exist", async () => {
+        //setup an event
+        const event: EventType = {
+            title: "Drinks on Andrew",
+            location: "The Pub",
+            startDate: new Date("2024-01-01T00:00:00.000Z"),
+            endDate: new Date("2024-01-02T01:00:00.000Z"),
+            description: "Bring your best fit"
+        }
+
+        //ensure event is made and valid.
+        const response = await request.post('/event').send(event)
+        expect(response.status).toBe(201)
+        const eventId = response.body.eventId
+
+        const response2 = await request.post(`/event/${eventId}/assign/xyz`).expect(500)
+        console.log(response2)
     })
 
     test("Test for an event that is already assigned to a user", () => {
