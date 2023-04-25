@@ -12,7 +12,7 @@ interface Props {
   users: User[];
 }
 
-const UserList: React.FC<Props> = () => {
+function UserList() {
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
