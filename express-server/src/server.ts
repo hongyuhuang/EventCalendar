@@ -38,6 +38,35 @@ app.get("/users", (req, res) => {
     });
 });
 
+/**
+ * Registers a new user.
+ *
+ * Put at the top of express file to skip auth
+ *
+ * Intended to be used with the 'create-account' button on the front end
+ *
+ * As such, this route provides restricted access to what can be inserted into the DB - e.g. no users with admin privileges can be created
+ */
+app.post("/register", async (req, res) => {
+    try {
+        await pool.query<OkPacket>(
+            `INSERT INTO USER (firstName, lastName, isAdmin, email, password)
+                  VALUES (?, ?, ?, ?, ?)`,
+            [
+                req.body.firstName,
+                req.body.lastName,
+                0,
+                req.body.email,
+                req.body.password,
+            ]
+        );
+        res.send("User registered successfully");
+    } catch (e) {
+        console.log(e);
+        res.status(500).send("An error occurred while registering the user");
+    }
+});
+
 // Adding in basic auth
 app.use(
     basicAuth({
