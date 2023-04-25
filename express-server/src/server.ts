@@ -15,6 +15,8 @@ const acl = require("express-acl"); // For role based auth
 dotenv.config();
 const app = express();
 
+const cors = require('cors');
+
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -25,6 +27,8 @@ const pool = mysql.createPool({
 app.use(bodyParser.json()); //for json inputs
 
 app.use(multer().none()); //for Form inputs
+
+app.use(cors());
 
 const PORT = 3001;
 
