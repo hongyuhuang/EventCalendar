@@ -8,10 +8,6 @@ export interface User {
   email: string;
 }
 
-interface Props {
-  users: User[];
-}
-
 function UserList() {
   const [users, setUsers] = useState<User[]>([]);
 
