@@ -8,6 +8,7 @@ import multer from "multer"; //for Form inputs
 import { format } from "date-fns";
 import { OkPacket } from "mysql2";
 import bodyParser from "body-parser";
+import { ResultSetHeader } from "mysql2";
 const assert = require("assert");
 
 const acl = require("express-acl"); // For role based auth
@@ -174,21 +175,37 @@ app.get("/event/:id", async (req, res) => {
  */
 app.post("/event", async (req, res) => {
     try {
-        let { title, location, startDate, endDate, description } = req.body;
-        startDate = format(new Date(startDate), "yyyy-MM-dd");
-        endDate = format(new Date(endDate), "yyyy-MM-dd");
-        await pool.query<Event[]>(
-            `INSERT INTO EVENT (title, location, startDate, endDate, description)
-             VALUES (?, ?, ?, ?, ?)`,
-            [title, location, startDate, endDate, description]
-        );
-        res.status(201).send("Event created");
+      const { title, location, startDate, endDate, description } = req.body;
+      const formattedStartDate = format(new Date(startDate), "yyyy-MM-dd HH:mm:ss");
+      const formattedEndDate = format(new Date(endDate), "yyyy-MM-dd HH:mm:ss");
+  
+      const [result] = await pool.query<ResultSetHeader>(
+        "INSERT INTO EVENT (title, location, startDate, endDate, description) VALUES (?, ?, ?, ?, ?)",
+        [title, location, formattedStartDate, formattedEndDate, description]
+      );
+  
+      const { insertId } = result;
+      res.status(201).send({ eventId: insertId });
     } catch (err) {
-        console.log(err);
-        res.status(500).send("Internal server error");
+      console.log(err);
+      res.status(500).send("An error occurred while creating the event");
     }
-});
+  });
 
+/**
+ * Deletes an event by ID
+ */
+app.delete("/event/:eventId", async (req, res) => {
+    try {
+      const { eventId } = req.params;
+      await pool.query("DELETE FROM EVENT WHERE eventId = ?", [eventId]);
+      res.send(`Event with ID ${eventId} deleted`);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("An error occurred while deleting the event");
+    }
+  });
+  
 /**
  * Performs a partial update on an event
  */
@@ -234,6 +251,31 @@ app.patch("/event/:eventId", async (req, res) => {
     }
 });
 
+// EXAPLES STUFF
+
+// app.get("/user/:id", async (req, res) => {
+//     try {
+//         const [results] = await pool.query<User[]>(
+//             `SELECT *
+//              FROM USER
+//              WHERE userId = ?`,
+//             [req.params.id]
+//         );
+//         if (
+//             typeof results === "undefined" ||
+//             (results as RowDataPacket[]).length === 0
+//         ) {
+//             res.status(404).send("User not found");
+//         } else {
+//             res.send(results[0]);
+//         }
+//     } catch (err) {
+//         console.log(err);
+//         res.status(500).send("An error occurred while getting the user");
+//     }
+// });
+
+
 /**
  * Assigns a user to a particular vent
  */
@@ -250,7 +292,7 @@ app.post("/event/:eventId/assign/:userId", async (req, res) => {
             [eventId]
         );
 
-        if ((eventResults as RowDataPacket[]).length === 0) {
+        if ((eventResults as RowDataPacket[])[0].length === 0) { //might need a [0] before length.
             return res.status(404).send("Event not found");
         }
 
@@ -262,7 +304,7 @@ app.post("/event/:eventId/assign/:userId", async (req, res) => {
             [userId]
         );
 
-        if ((userResults as RowDataPacket[]).length === 0) {
+        if ((userResults as RowDataPacket[])[0].length === 0) { //might need a [0] before length.
             return res.status(404).send("User not found");
         }
 
@@ -276,7 +318,7 @@ app.post("/event/:eventId/assign/:userId", async (req, res) => {
         );
 
         // Check if attendance record already exists
-        if ((attendanceResults as RowDataPacket[]).length > 0) {
+        if ((attendanceResults as RowDataPacket[])[0].length > 0) {
             return res.send("User is already assigned to the event");
         }
 
@@ -286,7 +328,7 @@ app.post("/event/:eventId/assign/:userId", async (req, res) => {
                                      VALUES (?,?)`,
             [userId, eventId]
         );
-        res.send("User assigned to event successfully");
+        res.status(201).send("User assigned to event successfully");
     } catch (err) {
         console.log(err);
         res.status(500).send(
@@ -329,17 +371,36 @@ app.get("/user/:userId/events", async (req, res) => {
     }
 });
 
+// /**
+//  * Creates a new user  >>>  THIS IS THE OLD ROUTE. <<<
+//  */
+// app.post("/user", async (req, res) => {
+//     try {
+//         const { firstName, lastName, isAdmin, email, password } = req.body;
+//         const [results] = await pool.query<User[]>(
+//             "INSERT INTO USER (firstName, lastName, isAdmin, email, password) VALUES (?, ?, ?, ?, ?)",
+//             [firstName, lastName, isAdmin, email, password]
+//         );
+//         res.send(results);
+//     } catch (err) {
+//         console.log(err);
+//         res.status(500).send("An error occurred while creating the user");
+//     }
+// });
+
 /**
- * Creates a new user
+ * Creates a new user  >>> THIS IS THE NEW ROUTE <<<
  */
+
 app.post("/user", async (req, res) => {
     try {
         const { firstName, lastName, isAdmin, email, password } = req.body;
-        const [results] = await pool.query<User[]>(
+        const [result] = await pool.query<ResultSetHeader>(
             "INSERT INTO USER (firstName, lastName, isAdmin, email, password) VALUES (?, ?, ?, ?, ?)",
             [firstName, lastName, isAdmin, email, password]
         );
-        res.send(results);
+        const { insertId } = result;
+        res.send({ userId: insertId });
     } catch (err) {
         console.log(err);
         res.status(500).send("An error occurred while creating the user");
@@ -389,6 +450,27 @@ app.get("/user", async (req, res) => {
     } catch (err) {
         console.log(err);
         res.status(500).send("An error occurred while getting the users");
+    }
+});
+
+/**
+ * Delete a user by ID
+ */
+app.delete("/user/:id", async (req, res) => {
+    try {
+        const [results] = await pool.query<ResultSetHeader>(
+            `DELETE FROM USER
+             WHERE userId = ?`,
+            [req.params.id]
+        );
+        if (results.affectedRows === 0) {
+            res.status(404).send("User not found");
+        } else {
+            res.sendStatus(204);
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while deleting the user");
     }
 });
 
