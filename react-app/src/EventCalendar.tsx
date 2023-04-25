@@ -22,7 +22,7 @@ function EventCalendar() {
   const [events, setEvents] = useState<Event[]>([]);
   
   useEffect(() => {
-    axios.get("/user")
+    axios.get("http://localhost:3001/user")
     .then((response) => {
       console.log(response.data);
       setEvents(response.data);
