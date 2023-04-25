@@ -292,6 +292,35 @@ paths:
             schema:
               type: object
               properties: {}
+  /register:
+    get:
+      summary: Register a new user
+      tags:
+        - User
+      responses:
+        '200':
+          description: OK
+      operationId: get-user-register
+      description: |-
+        Registers a new user
+
+        Intended to be used when a user on front end presses 'create account' button
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+        description: 'Just the same as a normal user, without the isAdmin attribute'
+    parameters: []
 components:
   schemas:
     User:
