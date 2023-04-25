@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 interface EventFormData {
   title: string;
@@ -26,10 +27,16 @@ const CreateEventForm: React.FC = () => {
     });
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    console.log(formData);
-  };
+const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  event.preventDefault();
+
+  try {
+    const response = await axios.post('/event', formData);
+    console.log(response.data);
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   return (
     <form onSubmit={handleSubmit}>

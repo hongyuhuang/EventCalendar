@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useState } from 'react';
 
 interface FormData {
@@ -24,9 +25,15 @@ const SignupForm: React.FC = () => {
     });
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log(formData);
+  
+    try {
+      const response = await axios.post('/user', formData);
+      console.log(response.data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
