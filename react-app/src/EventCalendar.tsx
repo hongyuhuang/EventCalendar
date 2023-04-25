@@ -22,7 +22,7 @@ function EventCalendar() {
   const [events, setEvents] = useState<Event[]>([]);
   
   useEffect(() => {
-    axios.get("http://localhost:3001/user")
+    axios.get("/")
     .then((response) => {
       console.log(response.data);
       setEvents(response.data);
@@ -30,7 +30,7 @@ function EventCalendar() {
     .catch((error) => {
       console.log(error);
     });
-  }, []);  
+  }, [events]);  
   
   const navigate = useNavigate();
   
