@@ -8,7 +8,6 @@ import multer from "multer"; //for Form inputs
 import { format } from "date-fns";
 import { OkPacket } from "mysql2";
 import bodyParser from "body-parser";
-import { authorize } from "express-acl";
 const assert = require("assert");
 
 const acl = require("express-acl"); // For role based auth
@@ -23,6 +22,11 @@ const pool = mysql.createPool({
     database: process.env.DB_DATABASE,
 });
 
+app.use(bodyParser.json()); //for json inputs
+
+app.use(multer().none()); //for Form inputs
+
+const PORT = 3001;
 
 app.get("/", (req, res) => {
     res.redirect("/test");
@@ -88,44 +92,65 @@ async function getUserRole(email: string, password: string): Promise<string> {
     }
 }
 
-app.get("/users", (req, res) => {
-    pool.query<User[]>("SELECT * FROM USER", function (err, results, fields) {
-        res.send(results);
-        /**
-         * Basic Auth authorizing function a user using a username and password combination
-         *
-         * @param email string for the email of the user
-         * @param password string for a user's project
-         * @param callback used for async auth
-         * @return void, callback handles the result
-         */
-        async function authorize(
-            email: string,
-            password: string,
-            callback: (err: Error | null, authorized: boolean) => void
-        ): Promise<void> {
-            try {
-                const [results] = await pool.query<User[]>(
-                    `SELECT *
+/**
+ * Basic Auth authorizing function a user using a username and password combination
+ *
+ * @param email string for the email of the user
+ * @param password string for a user's project
+ * @param callback used for async auth
+ * @return void, callback handles the result
+ */
+async function authorize(
+    email: string,
+    password: string,
+    callback: (err: Error | null, authorized: boolean) => void
+): Promise<void> {
+    try {
+        const [results] = await pool.query<User[]>(
+            `SELECT *
              FROM USER
              WHERE email = ?
                AND password = ?`,
-                    [email, password]
-                );
-                return callback(null, results.length === 1);
-            } catch (err) {
-                console.error(err);
-                return callback(err, false);
-            }
-        }
+            [email, password]
+        );
+        return callback(null, results.length === 1);
+    } catch (err) {
+        console.error(err);
+        return callback(err, false);
+    }
+}
+
+// Adding in ACL
+acl.config(
+    {
+        roleSearchPath: "role",
+        baseUrl: "/",
+    },
+    {
+        status: "Access Denied",
+        message: "You do not have permission to access this resource",
+    }
+);
+
+app.use(acl.authorize);
+
+/**
+ * Handles login of the React app.
+ *
+ * Basically just returns whether a user is an admin or not that a user has, given the headers. It is already assumed that their credentials are valid.
+ */
+app.get("/login", (req, res) => {
+    res.status(200).json({
+        // @ts-ignore
+        isAdmin: req.role === "admin",
     });
 });
 
 /*
  * Route to return event with a given id
  */
-app.get("/event/:eventId", async (req, res) => {
-    const eventId = req.params.eventId;
+app.get("/event/:id", async (req, res) => {
+    const eventId = req.params.id;
 
     try {
         const [results] = await pool.query<Event[]>(
@@ -171,8 +196,8 @@ app.patch("/event/:eventId", async (req, res) => {
     try {
         const eventId = req.params.eventId;
         const { title, location, startDate, endDate, description } = req.body;
-        const formattedStartDate = format(new Date(startDate), 'yyyy-MM-dd');
-        const formattedEndDate = format(new Date(endDate), 'yyyy-MM-dd');
+        const formattedStartDate = format(new Date(startDate), "yyyy-MM-dd");
+        const formattedEndDate = format(new Date(endDate), "yyyy-MM-dd");
 
         const findResults = await pool.query<Event[]>(
             `SELECT *
@@ -305,46 +330,6 @@ app.get("/user/:userId/events", async (req, res) => {
 });
 
 /**
- * Gets a user
- */
-app.get("/user/:userId", async (req, res) => {
-    try {
-        const userId = req.params.userId;
-        const [results] = await pool.query<User[]>(
-            `SELECT * FROM USER WHERE userId = ?`,
-            [userId]
-        );
-
-        if (results.length === 0) {
-            res.status(404).send("User not found");
-        } else {
-            res.status(200).send(results[0]);
-        }
-    } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while fetching the user");
-    }
-});
-
-/**
- * Deletes a user
- */
-app.delete("/user/:userId", async (req, res) => {
-    try {
-        const userId = req.params.userId;
-        const [results] = await pool.query<User[]>(
-            `DELETE FROM USER WHERE userId = ?`,
-            [userId]
-        );
-
-        res.status(204).send("User deleted successfully");
-    } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while deleting the user");
-    }
-});
-
-/**
  * Creates a new user
  */
 app.post("/user", async (req, res) => {
@@ -354,14 +339,12 @@ app.post("/user", async (req, res) => {
             "INSERT INTO USER (firstName, lastName, isAdmin, email, password) VALUES (?, ?, ?, ?, ?)",
             [firstName, lastName, isAdmin, email, password]
         );
-
         res.send(results);
     } catch (err) {
         console.log(err);
         res.status(500).send("An error occurred while creating the user");
     }
 });
-
 
 /**
  * Get a user by ID
@@ -412,13 +395,12 @@ app.get("/user", async (req, res) => {
 /**
  * Returns a photo for a particular user.
  */
-app.get("/user/:userId/photo", (req, res) => { });
+app.get("/user/:username/photo", (req, res) => {});
 
-const PORT = process.env.PORT;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
 module.exports = {
-    app
-}
+    app: app,
+};
