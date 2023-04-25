@@ -240,25 +240,64 @@ describe("Test GET /user", () => {
             Authorization: authHeader(username, pwd),
         };
 
-        // I recommend using supertest, separates code from PORT, and is intended for testing
-
-        const response = await request.get("/user").set(headers);
-
-        expect(response.status).toBe(200);
-        console.log(response.body);
-
         /*
-        //Create user to Get
-        await axios
+         * With testing jest async, if you are using .then you need to return the promise from the test.
+         * For normal async/await - declare test async, then await the promise, and do your assertions from there.
+         *
+         * Described here https://jestjs.io/docs/asynchronous
+         *
+         * I'd recommend using SuperTest, as it bounds your app to a particular port, and has built inserts for then (if this is want to use)
+         * (You,d still need to return promises as described in jest docs). I think it also looks cleaner with await - my preference.
+         *
+         * e.g. (using request as defined at start of file).
+         *
+         * const response = await request.get("/user").set(headers);
+         * expect(response.status).toBe(200);
+         * console.log(response.body);
+         *
+         * One last point I should've told you earlier,  I've switched the ports for express and react. React uses port 3000, and express uses 3001.
+         * This is defined in the server.ts I copied in - no need to use .env
+         *
+         * For code below:
+         *
+         * Axios.post(), requires a body to be passed in, and headers after this
+         *
+         * Previous code was intepretting {headers : headers} as the body, and not the headers, this is why auth was failing, no headers were actually being sent.
+         *
+         * Old version:
+         *
+         * return axios
             .post("http://localhost:3001/user", { headers: headers })
             .then((response) => {
                 // console.log('Response', response.data);
                 console.log("Status", response.status);
-                expect(response.status).toBe(201);
+                expect(response.status).toBe(200);
                 userId = response.body.userId;
+                console.log(response.body);
+            });
+            *
+            * New and improved
+            *
+            return axios
+            .post("http://localhost:3001/user", {a user to post}, { headers: headers })
+            .then((response) => {
+                // console.log('Response', response.data);
+                console.log("Status", response.status);
+                expect(response.status).toBe(200);
+                userId = response.body.userId;
+                console.log(response.body);
             });
 
          */
+        return axios
+            .post("http://localhost:3001/user", {}, { headers: headers })
+            .then((response) => {
+                // console.log('Response', response.data);
+                console.log("Status", response.status);
+                expect(response.status).toBe(200);
+                userId = response.body.userId;
+                console.log(response.body);
+            });
 
         /*
 
