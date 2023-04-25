@@ -139,7 +139,7 @@ const App: React.FC = () => {
       <Main>
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route path="/events" element={<EventCalendar events={[]} />} />
+          <Route path="/events" element={<EventCalendar />} />
           <Route path="/add-user" element={<SignupForm />} />
           <Route path="/user-list" element={<UserList />} />
           <Route path="/event-details" element={<EventDetails />}></Route>
