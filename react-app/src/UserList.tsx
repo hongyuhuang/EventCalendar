@@ -26,7 +26,6 @@ function UserList() {
         axios
             .get("http://localhost:3001/user", { headers: headers })
             .then((response) => {
-                //console.log(response.data);
                 setUsers(response.data);
             })
             .catch((error) => {
