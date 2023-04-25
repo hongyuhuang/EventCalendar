@@ -1,10 +1,10 @@
 import React from "react";
-import { CalendarEvent } from "./EventCalendar";
+import { Event } from "./EventCalendar";
 import { useLocation } from "react-router-dom";
 
 function EventDetails() {
     const location = useLocation();
-    const event: CalendarEvent = location.state.event;
+    const event: Event = location.state.event;  
 
   return (
     <div>
