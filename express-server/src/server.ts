@@ -15,7 +15,7 @@ const acl = require("express-acl"); // For role based auth
 dotenv.config();
 const app = express();
 
-const cors = require('cors');
+const cors = require("cors");
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
@@ -170,6 +170,23 @@ app.get("/event/:id", async (req, res) => {
     } catch (err) {
         console.error(err);
         res.redirect("/404");
+    }
+});
+
+/**
+ * Route to get all events
+ */
+app.get("/event", async (req, res) => {
+    try {
+        const [results] = await pool.query<Event[]>(
+            `SELECT *
+             FROM EVENT;`
+        );
+
+        res.send(results);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while getting the events");
     }
 });
 

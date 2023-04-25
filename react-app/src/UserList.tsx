@@ -23,14 +23,10 @@ function UserList() {
         Authorization: authHeader(username, password),
     };
 
-    // Should be "Authorization: Basic am9obmRvZUBlbWFpbC5jb206cGFzc3dvcmQxMjM="
-    console.log(headers);
-
     useEffect(() => {
         axios
             .get("http://localhost:3001/user", { headers: headers })
             .then((response) => {
-                console.log(response.data);
                 setUsers(response.data);
             })
             .catch((error) => {
