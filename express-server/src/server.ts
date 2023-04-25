@@ -206,6 +206,23 @@ app.get("/event/:id", async (req, res) => {
 });
 
 /**
+ * Route to get all events
+ */
+app.get("/event", async (req, res) => {
+    try {
+        const [results] = await pool.query<Event[]>(
+            `SELECT *
+             FROM EVENT;`
+        );
+
+        res.send(results);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while getting the events");
+    }
+});
+
+/**
  * Creates a new event
  */
 app.post("/event", async (req, res) => {
