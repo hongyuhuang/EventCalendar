@@ -19,14 +19,14 @@ function UserList() {
     const password = "password123";
 
     const headers = {
-        Authorization: authHeader(username, password)
-      };
+        Authorization: authHeader(username, password),
+    };
 
     useEffect(() => {
         axios
-            .get("http://localhost:3001/user", { headers })
+            .get("http://localhost:3001/user", { headers: headers })
             .then((response) => {
-                console.log(response.data);
+                //console.log(response.data);
                 setUsers(response.data);
             })
             .catch((error) => {
