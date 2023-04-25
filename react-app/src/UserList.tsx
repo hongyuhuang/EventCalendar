@@ -10,23 +10,23 @@ export interface User {
 
 function UserList() {
     const [users, setUsers] = useState<User[]>([]);
-
+    
     const authHeader = (username: string, password: string) => {
         const base64Credentials = btoa(`${username}:${password}`);
         return `Basic ${base64Credentials}`;
     };
+
     const username = "johndoe@email.com";
     const password = "password123";
 
     const headers = {
-        Authorization: authHeader(username, password)
-      };
+        Authorization: authHeader(username, password),
+    };
 
     useEffect(() => {
         axios
-            .get("http://localhost:3001/user", { headers })
+            .get("http://localhost:3001/user", { headers: headers })
             .then((response) => {
-                console.log(response.data);
                 setUsers(response.data);
             })
             .catch((error) => {
