@@ -20,7 +20,7 @@ function UserList() {
       .catch((error) => {
         console.log(error);
       });
-  }, []);  
+  }, [users]);  
 
   return (
     <div>
