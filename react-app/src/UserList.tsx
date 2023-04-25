@@ -32,7 +32,7 @@ function UserList() {
             .catch((error) => {
                 console.log(error);
             });
-    }, []);
+    }, [headers]);
 
     return (
         <div>
