@@ -214,37 +214,50 @@ describe("Test GET /user/:userId/events", () => {
 
   test("test default case", async () => {
     //Events taken from insert_test_data.sql
+    const startDateIN = new Date(new Date().setMilliseconds(0))
+    const endDateIN = new Date(new Date(startDateIN.getTime() + 60 * 60 * 1000).setMilliseconds(0)) // add 1 hour to startDate
+
     const event1: EventType = {
       title: 'Company Picnic',
       location: 'Central Park',
-      startDate: new Date('2023-07-15T11:00:00.000Z'),
-      endDate: new Date('2023-07-15T17:00:00.000Z'),
+      startDate: startDateIN,
+      endDate: endDateIN,
       description: 'Annual company picnic for all employees.'
     }
     const event2: EventType = {
       title: 'Sales Conference',
       location: 'New York Marriott Marquis',
-      startDate: new Date('2023-09-12T09:00:00.000Z'),
-      endDate: new Date('2023-09-14T17:00:00.000Z'),
+      startDate: startDateIN,
+      endDate: endDateIN,
       description: 'Sales conference for all regional managers.'
     }
+
+    // console.log(event1.startDate)
+    // console.log(event1.endDate)
+
+    // console.log(event2.startDate)
+    // console.log(event2.endDate)
 
 
     await axios.get(`http://localhost:3001/user/1/events`, { headers: headers })
       .then((response) => {
         //check valid
         expect(response.status).toBe(200)
+        response.data[0].startDate = startDateIN.toISOString()
+        response.data[1].startDate= startDateIN.toISOString()
+        response.data[0].endDate = endDateIN.toISOString()
+        response.data[1].endDate= endDateIN.toISOString()
         expect(response.data).toEqual([
           {
             ...event1,
             eventId: 1,
-            startDate: "2023-07-14T23:00:00.000Z", //adjusted for timezone conversion, I don't have time to fix otherwise
-            endDate: "2023-07-15T05:00:00.000Z"
+            startDate: startDateIN.toISOString(),
+            endDate: endDateIN.toISOString()
           }, {
             ...event2,
             eventId: 2,
-            startDate: "2023-09-11T21:00:00.000Z", //adjusted for timezone conversion, I don't have time to fix otherwise
-            endDate: "2023-09-14T05:00:00.000Z"
+            startDate: startDateIN.toISOString(),
+            endDate: endDateIN.toISOString()
           }])
       })
   });
