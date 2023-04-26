@@ -8,8 +8,9 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "outDir": "./build",
-    "rootDir": "src",
+    "rootDir": ".",
+    "types": ["jest", "node", "@types/jest"]
   },
-  "include": ["src/*"],
+  "include": ["src/**/*.ts" , "test/**/*.ts"],
   "exclude": ["node_modules"]
 }

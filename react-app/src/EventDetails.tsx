@@ -10,8 +10,8 @@ function EventDetails() {
     <div>
       <h2>{event.title}</h2>
       <p>{event.description}</p>
-      <p>Start Time: {event.start.toLocaleString()}</p>
-      <p>End Time: {event.end.toLocaleString()}</p>
+      <p>Start Time: {event.startDate.toLocaleString()}</p>
+      <p>End Time: {event.endDate.toLocaleString()}</p>
     </div>
   );
 }
