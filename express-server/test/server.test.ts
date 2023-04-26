@@ -15,7 +15,24 @@ const headers = {
 
 let request = superTest(app);
 
-describe("Test authorization", () => { });
+describe("Test authorization", () => {
+  test("Test Normally", async () => {
+    const user: UserType = {
+      firstName: "Morty1",
+      lastName: "Smith1",
+      email: "morty.smith1@example.com",
+      isAdmin: false,
+      password: "123456"
+  }
+
+    await axios
+    .post("http://localhost:3001/user", user, { headers: "BadAUTH" })
+    .catch((err) => {
+      // console.log("Status", response.status);
+      expect(err.response.status).toBe(401);
+    });
+  })
+});
 
 describe("Test POST /event/:eventId/assign/:userId", () => {
    test("Test normally", async () => {
