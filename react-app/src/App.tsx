@@ -29,7 +29,7 @@ const Header = styled.header`
     left: 0;
     width: 100%;
     height: 3px;
-    background-color: #f9c000;
+    background-color: var(--otago-yellow);
   }
   position: fixed;
   display: flex;

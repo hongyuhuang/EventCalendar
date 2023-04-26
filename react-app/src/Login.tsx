@@ -1,25 +1,21 @@
-import React from "react";
-import { useFormik } from "formik";
+import React, { useState } from "react";
 import styled from "styled-components";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  background: var(--otago-grey-light);
-  border: 2px solid var(--otago-grey-dark);
-  border-radius: 5px;
-  padding: 10px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    width: 960px;
 `;
 
 const Label = styled.label`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  font-size: small;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+    width: 100%;
 `;
 
 const Title = styled.h1`
@@ -32,54 +28,81 @@ const LoginHeading = styled.h2`
 `;
 
 const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 `;
 
 const Input = styled.input`
-    border-radius: 5px;
-    width: 200px;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
 `;
 
-const Submit = styled.input`
-    border-radius: 5px;    
+const Button = styled.button`
+    padding: 0.5rem;
+    background-color: #f9c003;
+    color: black;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+
+    &:hover {
+        background-color: #e3af03;
+        color: white;
+    }
 `;
 
-const Login = () => {
-  const formik = useFormik({
-    initialValues: {
-      username: "",
-      password: "",
-    },
-    onSubmit: (values) => {
-      // TODO: Send values to backend
-      console.log(values);
+interface LoginFormData {
+  email: string;
+  password: string;
+}
 
-      
-    },
-  });
-  /*
-  axios.get("http://localhost:3001/login", {headers: values})
-            .then(response => console.log(response.data))
-            .catch(e => console.log(e));
-  */
+const initialFormData: LoginFormData = {
+  email: '',
+  password: ''
+};
+
+function Login() {
+  const [formData, setFormData] = useState<LoginFormData>(initialFormData);
+  const navigate = useNavigate();
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [event.target.name]: event.target.value,
+    });
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    try {
+      const response = await axios.post('http://localhost:3001/register', formData);
+      console.log(response.data);
+      navigate('/user-list');
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <Wrapper>
-      <Title>Welcome to EventCalendar</Title>
+      <Title>Welcome to Event Calendar</Title>
       <LoginHeading>Please login</LoginHeading>
-      <Form id="login-form" onSubmit={formik.handleSubmit}>
+      <Form id="login-form" onSubmit={handleSubmit}>
         <Label>
           Username:
           <Input
             id="username"
             type="text"
             name="username"
-            onChange={formik.handleChange}
-            value={formik.values.username}
+            onChange={handleChange}
+            value={formData.email}
           />
         </Label>
         <Label>
@@ -88,11 +111,11 @@ const Login = () => {
             id="password"
             type="password"
             name="password"
-            onChange={formik.handleChange}
-            value={formik.values.password}
+            onChange={handleChange}
+            value={formData.password}
           />
         </Label>
-        <Submit type="submit" value="Submit" id="login-submit" />
+        <Button type="submit">LOG IN</Button>
       </Form>
     </Wrapper>
   );
