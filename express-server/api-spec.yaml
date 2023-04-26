@@ -65,7 +65,7 @@ paths:
       tags:
         - Event
   /event:
-    delete:
+    post:
       summary: Creates a new event
       operationId: delete-event
       responses:
@@ -103,7 +103,7 @@ paths:
         name: userId
         in: path
         required: true
-    get:
+    post:
       summary: Assign an event to a user
       tags:
         - User
@@ -265,7 +265,7 @@ paths:
       operationId: get-user-userOId
       description: Finds the photo of a user with the given ID
   /login:
-    get:
+    post:
       summary: Handle Login of user
       tags: []
       responses:
@@ -293,7 +293,7 @@ paths:
               type: object
               properties: {}
   /register:
-    get:
+    post:
       summary: Register a new user
       tags:
         - User
