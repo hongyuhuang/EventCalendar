@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { OkPacket } from "mysql2";
 import bodyParser from "body-parser";
 import { ResultSetHeader } from "mysql2";
+
 const assert = require("assert");
 
 const acl = require("express-acl"); // For role based auth
@@ -40,11 +41,16 @@ app.get("/", (req, res) => {
     res.redirect("/test");
 });
 
-app.get("/users", (req, res) => {
-    pool.query<User[]>("SELECT * FROM USER", function (err, results, fields) {
-        res.json(results);
-    });
-});
+app.get("/users", async (req, res) => {
+    try {
+      const [results] = await pool.query<User[]>("SELECT * FROM USER");
+      res.json(results);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("An error occurred while retrieving the users");
+    }
+  });
+  
 
 /**
  * Registers a new user.
@@ -157,6 +163,8 @@ async function authorize(
     }
 }
 
+
+
 // Adding in ACL
 acl.config(
     {
@@ -176,12 +184,35 @@ app.use(acl.authorize);
  *
  * Basically just returns whether a user is an admin or not that a user has, given the headers. It is already assumed that their credentials are valid.
  */
-app.get("/login", (req, res) => {
-    res.status(200).json({
-        // @ts-ignore
-        isAdmin: req.role === "admin",
-    });
-});
+// app.get("/login", (req, res) => {
+//     res.status(200).json({
+//         // @ts-ignore
+//         isAdmin: req.role === "admin",
+//     });
+// });
+
+
+app.post("/login", async (req, res) => {
+    console.log(req.body);
+    try {
+      // Check if user is authorized
+      const [results] = await pool.execute<User[]>(
+        "SELECT * FROM USER WHERE email = ? AND password = ?",
+        [req.body.email, req.body.password]
+      );
+      if (results.length >= 1) {
+        // Redirect to user list page
+        res.redirect("/users");
+      } else {
+        res.status(401).send("Unauthorized");
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Internal Server Error");
+    }
+  });
+  
+  
 
 /*
  * Route to return event with a given id

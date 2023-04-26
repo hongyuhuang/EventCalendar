@@ -77,12 +77,24 @@ function Login() {
       [event.target.name]: event.target.value,
     });
   };
+  
+  const authHeader = (username: string, password: string) => {
+      const base64Credentials = btoa(`${username}:${password}`);
+      return `Basic ${base64Credentials}`;
+  };
+
+  const username = "johndoe@email.com";
+  const password = "password123";
+
+  const headers = {
+      Authorization: authHeader(username, password),
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     try {
-      const response = await axios.post('http://localhost:3001/register', formData);
+      const response = await axios.post('http://localhost:3001/login', formData, {headers: headers});
       console.log(response.data);
       navigate('/user-list');
     } catch (error) {
@@ -96,11 +108,11 @@ function Login() {
       <LoginHeading>Please login</LoginHeading>
       <Form id="login-form" onSubmit={handleSubmit}>
         <Label>
-          Username:
+          Email:
           <Input
-            id="username"
-            type="text"
-            name="username"
+            id="email"
+            type="email"
+            name="email"
             onChange={handleChange}
             value={formData.email}
           />
