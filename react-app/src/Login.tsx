@@ -1,26 +1,21 @@
 import React, { useState } from "react";
-import { useFormik } from "formik";
 import styled from "styled-components";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  background: var(--otago-grey-light);
-  border: 2px solid var(--otago-grey-dark);
-  border-radius: 5px;
-  padding: 10px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    width: 960px;
 `;
 
 const Label = styled.label`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  font-size: small;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+    width: 100%;
 `;
 
 const Title = styled.h1`
@@ -33,20 +28,33 @@ const LoginHeading = styled.h2`
 `;
 
 const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 `;
 
 const Input = styled.input`
-    border-radius: 5px;
-    width: 200px;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
 `;
 
-const Submit = styled.input`
-    border-radius: 5px;    
+const Button = styled.button`
+    padding: 0.5rem;
+    background-color: #f9c003;
+    color: black;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+
+    &:hover {
+        background-color: #e3af03;
+        color: white;
+    }
 `;
 
 interface LoginFormData {
@@ -84,7 +92,7 @@ function Login() {
 
   return (
     <Wrapper>
-      <Title>Welcome to EventCalendar</Title>
+      <Title>Welcome to Event Calendar</Title>
       <LoginHeading>Please login</LoginHeading>
       <Form id="login-form" onSubmit={handleSubmit}>
         <Label>
@@ -107,7 +115,7 @@ function Login() {
             value={formData.password}
           />
         </Label>
-        <Submit type="submit" value="Submit" id="login-submit" />
+        <Button type="submit">LOG IN</Button>
       </Form>
     </Wrapper>
   );

@@ -3,6 +3,18 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
+const Wrapper = styled.div`
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    width: 960px;
+`;
+
+const Heading = styled.h2`
+  color: var(--otago-blue-dark);
+`;
+
 const Form = styled.form`
     display: flex;
     flex-direction: column;
@@ -13,6 +25,7 @@ const Label = styled.label`
     display: flex;
     flex-direction: column;
     margin-bottom: 1rem;
+    width: 100%;
 `;
 
 const Input = styled.input`
@@ -26,7 +39,9 @@ const Input = styled.input`
 const Textarea = styled.textarea`
     padding: 0.5rem;
     margin-top: 0.5rem;
-    border: 1px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
 `;
 
 const Button = styled.button`
@@ -111,53 +126,56 @@ function CreateEventForm() {
     };
 
     return (
-        <Form onSubmit={handleSubmit}>
-            <Label>
-                Title:
-                <Input
-                    type="text"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                />
-            </Label>
-            <Label>
-                Location:
-                <Input
-                    type="text"
-                    name="location"
-                    value={formData.location}
-                    onChange={handleChange}
-                />
-            </Label>
-            <Label>
-                Start Date:
-                <Input
-                    type="datetime-local"
-                    name="startDate"
-                    value={formData.startDate.toISOString().slice(0, 16)}
-                    onChange={handleChange}
-                />
-            </Label>
-            <Label>
-                End Date:
-                <Input
-                    type="datetime-local"
-                    name="endDate"
-                    value={formData.endDate.toISOString().slice(0, 16)}
-                    onChange={handleChange}
-                />
-            </Label>
-            <Label>
-                Description:
-                <Textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                />
-            </Label>
-            <Button type="submit">Submit</Button>
-        </Form>
+        <Wrapper>
+            <Heading>Event Details</Heading>
+            <Form onSubmit={handleSubmit}>
+                <Label>
+                    Title:
+                    <Input
+                        type="text"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleChange}
+                    />
+                </Label>
+                <Label>
+                    Location:
+                    <Input
+                        type="text"
+                        name="location"
+                        value={formData.location}
+                        onChange={handleChange}
+                    />
+                </Label>
+                <Label>
+                    Start Date:
+                    <Input
+                        type="datetime-local"
+                        name="startDate"
+                        value={formData.startDate.toISOString().slice(0, 16)}
+                        onChange={handleChange}
+                    />
+                </Label>
+                <Label>
+                    End Date:
+                    <Input
+                        type="datetime-local"
+                        name="endDate"
+                        value={formData.endDate.toISOString().slice(0, 16)}
+                        onChange={handleChange}
+                    />
+                </Label>
+                <Label>
+                    Description:
+                    <Textarea
+                        name="description"
+                        value={formData.description}
+                        onChange={handleChange}
+                    />
+                </Label>
+                <Button type="submit">Create Event</Button>
+            </Form>
+        </Wrapper>
     );
 }
 
