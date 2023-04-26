@@ -16,6 +16,13 @@ const acl = require("express-acl"); // For role based auth
 dotenv.config();
 const app = express();
 
+const cors = require("cors");
+app.use(
+    cors({
+        origin: "http://localhost:3000",
+    })
+);
+
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -37,6 +44,35 @@ app.get("/users", (req, res) => {
     pool.query<User[]>("SELECT * FROM USER", function (err, results, fields) {
         res.json(results);
     });
+});
+
+/**
+ * Registers a new user.
+ *
+ * Put at the top of express file to skip auth
+ *
+ * Intended to be used with the 'create-account' button on the front end
+ *
+ * As such, this route provides restricted access to what can be inserted into the DB - e.g. no users with admin privileges can be created
+ */
+app.post("/register", async (req, res) => {
+    try {
+        await pool.query<OkPacket>(
+            `INSERT INTO USER (firstName, lastName, isAdmin, email, password)
+                  VALUES (?, ?, ?, ?, ?)`,
+            [
+                req.body.firstName,
+                req.body.lastName,
+                0,
+                req.body.email,
+                req.body.password,
+            ]
+        );
+        res.send("User registered successfully");
+    } catch (e) {
+        console.log(e);
+        res.status(500).send("An error occurred while registering the user");
+    }
 });
 
 // Adding in basic auth
@@ -167,6 +203,23 @@ app.get("/event/:id", async (req, res) => {
     } catch (err) {
         console.error(err);
         res.redirect("/404");
+    }
+});
+
+/**
+ * Route to get all events
+ */
+app.get("/event", async (req, res) => {
+    try {
+        const [results] = await pool.query<Event[]>(
+            `SELECT *
+             FROM EVENT;`
+        );
+
+        res.send(results);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while getting the events");
     }
 });
 
