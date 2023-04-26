@@ -265,7 +265,7 @@ paths:
       operationId: get-user-userOId
       description: Finds the photo of a user with the given ID
   /login:
-    post:
+    get:
       summary: Handle Login of user
       tags: []
       responses:
