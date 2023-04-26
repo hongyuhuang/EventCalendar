@@ -54,16 +54,14 @@ function EventCalendar() {
     };
 
     return (
-        <div>
-            <Calendar
-                localizer={localizer}
-                events={events}
-                startAccessor="startDate"
-                endAccessor="endDate"
-                onSelectEvent={handleSelectEvent}
-                style={{ height: window.innerHeight - 150, width: "95vw" }}
-            />
-        </div>
+        <Calendar
+            localizer={localizer}
+            events={events}
+            startAccessor="startDate"
+            endAccessor="endDate"
+            onSelectEvent={handleSelectEvent}
+            style={{ height: window.innerHeight - 150, width: "95vw" }}
+        />
     );
 }
 
