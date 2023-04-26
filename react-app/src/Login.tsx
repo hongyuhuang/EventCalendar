@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { useFormik } from "formik";
 import styled from "styled-components";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Wrapper = styled.div`
   display: flex;
@@ -48,38 +49,52 @@ const Submit = styled.input`
     border-radius: 5px;    
 `;
 
-const Login = () => {
-  const formik = useFormik({
-    initialValues: {
-      username: "",
-      password: "",
-    },
-    onSubmit: (values) => {
-      // TODO: Send values to backend
-      console.log(values);
+interface LoginFormData {
+  email: string;
+  password: string;
+}
 
-      
-    },
-  });
-  /*
-  axios.get("http://localhost:3001/login", {headers: values})
-            .then(response => console.log(response.data))
-            .catch(e => console.log(e));
-  */
+const initialFormData: LoginFormData = {
+  email: '',
+  password: ''
+};
+
+function Login() {
+  const [formData, setFormData] = useState<LoginFormData>(initialFormData);
+  const navigate = useNavigate();
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [event.target.name]: event.target.value,
+    });
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    try {
+      const response = await axios.post('http://localhost:3001/register', formData);
+      console.log(response.data);
+      navigate('/user-list');
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <Wrapper>
       <Title>Welcome to EventCalendar</Title>
       <LoginHeading>Please login</LoginHeading>
-      <Form id="login-form" onSubmit={formik.handleSubmit}>
+      <Form id="login-form" onSubmit={handleSubmit}>
         <Label>
           Username:
           <Input
             id="username"
             type="text"
             name="username"
-            onChange={formik.handleChange}
-            value={formik.values.username}
+            onChange={handleChange}
+            value={formData.email}
           />
         </Label>
         <Label>
@@ -88,8 +103,8 @@ const Login = () => {
             id="password"
             type="password"
             name="password"
-            onChange={formik.handleChange}
-            value={formik.values.password}
+            onChange={handleChange}
+            value={formData.password}
           />
         </Label>
         <Submit type="submit" value="Submit" id="login-submit" />

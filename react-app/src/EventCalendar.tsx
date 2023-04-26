@@ -8,10 +8,10 @@ import axios from "axios";
 const localizer = momentLocalizer(moment);
 export interface Event {
     title: string;
+    location: string;
     startDate: Date;
     endDate: Date;
     description: string;
-    location: string;
 }
 
 function EventCalendar() {
@@ -33,6 +33,7 @@ function EventCalendar() {
         axios
             .get("http://localhost:3001/event", { headers: headers })
             .then((response) => {
+                console.log(response.data);
                 setEvents(response.data);
             })
             .catch((error) => {
