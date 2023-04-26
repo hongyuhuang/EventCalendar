@@ -33,8 +33,14 @@ function EventCalendar() {
         axios
             .get("http://localhost:3001/event", { headers: headers })
             .then((response) => {
-                console.log(response.data);
-                setEvents(response.data);
+                const parsedEvents = response.data.map((event: Event) => {
+                    return {
+                        ...event,
+                        startDate: new Date(event.startDate),
+                        endDate: new Date(event.endDate),
+                    };
+                });
+                setEvents(parsedEvents);
             })
             .catch((error) => {
                 console.log(error);
