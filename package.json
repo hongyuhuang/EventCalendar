@@ -8,12 +8,10 @@
     "react": "cd react-app && npm run start",
     "server": "cd express-server && npm run start",
     "start": "concurrently \"npm run server\" \"npm run react\"",
-    "install-deps": "npm install && cd react-app && npm install && cd ../express-server && npm install"
+    "install-deps": "npm install && cd react-app && npm install && cd ../express-server && npm install",
+    "clear-cache": "npm cache clean --force && cd react-app && npm cache clean --force && cd ../express-server && npm cache clean --force"
   },
   "dependencies": {
-    "axios": "^1.3.6",
-    "dotenv": "^16.0.3",
-    "express-acl": "^2.0.9",
     "prettier": "^2.8.5"
   },
   "prettier": {
