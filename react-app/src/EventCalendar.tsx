@@ -33,7 +33,7 @@ function EventCalendar() {
 
     useEffect(() => {
         axios
-            .get("http://localhost:3001/user", { headers: headers })
+            .get("http://localhost:3001/event", { headers: headers })
             .then((response) => {
                 setEvents(response.data);
             })
