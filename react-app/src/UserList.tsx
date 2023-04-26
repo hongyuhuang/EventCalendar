@@ -1,5 +1,30 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import styled from "styled-components";
+
+const Table = styled.table`
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px;
+
+    th,
+    td {
+        text-align: left;
+        padding: 8px;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+`;
+
+const Heading = styled.h2`
+  color: var(--otago-blue-dark);
+`;
 
 export interface User {
     id: number;
@@ -10,7 +35,7 @@ export interface User {
 
 function UserList() {
     const [users, setUsers] = useState<User[]>([]);
-    
+
     const authHeader = (username: string, password: string) => {
         const base64Credentials = btoa(`${username}:${password}`);
         return `Basic ${base64Credentials}`;
@@ -36,14 +61,25 @@ function UserList() {
 
     return (
         <div>
-            <h2>User List</h2>
-            <ul>
-                {users.map((user) => (
-                    <li key={user.id}>
-                        {user.firstName} {user.lastName} - {user.email}
-                    </li>
-                ))}
-            </ul>
+            <Heading>List of Users</Heading>
+            <Table>
+                <thead>
+                    <tr>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {users.map((user) => (
+                        <tr key={user.id}>
+                            <td>{user.firstName}</td>
+                            <td>{user.lastName}</td>
+                            <td>{user.email}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </Table>
         </div>
     );
 }
