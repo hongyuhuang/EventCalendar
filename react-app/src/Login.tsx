@@ -90,18 +90,21 @@ function Login() {
       Authorization: authHeader(username, password),
   };
 
+  const [errorMessage, setErrorMessage] = useState("");
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
+  
     try {
       const response = await axios.post('http://localhost:3001/login', formData, {headers: headers});
       console.log(response.data);
       navigate('/user-list');
     } catch (error) {
       console.error(error);
+      setErrorMessage("Invalid email or password. Please try again."); // Set error message
     }
   };
-
+  
   return (
     <Wrapper>
       <Title>Welcome to Event Calendar</Title>
@@ -127,10 +130,12 @@ function Login() {
             value={formData.password}
           />
         </Label>
+        {errorMessage && <p style={{color: 'red'}}>{errorMessage}</p>}
         <Button type="submit">LOG IN</Button>
       </Form>
     </Wrapper>
   );
+  
 };
 
 export default Login;
