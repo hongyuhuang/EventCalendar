@@ -102,7 +102,7 @@ const App: React.FC = () => {
     <Wrapper>
       <Header>
         <Logo
-          src={process.env.PUBLIC_URL + "/images/university-of-otago-logo.png"}
+          src={"/images/university-of-otago-logo.png"}
           alt="University of Otago Logo"
         />
         <Title>Event Calendar</Title>
