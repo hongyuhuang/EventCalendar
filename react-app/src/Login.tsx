@@ -1,6 +1,7 @@
 import React from "react";
 import { useFormik } from "formik";
 import styled from "styled-components";
+import axios from "axios";
 
 const Wrapper = styled.div`
   display: flex;
@@ -56,8 +57,15 @@ const Login = () => {
     onSubmit: (values) => {
       // TODO: Send values to backend
       console.log(values);
+
+      
     },
   });
+  /*
+  axios.get("http://localhost:3001/login", {headers: values})
+            .then(response => console.log(response.data))
+            .catch(e => console.log(e));
+  */
 
   return (
     <Wrapper>

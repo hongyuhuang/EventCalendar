@@ -8,11 +8,9 @@ import axios from "axios";
 const localizer = momentLocalizer(moment);
 export interface Event {
     title: string;
-    start: Date;
-    end: Date;
-    allDay?: boolean;
-    resource?: any;
-    description?: string;
+    startDate: Date;
+    endDate: Date;
+    description: string;
     location: string;
 }
 
@@ -40,7 +38,7 @@ function EventCalendar() {
             .catch((error) => {
                 console.log(error);
             });
-    }, [headers]);
+    }, []);
 
     const navigate = useNavigate();
 
@@ -53,8 +51,8 @@ function EventCalendar() {
             <Calendar
                 localizer={localizer}
                 events={events}
-                startAccessor="start"
-                endAccessor="end"
+                startAccessor="startDate"
+                endAccessor="endDate"
                 onSelectEvent={handleSelectEvent}
                 style={{ height: window.innerHeight - 150, width: "95vw" }}
             />
