@@ -197,6 +197,54 @@ eventRouter.post("/:eventId/assign/:userId", async (req, res) => {
     }
 });
 
+/**
+ * Finds all the users that are assigned to an event
+ */
+eventRouter.get("/:eventId/assign", async (req, res) => {
+    try {
+        // Checks if the event exists
+        const eventResults = await pool.query<Event[]>(
+            `SELECT * FROM EVENT WHERE eventId = ?`
+        );
+        if ((eventResults as RowDataPacket[])[0].length === 0) {
+            return res.status(404).send("Event not found");
+        }
+        const userResults = pool.query<User[]>(
+            `SELECT U.userId, firstName, lastName
+                FROM ATTENDANCE_RECORD ar JOIN USER U on U.userId = ar.userId
+                WHERE eventId = ?`,
+            [req.params.eventId]
+        );
+        res.send(userResults);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while getting the users");
+    }
+});
+
+/**
+ * Removes an assignment for a user to an event
+ */
+eventRouter.delete("/:eventId/assign/:userId", async (req, res) => {
+    try {
+        const { eventId, userId } = req.params;
+        const [results] = await pool.query(
+            "DELETE FROM ATTENDANCE_RECORD WHERE eventId = ? AND userId = ?",
+            [eventId, userId]
+        );
+        // @ts-ignore
+        if (results.affectedRows === 0) {
+            return res.status(404).send("User not assigned to event");
+        }
+        res.send("User unassigned from event successfully");
+    } catch (err) {
+        console.log(err);
+        res.status(500).send(
+            "An error occurred while un-assigning the user from the event"
+        );
+    }
+});
+
 export {};
 
 module.exports = {
