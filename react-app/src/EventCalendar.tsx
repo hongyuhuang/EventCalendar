@@ -8,10 +8,10 @@ import axios from "axios";
 const localizer = momentLocalizer(moment);
 export interface Event {
     title: string;
+    location: string;
     startDate: Date;
     endDate: Date;
     description: string;
-    location: string;
 }
 
 function EventCalendar() {
@@ -33,7 +33,14 @@ function EventCalendar() {
         axios
             .get("http://localhost:3001/event", { headers: headers })
             .then((response) => {
-                setEvents(response.data);
+                const parsedEvents = response.data.map((event: Event) => {
+                    return {
+                        ...event,
+                        startDate: new Date(event.startDate),
+                        endDate: new Date(event.endDate),
+                    };
+                });
+                setEvents(parsedEvents);
             })
             .catch((error) => {
                 console.log(error);
@@ -47,16 +54,14 @@ function EventCalendar() {
     };
 
     return (
-        <div>
-            <Calendar
-                localizer={localizer}
-                events={events}
-                startAccessor="startDate"
-                endAccessor="endDate"
-                onSelectEvent={handleSelectEvent}
-                style={{ height: window.innerHeight - 150, width: "95vw" }}
-            />
-        </div>
+        <Calendar
+            localizer={localizer}
+            events={events}
+            startAccessor="startDate"
+            endAccessor="endDate"
+            onSelectEvent={handleSelectEvent}
+            style={{ height: window.innerHeight - 150, width: "95vw" }}
+        />
     );
 }
 
