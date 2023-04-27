@@ -321,6 +321,39 @@ paths:
                   type: string
         description: 'Just the same as a normal user, without the isAdmin attribute'
     parameters: []
+  '/user/{userId}/password':
+    patch:
+      summary: Changes a user password
+      operationId: patch-user-password
+      responses:
+        '200':
+          description: OK
+      description: |-
+        Changes the password of a user. 
+
+        Changes the password of a user found in the auth header, once it passes auth - user is allowed to change their own password
+
+        Admins have access to change any password. Otherwise, if it's a user, the id specified in the path param must match the one found in authorization.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPassword:
+                  type: string
+                  description: String value for the new password
+        description: ''
+      tags:
+        - User
+    parameters:
+      - schema:
+          type: string
+        name: userId
+        in: path
+        required: true
+        description: Id of the user who's password is to be changed
 components:
   schemas:
     User:

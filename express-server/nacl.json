@@ -31,6 +31,11 @@
         "resource": "user/:id",
         "methods": ["GET"],
         "action" : "allow"
+      },
+      {
+        "resource": "user/password",
+        "methods": ["PATCH"],
+        "action" : "allow"
       }
     ]
   }
