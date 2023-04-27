@@ -49,13 +49,13 @@ userRouter.get("/", async (req, res) => {
 /**
  * Get a user by ID
  */
-userRouter.get("/:id", async (req, res) => {
+userRouter.get("/:userId", async (req, res) => {
     try {
         const [results] = await pool.query<User[]>(
             `SELECT *
              FROM USER
              WHERE userId = ?`,
-            [req.params.id]
+            [req.params.userId]
         );
         if (
             typeof results === "undefined" ||
@@ -74,12 +74,12 @@ userRouter.get("/:id", async (req, res) => {
 /**
  * Delete a user by ID
  */
-userRouter.delete("/:id", async (req, res) => {
+userRouter.delete("/:userId", async (req, res) => {
     try {
         const [results] = await pool.query<ResultSetHeader>(
             `DELETE FROM USER
              WHERE userId = ?`,
-            [req.params.id]
+            [req.params.userId]
         );
         if (results.affectedRows === 0) {
             res.status(404).send("User not found");
@@ -134,16 +134,18 @@ userRouter.get("/:username/photo", (req, res) => {});
 /**
  * Changes a password. Only the user as themselves or an admin can change a password.
  */
-userRouter.patch("/:id/password", async (req, res) => {
+userRouter.patch("/:userId/password", async (req, res) => {
     try {
-        if (req.params.id !== req.auth.userid && !req.role.isadmin) {
+        // Check headers to see for match
+        if (req.auth.username !== req.params.userId || !req.auth.isAdmin) {
             res.status(403).send("Forbidden");
+            return;
         }
         const [results] = await pool.query<ResultSetHeader>(
             `UPDATE USER
              SET password = ?
              WHERE userId = ?`,
-            [req.body.password, req.params.id]
+            [req.body.newPassword, req.params.id]
         );
         if (results.affectedRows === 0) {
             res.status(404).send("User not found");
