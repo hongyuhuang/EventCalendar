@@ -130,6 +130,42 @@ paths:
           description: Event or user not found
       operationId: get-event-eventId-assign-userId
       description: Assigns a event with a given ID to a user with a given ID. Returns the ID of the attendance of a user to an an event.
+    delete:
+      summary: Removes an Assignment
+      operationId: delete-event-eventId-assign-userId
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: No assignment was found - so not deleted. Double check that eventId and userId actually reference an event and user
+      description: Removes an assignment from a user to an event
+      tags:
+        - Event
+        - User
+  '/event/{eventId}/assign':
+    parameters:
+      - schema:
+          type: string
+        name: eventId
+        in: path
+        required: true
+    get:
+      summary: Gets all the user's assigned to an event
+      tags:
+        - Event
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          description: Event not found
+      operationId: get-event-eventId-assign
+      description: Gets users assigned to an event
   '/user/{userId}':
     parameters:
       - schema:
