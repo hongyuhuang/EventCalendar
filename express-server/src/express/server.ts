@@ -57,9 +57,9 @@ app.post("/register", async (req, res) => {
 });
 
 // Add in routers
+app.use(authRouter);
 app.use("/user", userRouter);
 app.use("/event", eventRouter);
-app.use(authRouter);
 
 // Final Setup
 const PORT = 3001;
