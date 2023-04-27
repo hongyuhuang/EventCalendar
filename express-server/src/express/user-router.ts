@@ -136,17 +136,23 @@ userRouter.get("/:username/photo", (req, res) => {});
  */
 userRouter.patch("/:userId/password", async (req, res) => {
     try {
-        // Check headers to see for match
-        if (req.auth.username !== req.params.userId || !req.auth.isAdmin) {
-            res.status(403).send("Forbidden");
-            return;
-        }
-        const [results] = await pool.query<ResultSetHeader>(
-            `UPDATE USER
-             SET password = ?
-             WHERE userId = ?`,
-            [req.body.newPassword, req.params.id]
-        );
+        const whereClause = req.auth.isAdmin
+            ? `WHERE userId = ?`
+            : `WHERE userId = ? AND email = ?`;
+
+        const queryParams: string[] = req.auth.isAdmin
+            ? [req.params.id]
+            : [req.params.id, req.auth.email];
+
+        const results = (
+            await pool.query<ResultSetHeader>(
+                `UPDATE USER
+                 SET password = ?
+                 ${whereClause}`,
+                queryParams
+            )
+        )[0];
+
         if (results.affectedRows === 0) {
             res.status(404).send("User not found");
         } else {
