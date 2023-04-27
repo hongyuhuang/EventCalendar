@@ -131,6 +131,31 @@ userRouter.get("/:userId/events", async (req, res) => {
  */
 userRouter.get("/:username/photo", (req, res) => {});
 
+/**
+ * Changes a password. Only the user as themselves or an admin can change a password.
+ */
+userRouter.patch("/:id/password", async (req, res) => {
+    try {
+        if (req.params.id !== req.auth.userid && !req.role.isadmin) {
+            res.status(403).send("Forbidden");
+        }
+        const [results] = await pool.query<ResultSetHeader>(
+            `UPDATE USER
+             SET password = ?
+             WHERE userId = ?`,
+            [req.body.password, req.params.id]
+        );
+        if (results.affectedRows === 0) {
+            res.status(404).send("User not found");
+        } else {
+            res.sendStatus(204);
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("An error occurred while updating the user");
+    }
+});
+
 export {};
 
 module.exports = {
