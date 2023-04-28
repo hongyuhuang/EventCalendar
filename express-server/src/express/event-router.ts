@@ -5,7 +5,12 @@ import { format } from "date-fns";
 import { OkPacket, ResultSetHeader } from "mysql2";
 const express = require("express");
 const eventRouter = express.Router();
-const pool: Pool = require("../sql-setup").pool;
+const { pool, handleDbError } = require("../helpers") as {
+    pool: Pool;
+    handleDbError: any;
+};
+
+const createHttpError = require("http-errors");
 
 /*
  * Route to return event with a given id
@@ -68,10 +73,13 @@ eventRouter.post("/", async (req, res) => {
         );
 
         const { insertId } = result;
-        res.status(201).send({ eventId: insertId });
+        return res.status(201).send({ eventId: insertId });
     } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while creating the event");
+        return handleDbError(
+            err,
+            res,
+            "An error occurred while creating the event"
+        );
     }
 });
 
@@ -84,8 +92,11 @@ eventRouter.delete("/:eventId", async (req, res) => {
         await pool.query("DELETE FROM EVENT WHERE eventId = ?", [eventId]);
         res.send(`Event with ID ${eventId} deleted`);
     } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while deleting the event");
+        return handleDbError(
+            err,
+            res,
+            "An error occurred while deleting the event"
+        );
     }
 });
 
@@ -127,53 +138,33 @@ eventRouter.patch("/:eventId", async (req, res) => {
                 eventId,
             ]
         );
-        res.send("Event updated successfully");
+        return res.send("Event updated successfully");
     } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while updating the event");
+        return handleDbError(
+            err,
+            res,
+            "An error occurred while updating the event"
+        );
     }
 });
 
 /**
- * Assigns a user to a particular vent
+ * Assigns a user to a particular event
  */
 eventRouter.post("/:eventId/assign/:userId", async (req, res) => {
     try {
         const eventId = req.params.eventId;
         const userId = req.params.userId;
 
-        // Check if the event exists
-        const eventResults = await pool.query<Event[]>(
-            `SELECT *
-             FROM EVENT
-             WHERE eventId = ?`,
-            [eventId]
-        );
-
-        if ((eventResults as RowDataPacket[])[0].length === 0) {
-            //might need a [0] before length.
-            return res.status(404).send("Event not found");
-        }
-
-        // Check if the user exists
-        const userResults = await pool.query<User[]>(
-            `SELECT *
-                     FROM USER
-                     WHERE userId = ?`,
-            [userId]
-        );
-
-        if ((userResults as RowDataPacket[])[0].length === 0) {
-            //might need a [0] before length.
-            return res.status(404).send("User not found");
-        }
+        await checkEventAndUserExists(eventId, userId, res);
+        await checkUserCanChangeAssignment(userId, eventId, res);
 
         // If both event and user exist, check if attendance record already exists
         const attendanceResults = await pool.query(
             `SELECT *
-                             FROM ATTENDANCE_RECORD
-                             WHERE userId = ?
-                               AND eventId = ?`,
+                         FROM ATTENDANCE_RECORD
+                         WHERE userId = ?
+                           AND eventId = ?`,
             [userId, eventId]
         );
 
@@ -188,10 +179,11 @@ eventRouter.post("/:eventId/assign/:userId", async (req, res) => {
                                      VALUES (?,?)`,
             [userId, eventId]
         );
-        res.status(201).send("User assigned to event successfully");
+        return res.status(201).send("User assigned to event successfully");
     } catch (err) {
-        console.log(err);
-        res.status(500).send(
+        return handleDbError(
+            err,
+            res,
             "An error occurred while assigning the user to the event"
         );
     }
@@ -215,10 +207,13 @@ eventRouter.get("/:eventId/assign", async (req, res) => {
                 WHERE eventId = ?`,
             [req.params.eventId]
         );
-        res.send(userResults);
+        return res.send(userResults);
     } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while getting the users");
+        return handleDbError(
+            err,
+            res,
+            "An error occurred while getting the users assigned to the event"
+        );
     }
 });
 
@@ -228,6 +223,10 @@ eventRouter.get("/:eventId/assign", async (req, res) => {
 eventRouter.delete("/:eventId/assign/:userId", async (req, res) => {
     try {
         const { eventId, userId } = req.params;
+
+        await checkEventAndUserExists(eventId, userId, res);
+        await checkUserCanChangeAssignment(userId, eventId, res);
+
         const [results] = await pool.query(
             "DELETE FROM ATTENDANCE_RECORD WHERE eventId = ? AND userId = ?",
             [eventId, userId]
@@ -236,14 +235,75 @@ eventRouter.delete("/:eventId/assign/:userId", async (req, res) => {
         if (results.affectedRows === 0) {
             return res.status(404).send("User not assigned to event");
         }
-        res.send("User unassigned from event successfully");
+        return res.send("User un-assigned from event successfully");
     } catch (err) {
-        console.log(err);
-        res.status(500).send(
+        return handleDbError(
+            err,
+            res,
             "An error occurred while un-assigning the user from the event"
         );
     }
 });
+
+/**
+ * Checks if a user can change an assignment or not
+ *
+ * If not, a response is automatically sent back to client
+ *
+ * @param req express Request
+ * @param res express Response
+ * @param userId id of the user to check permissions
+ */
+async function checkUserCanChangeAssignment(req, res, userId) {
+    // If the user is not an admin, check if the auth username matches the user being assigned
+    if (req.role !== "admin") {
+        const results = await pool.query<User[]>(
+            `SELECT * 
+                         FROM USER
+                         WHERE email = ? AND userId = ?`,
+            [req.auth.username, userId]
+        );
+        if ((results as RowDataPacket[])[0].length === 0) {
+            throw new createHttpError(403, "User cannot change assignment");
+        }
+    }
+    return;
+}
+
+/**
+ * Checks if a user and event exist before assigning a user to an event
+ *
+ * A response is automatically sent if not
+ *
+ * @param eventId string for an event id
+ * @param userId string for a user id
+ */
+async function checkEventAndUserExists(eventId: string, userId: string, res) {
+    // Check if the event exists
+    const [eventResults] = await pool.query<Event[]>(
+        `SELECT *
+             FROM EVENT
+             WHERE eventId = ?`,
+        [eventId]
+    );
+
+    if ((eventResults as RowDataPacket[]).length === 0) {
+        throw new createHttpError(404, "Event not found");
+    }
+
+    // Check if the user exists
+    const userResults = await pool.query<User[]>(
+        `SELECT *
+                     FROM USER
+                     WHERE userId = ?`,
+        [userId]
+    );
+
+    if ((userResults as RowDataPacket[]).length === 0) {
+        throw new createHttpError(404, "User not found");
+    }
+    return;
+}
 
 export {};
 
