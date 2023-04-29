@@ -16,10 +16,7 @@ const saltRounds = 10;
  */
 userRouter.post("/", async (req, res) => {
     try {
-        const passwordHashSalt = bcrypt.hashSync(
-            req.body.password,
-            bcrypt.genSalt(saltRounds)
-        );
+        const passwordHashSalt = bcrypt.hashSync(req.body.password, 10);
 
         const { firstName, lastName, isAdmin, email, password } = req.body;
         const [result] = await pool.query<ResultSetHeader>(
@@ -47,7 +44,6 @@ userRouter.get("/", async (req, res) => {
              WHERE isAdmin = ? OR isAdmin = 0`,
             [includeAdmins]
         );
-
         res.send(results);
     } catch (err) {
         console.log(err);
@@ -70,13 +66,18 @@ userRouter.get("/:userId", async (req, res) => {
             typeof results === "undefined" ||
             (results as RowDataPacket[]).length === 0
         ) {
-            res.status(404).send("User not found");
-        } else {
-            res.send(results[0]);
+            return res.status(404).send("User not found");
         }
+
+        const foundUser = results[0];
+
+        if (req.role !== "admin") {
+            foundUser.password = "REDACTED";
+        }
+        return res.send(foundUser);
     } catch (err) {
         console.log(err);
-        res.status(500).send("An error occurred while getting the user");
+        return res.status(500).send("An error occurred while getting the user");
     }
 });
 
@@ -145,10 +146,7 @@ userRouter.get("/:username/photo", (req, res) => {});
  */
 userRouter.patch("/:userId/password", async (req, res) => {
     try {
-        const passwordHashSalt = bcrypt.hashSync(
-            req.body.newPassword,
-            bcrypt.genSalt(saltRounds)
-        );
+        const passwordHashSalt = bcrypt.hashSync(req.body.newPassword, 10);
 
         const whereClause = `WHERE userId = ?`;
         const queryParams: string[] = [passwordHashSalt, req.params.id];

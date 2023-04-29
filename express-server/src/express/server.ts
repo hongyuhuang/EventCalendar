@@ -13,6 +13,8 @@ const authRouter = require("./auth").authRouter; // For auth routes
 // Create express app
 const app = express();
 
+const bcrypt = require("bcrypt");
+
 // Adding CORS(Cross Origin Resource Sharing) express
 const cors = require("cors");
 app.use(
@@ -38,6 +40,7 @@ app.use(multer().none());
  */
 app.post("/register", async (req, res) => {
     try {
+        const hashSaltPassword = bcrypt.hashSync(req.body.password, 10);
         await pool.query<OkPacket>(
             `INSERT INTO USER (firstName, lastName, isAdmin, email, password)
                   VALUES (?, ?, ?, ?, ?)`,
@@ -46,7 +49,7 @@ app.post("/register", async (req, res) => {
                 req.body.lastName,
                 0,
                 req.body.email,
-                req.body.password,
+                hashSaltPassword,
             ]
         );
         res.send("User registered successfully");
