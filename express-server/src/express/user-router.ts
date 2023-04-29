@@ -7,15 +7,24 @@ const pool: Pool = require("../sql-setup").pool;
 const express = require("express");
 const userRouter = express.Router();
 
+// Password encryption
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
+
 /**
  * Creates a new user
  */
 userRouter.post("/", async (req, res) => {
     try {
+        const passwordHashSalt = bcrypt.hashSync(
+            req.body.password,
+            bcrypt.genSalt(saltRounds)
+        );
+
         const { firstName, lastName, isAdmin, email, password } = req.body;
         const [result] = await pool.query<ResultSetHeader>(
             "INSERT INTO USER (firstName, lastName, isAdmin, email, password) VALUES (?, ?, ?, ?, ?)",
-            [firstName, lastName, isAdmin, email, password]
+            [firstName, lastName, isAdmin, email, passwordHashSalt]
         );
         const { insertId } = result;
         res.send({ userId: insertId });
@@ -136,13 +145,19 @@ userRouter.get("/:username/photo", (req, res) => {});
  */
 userRouter.patch("/:userId/password", async (req, res) => {
     try {
-        const whereClause = req.auth.isAdmin
-            ? `WHERE userId = ?`
-            : `WHERE userId = ? AND email = ?`;
+        const passwordHashSalt = bcrypt.hashSync(
+            req.body.newPassword,
+            bcrypt.genSalt(saltRounds)
+        );
 
-        const queryParams: string[] = req.auth.isAdmin
-            ? [req.params.id]
-            : [req.params.id, req.auth.email];
+        const whereClause = `WHERE userId = ?`;
+        const queryParams: string[] = [passwordHashSalt, req.params.id];
+
+        if (req.role !== "admin") {
+            // Need to check value of email too, if user is not an admin
+            queryParams.push(req.auth.username);
+            whereClause.concat(`AND email = ?`);
+        }
 
         const results = (
             await pool.query<ResultSetHeader>(
