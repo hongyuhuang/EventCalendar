@@ -5,6 +5,7 @@ CREATE TABLE USER(
     isAdmin BOOLEAN NOT NULL,
     email VARCHAR(100) NOT NULL,
     password VARCHAR(100) NOT NULL,
+    salt VARCHAR(100) NOT NULL,
     PRIMARY KEY (userId),
     UNIQUE (email)
 );
@@ -24,7 +25,7 @@ CREATE TABLE ATTENDANCE_RECORD(
     userId INT NOT NULL,
     eventId INT NOT NULL,
     PRIMARY KEY (attendanceId),
-    FOREIGN KEY (userId) REFERENCES USER(userId),
+    FOREIGN KEY (userId) REFERENCES USER(userId) ON DELETE CASCADE,
     FOREIGN KEY (eventId) REFERENCES EVENT(eventId) ON DELETE CASCADE
 );
 
