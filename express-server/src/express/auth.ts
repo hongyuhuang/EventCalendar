@@ -113,7 +113,7 @@ authRouter.use(acl.authorize);
  * Basically just returns whether a user is an admin or not that a user has, given the headers. It is already assumed that their credentials are valid.
  */
 authRouter.get("/login", (req, res) => {
-    res.status(200).json({
+    return res.status(200).json({
         // @ts-ignore
         isAdmin: req.role === "admin",
     });
