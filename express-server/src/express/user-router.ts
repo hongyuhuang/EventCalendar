@@ -3,7 +3,10 @@ import { Pool, RowDataPacket } from "mysql2/promise";
 import { ResultSetHeader } from "mysql2";
 import { User } from "../entities";
 
-const pool: Pool = require("../sql-setup").pool;
+const { pool, handleDbError } = require("../helpers") as {
+    pool: Pool;
+    handleDbError: any;
+};
 const express = require("express");
 const userRouter = express.Router();
 
@@ -26,8 +29,11 @@ userRouter.post("/", async (req, res) => {
         const { insertId } = result;
         res.send({ userId: insertId });
     } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while creating the user");
+        return handleDbError(
+            err,
+            res,
+            "An internal error occurred while creating a user"
+        );
     }
 });
 
@@ -46,8 +52,11 @@ userRouter.get("/", async (req, res) => {
         );
         res.send(results);
     } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while getting the users");
+        return handleDbError(
+            err,
+            res,
+            "An internal error occurred while getting the users"
+        );
     }
 });
 
@@ -67,6 +76,8 @@ userRouter.get("/:userId", async (req, res) => {
             (results as RowDataPacket[]).length === 0
         ) {
             return res.status(404).send("User not found");
+        } else {
+            res.send(results[0]);
         }
 
         const foundUser = results[0];
@@ -76,8 +87,11 @@ userRouter.get("/:userId", async (req, res) => {
         }
         return res.send(foundUser);
     } catch (err) {
-        console.log(err);
-        return res.status(500).send("An error occurred while getting the user");
+        return handleDbError(
+            res,
+            err,
+            "An internal error occurred while getting a user"
+        );
     }
 });
 
@@ -97,8 +111,11 @@ userRouter.delete("/:userId", async (req, res) => {
             res.sendStatus(204);
         }
     } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while deleting the user");
+        return handleDbError(
+            res,
+            err,
+            "An internal error occurred while deleting a user"
+        );
     }
 });
 
@@ -131,8 +148,11 @@ userRouter.get("/:userId/events", async (req, res) => {
             res.send(results);
         }
     } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while fetching events");
+        return handleDbError(
+            res,
+            err,
+            "An internal error occurred while getting events for a user"
+        );
     }
 });
 
@@ -146,6 +166,15 @@ userRouter.get("/:username/photo", (req, res) => {});
  */
 userRouter.patch("/:userId/password", async (req, res) => {
     try {
+        // Check headers to see for match
+        if (
+            req.auth.username !== req.params.userId ||
+            !(req.role === "admin")
+        ) {
+            res.status(403).send("Forbidden");
+            return;
+        }
+
         const passwordHashSalt = bcrypt.hashSync(req.body.newPassword, 10);
 
         const whereClause = `WHERE userId = ?`;
@@ -172,8 +201,11 @@ userRouter.patch("/:userId/password", async (req, res) => {
             res.sendStatus(204);
         }
     } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while updating the user");
+        return handleDbError(
+            res,
+            err,
+            "An internal error occurred while updating a user's password"
+        );
     }
 });
 

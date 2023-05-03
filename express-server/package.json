@@ -5,19 +5,21 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "start": "ts-node -T src/express/app.ts"
+    "start": "ts-node -T src/express/server.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.0",
+    "basic-auth-header": "^1.0.1",
     "cors": "^2.8.5",
     "date-fns": "^2.29.3",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-acl": "^2.0.9",
     "express-basic-auth": "^1.2.1",
+    "http-errors": "^2.0.0",
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.2.0",
     "path": "^0.12.7",

@@ -28,6 +28,16 @@
         "action" : "allow"
       },
       {
+        "resources": "event/:eventId/assign/:userId",
+        "methods": ["POST", "DELETE"],
+        "action": "allow"
+      },
+      {
+        "resources": "event/:eventId/assign/",
+        "methods": ["GET"],
+        "action": "allow"
+      },
+      {
         "resource": "user/:id",
         "methods": ["GET"],
         "action" : "allow"

@@ -4,7 +4,7 @@ import acl from "express-acl";
 import { Pool } from "mysql2/promise";
 import { User } from "../entities";
 
-const pool: Pool = require("../sql-setup").pool;
+const pool: Pool = require("../helpers").pool;
 const authRouter = require("express").Router();
 
 const bcrypt = require("bcrypt");
