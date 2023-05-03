@@ -33,7 +33,7 @@
         "action" : "allow"
       },
       {
-        "resource": "user/password",
+        "resource": "user/:id/password",
         "methods": ["PATCH"],
         "action" : "allow"
       }

@@ -7,15 +7,21 @@ const pool: Pool = require("../sql-setup").pool;
 const express = require("express");
 const userRouter = express.Router();
 
+// Password encryption
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
+
 /**
  * Creates a new user
  */
 userRouter.post("/", async (req, res) => {
     try {
+        const passwordHashSalt = bcrypt.hashSync(req.body.password, 10);
+
         const { firstName, lastName, isAdmin, email, password } = req.body;
         const [result] = await pool.query<ResultSetHeader>(
             "INSERT INTO USER (firstName, lastName, isAdmin, email, password) VALUES (?, ?, ?, ?, ?)",
-            [firstName, lastName, isAdmin, email, password]
+            [firstName, lastName, isAdmin, email, passwordHashSalt]
         );
         const { insertId } = result;
         res.send({ userId: insertId });
@@ -38,7 +44,6 @@ userRouter.get("/", async (req, res) => {
              WHERE isAdmin = ? OR isAdmin = 0`,
             [includeAdmins]
         );
-
         res.send(results);
     } catch (err) {
         console.log(err);
@@ -61,13 +66,18 @@ userRouter.get("/:userId", async (req, res) => {
             typeof results === "undefined" ||
             (results as RowDataPacket[]).length === 0
         ) {
-            res.status(404).send("User not found");
-        } else {
-            res.send(results[0]);
+            return res.status(404).send("User not found");
         }
+
+        const foundUser = results[0];
+
+        if (req.role !== "admin") {
+            foundUser.password = "REDACTED";
+        }
+        return res.send(foundUser);
     } catch (err) {
         console.log(err);
-        res.status(500).send("An error occurred while getting the user");
+        return res.status(500).send("An error occurred while getting the user");
     }
 });
 
@@ -136,13 +146,16 @@ userRouter.get("/:username/photo", (req, res) => {});
  */
 userRouter.patch("/:userId/password", async (req, res) => {
     try {
-        const whereClause = req.auth.isAdmin
-            ? `WHERE userId = ?`
-            : `WHERE userId = ? AND email = ?`;
+        const passwordHashSalt = bcrypt.hashSync(req.body.newPassword, 10);
 
-        const queryParams: string[] = req.auth.isAdmin
-            ? [req.params.id]
-            : [req.params.id, req.auth.email];
+        const whereClause = `WHERE userId = ?`;
+        const queryParams: string[] = [passwordHashSalt, req.params.id];
+
+        if (req.role !== "admin") {
+            // Need to check value of email too, if user is not an admin
+            queryParams.push(req.auth.username);
+            whereClause.concat(`AND email = ?`);
+        }
 
         const results = (
             await pool.query<ResultSetHeader>(
