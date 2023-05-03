@@ -3,9 +3,18 @@ import assert from "assert";
 import acl from "express-acl";
 import { Pool } from "mysql2/promise";
 import { User } from "../entities";
+const bodyParser = require("body-parser");
 
 const pool: Pool = require("../helpers").pool;
 const authRouter = require("express").Router();
+
+// Set up reCaptcha for login
+const ReCaptcha = require("express-recaptcha").RecaptchaV2;
+const reCaptcha = new ReCaptcha(
+    process.env.RECAPTCHA_SITE_KEY,
+    process.env.RECAPTCHA_SECRET
+);
+authRouter.use(bodyParser.urlencoded({ extended: true }));
 
 const bcrypt = require("bcrypt");
 
@@ -113,6 +122,11 @@ authRouter.use(acl.authorize);
  * Basically just returns whether a user is an admin or not that a user has, given the headers. It is already assumed that their credentials are valid.
  */
 authRouter.get("/login", (req, res) => {
+    if (!req.recaptcha || req.recaptcha.error) {
+        console.log(req.recaptcha);
+        console.log(req.query);
+        return res.status(422).send("Failed reCAPTCHA");
+    }
     return res.status(200).json({
         // @ts-ignore
         isAdmin: req.role === "admin",
