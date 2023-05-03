@@ -1,52 +1,52 @@
 [
-    {
-        "group": "admin",
-        "permissions": [
-            {
-                "resource": "*",
-                "methods": "*",
-                "action": "allow"
-            }
-        ]
-    },
-    {
-        "group": "user",
-        "permissions": [
-            {
-                "resource": "event/:eventId",
-                "methods": ["GET"],
-                "action": "allow"
-            },
-            {
-                "resource": "login",
-                "methods": ["GET"],
-                "action": "allow"
-            },
-            {
-                "resources": "user/:username/photo",
-                "methods": ["GET"],
-                "action": "allow"
-            },
-            {
-                "resources": "event/:eventId/assign/:userId",
-                "methods": ["POST", "DELETE"],
-                "action": "allow"
-            },
-            {
-                "resources": "event/:eventId/assign/",
-                "methods": ["GET"],
-                "action": "allow"
-            },
-            {
-                "resource": "user/:id",
-                "methods": ["GET"],
-                "action": "allow"
-            },
-            {
-                "resource": "user/password",
-                "methods": ["PATCH"],
-                "action": "allow"
-            }
-        ]
-    }
+  {
+    "group": "admin",
+    "permissions": [
+      {
+        "resource": "*",
+        "methods": "*",
+        "action" : "allow"
+      }
+    ]
+  },
+  {
+    "group": "user",
+    "permissions": [
+      {
+        "resource": "event/:eventId",
+        "methods": ["GET"],
+        "action" : "allow"
+      },
+      {
+        "resource": "login",
+        "methods": ["GET"],
+        "action" : "allow"
+      },
+      {
+        "resources": "user/:username/photo",
+        "methods": ["GET"],
+        "action" : "allow"
+      },
+      {
+        "resources": "event/:eventId/assign/:userId",
+        "methods": ["POST", "DELETE"],
+        "action": "allow"
+      },
+      {
+        "resources": "event/:eventId/assign/",
+        "methods": ["GET"],
+        "action": "allow"
+      },
+      {
+        "resource": "user/:id",
+        "methods": ["GET"],
+        "action" : "allow"
+      },
+      {
+        "resource": "user/:id/password",
+        "methods": ["PATCH"],
+        "action" : "allow"
+      }
+    ]
+  }
 ]

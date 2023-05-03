@@ -10,15 +10,21 @@ const { pool, handleDbError } = require("../helpers") as {
 const express = require("express");
 const userRouter = express.Router();
 
+// Password encryption
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
+
 /**
  * Creates a new user
  */
 userRouter.post("/", async (req, res) => {
     try {
+        const passwordHashSalt = bcrypt.hashSync(req.body.password, 10);
+
         const { firstName, lastName, isAdmin, email, password } = req.body;
         const [result] = await pool.query<ResultSetHeader>(
             "INSERT INTO USER (firstName, lastName, isAdmin, email, password) VALUES (?, ?, ?, ?, ?)",
-            [firstName, lastName, isAdmin, email, password]
+            [firstName, lastName, isAdmin, email, passwordHashSalt]
         );
         const { insertId } = result;
         res.send({ userId: insertId });
@@ -44,7 +50,6 @@ userRouter.get("/", async (req, res) => {
              WHERE isAdmin = ? OR isAdmin = 0`,
             [includeAdmins]
         );
-
         res.send(results);
     } catch (err) {
         return handleDbError(
@@ -70,10 +75,17 @@ userRouter.get("/:userId", async (req, res) => {
             typeof results === "undefined" ||
             (results as RowDataPacket[]).length === 0
         ) {
-            res.status(404).send("User not found");
+            return res.status(404).send("User not found");
         } else {
             res.send(results[0]);
         }
+
+        const foundUser = results[0];
+
+        if (req.role !== "admin") {
+            foundUser.password = "REDACTED";
+        }
+        return res.send(foundUser);
     } catch (err) {
         return handleDbError(
             res,
@@ -162,12 +174,27 @@ userRouter.patch("/:userId/password", async (req, res) => {
             res.status(403).send("Forbidden");
             return;
         }
-        const [results] = await pool.query<ResultSetHeader>(
-            `UPDATE USER
-             SET password = ?
-             WHERE userId = ?`,
-            [req.body.newPassword, req.params.id]
-        );
+
+        const passwordHashSalt = bcrypt.hashSync(req.body.newPassword, 10);
+
+        const whereClause = `WHERE userId = ?`;
+        const queryParams: string[] = [passwordHashSalt, req.params.id];
+
+        if (req.role !== "admin") {
+            // Need to check value of email too, if user is not an admin
+            queryParams.push(req.auth.username);
+            whereClause.concat(`AND email = ?`);
+        }
+
+        const results = (
+            await pool.query<ResultSetHeader>(
+                `UPDATE USER
+                 SET password = ?
+                 ${whereClause}`,
+                queryParams
+            )
+        )[0];
+
         if (results.affectedRows === 0) {
             res.status(404).send("User not found");
         } else {
