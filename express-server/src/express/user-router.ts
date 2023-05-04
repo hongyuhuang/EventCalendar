@@ -2,26 +2,58 @@ import { Pool, RowDataPacket } from "mysql2/promise";
 
 import { ResultSetHeader } from "mysql2";
 import { User } from "../entities";
+import * as fs from "fs";
+const path = require("path");
 
-const pool: Pool = require("../sql-setup").pool;
+const { pool, handleDbError } = require("../helpers") as {
+    pool: Pool;
+    handleDbError: any;
+};
 const express = require("express");
 const userRouter = express.Router();
+
+// Password encryption
+const bcrypt = require("bcrypt");
+
+// For file uploads
+const multer = require("multer");
+
+// For only accepting jpg uploads
+const fileFilter = function (req, file, cb) {
+    if (file.mimetype !== "image/jpeg") {
+        return cb(new Error("Only JPEG files are allowed"));
+    }
+    cb(null, true);
+};
+
+const upload = multer({
+    dest: "photos/",
+    fileFilter: fileFilter,
+});
 
 /**
  * Creates a new user
  */
 userRouter.post("/", async (req, res) => {
     try {
+        const passwordHashSalt = bcrypt.hashSync(req.body.password, 10);
+
         const { firstName, lastName, isAdmin, email, password } = req.body;
         const [result] = await pool.query<ResultSetHeader>(
             "INSERT INTO USER (firstName, lastName, isAdmin, email, password) VALUES (?, ?, ?, ?, ?)",
-            [firstName, lastName, isAdmin, email, password]
+            [firstName, lastName, isAdmin, email, passwordHashSalt]
         );
         const { insertId } = result;
         res.send({ userId: insertId });
     } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while creating the user");
+        if (err.code === "ER_DUP_ENTRY") {
+            return res.status(409).send("User with email already exists");
+        }
+        return handleDbError(
+            err,
+            res,
+            "An internal error occurred while creating a user"
+        );
     }
 });
 
@@ -38,11 +70,13 @@ userRouter.get("/", async (req, res) => {
              WHERE isAdmin = ? OR isAdmin = 0`,
             [includeAdmins]
         );
-
         res.send(results);
     } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while getting the users");
+        return handleDbError(
+            err,
+            res,
+            "An internal error occurred while getting the users"
+        );
     }
 });
 
@@ -61,13 +95,23 @@ userRouter.get("/:userId", async (req, res) => {
             typeof results === "undefined" ||
             (results as RowDataPacket[]).length === 0
         ) {
-            res.status(404).send("User not found");
+            return res.status(404).send("User not found");
         } else {
             res.send(results[0]);
         }
+
+        const foundUser = results[0];
+
+        if (req.role !== "admin") {
+            foundUser.password = "REDACTED";
+        }
+        return res.send(foundUser);
     } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while getting the user");
+        return handleDbError(
+            res,
+            err,
+            "An internal error occurred while getting a user"
+        );
     }
 });
 
@@ -87,8 +131,11 @@ userRouter.delete("/:userId", async (req, res) => {
             res.sendStatus(204);
         }
     } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while deleting the user");
+        return handleDbError(
+            res,
+            err,
+            "An internal error occurred while deleting a user"
+        );
     }
 });
 
@@ -121,28 +168,38 @@ userRouter.get("/:userId/events", async (req, res) => {
             res.send(results);
         }
     } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while fetching events");
+        return handleDbError(
+            res,
+            err,
+            "An internal error occurred while getting events for a user"
+        );
     }
 });
-
-/**
- * Returns a photo for a particular user.
- */
-userRouter.get("/:username/photo", (req, res) => {});
 
 /**
  * Changes a password. Only the user as themselves or an admin can change a password.
  */
 userRouter.patch("/:userId/password", async (req, res) => {
     try {
-        const whereClause = req.auth.isAdmin
-            ? `WHERE userId = ?`
-            : `WHERE userId = ? AND email = ?`;
+        // Check headers to see for match
+        if (
+            req.auth.username !== req.params.userId ||
+            !(req.role === "admin")
+        ) {
+            res.status(403).send("Forbidden");
+            return;
+        }
 
-        const queryParams: string[] = req.auth.isAdmin
-            ? [req.params.id]
-            : [req.params.id, req.auth.email];
+        const passwordHashSalt = bcrypt.hashSync(req.body.newPassword, 10);
+
+        const whereClause = `WHERE userId = ?`;
+        const queryParams: string[] = [passwordHashSalt, req.params.id];
+
+        if (req.role !== "admin") {
+            // Need to check value of email too, if user is not an admin
+            queryParams.push(req.auth.username);
+            whereClause.concat(`AND email = ?`);
+        }
 
         const results = (
             await pool.query<ResultSetHeader>(
@@ -159,13 +216,86 @@ userRouter.patch("/:userId/password", async (req, res) => {
             res.sendStatus(204);
         }
     } catch (err) {
-        console.log(err);
-        res.status(500).send("An error occurred while updating the user");
+        return handleDbError(
+            res,
+            err,
+            "An internal error occurred while updating a user's password"
+        );
     }
 });
+
+/**
+ * Returns a photo for a particular user.
+ */
+userRouter.get("/:userId/photo", async (req, res) => {
+    if (
+        req.role !== "admin" &&
+        !(await checkUserIdMatchesUsername(
+            req.params.userId,
+            req.auth.username
+        ))
+    ) {
+        return res.status(403).send("Forbidden");
+    }
+    const photoDir = userPhotoDir(req.params.userId);
+
+    // Check if file exists
+    if (!fs.existsSync(photoDir)) {
+        return res.status(404).send("Photo not found");
+    }
+    return res.sendFile(`${process.cwd()}${path.sep}${photoDir}`); // Requires absolute path
+});
+
+/**
+ * Uploads a photo for a particular user, covers cases of updating and creating
+ */
+userRouter.post("/:userId/photo", upload.single("photo"), async (req, res) => {
+    if (
+        req.role !== "admin" &&
+        !(await checkUserIdMatchesUsername(
+            req.params.userId,
+            req.auth.username
+        ))
+    ) {
+        return res.status(403).send("Forbidden");
+    }
+
+    fs.renameSync(req.file.path, userPhotoDir(req.params.userId));
+
+    res.send("File uploaded successfully");
+});
+
+/**
+ * Checks if a user ID matches a username
+ *
+ * @param userId string
+ * @param username string
+ * @return Promise resolving to boolean
+ */
+async function checkUserIdMatchesUsername(
+    userId: string,
+    username: string
+): Promise<boolean> {
+    const [results] = await pool.query<[]>(
+        `SELECT * FROM USER WHERE userId = ? AND email = ?`,
+        [userId, username]
+    );
+    return results.length > 0;
+}
+
+/**
+ * Returns the directory for a saved user's photo, relative to the current file.
+ *
+ * @param userId string
+ * @return string
+ */
+function userPhotoDir(userId: string) {
+    return `photos\\user_${userId}.jpg`;
+}
 
 export {};
 
 module.exports = {
     userRouter,
+    checkUserIdMatchesUsername,
 };

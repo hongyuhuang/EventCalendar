@@ -130,6 +130,42 @@ paths:
           description: Event or user not found
       operationId: get-event-eventId-assign-userId
       description: Assigns a event with a given ID to a user with a given ID. Returns the ID of the attendance of a user to an an event.
+    delete:
+      summary: Removes an Assignment
+      operationId: delete-event-eventId-assign-userId
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: No assignment was found - so not deleted. Double check that eventId and userId actually reference an event and user
+      description: Removes an assignment from a user to an event
+      tags:
+        - Event
+        - User
+  '/event/{eventId}/assign':
+    parameters:
+      - schema:
+          type: string
+        name: eventId
+        in: path
+        required: true
+    get:
+      summary: Gets all the user's assigned to an event
+      tags:
+        - Event
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          description: Event not found
+      operationId: get-event-eventId-assign
+      description: Gets users assigned to an event
   '/user/{userId}':
     parameters:
       - schema:
@@ -252,7 +288,10 @@ paths:
         - User
       responses:
         '200':
-          description: User found
+          description: |-
+            User found
+
+            Contains image as jpg
           content:
             image/jpeg:
               schema:
@@ -261,9 +300,46 @@ paths:
         '401':
           $ref: '#/components/responses/401'
         '404':
-          description: User not found
+          description: Photo not found
       operationId: get-user-userOId
       description: Finds the photo of a user with the given ID
+    post:
+      summary: Upload or Update Photo
+      operationId: post-user-userId-photo
+      responses:
+        '200':
+          description: OK
+        '401':
+          $ref: '#/components/responses/401'
+      description: Updates or creates a photo
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+        description: |-
+          A multipart form, with just one entry for the photo.
+
+          Photo should have key 'photo' and be jpg. 
+
+          I don't know how to document photos with stoplight, so I'll just describe how to interact with this endpoint.
+
+          Basically the multi part form to update/upload a photo should look a bit like:
+
+          ```html
+          <form action="/:userId/photo" method="POST" enctype="multipart/form-data">
+            <input type="file" name="photo">
+            <button type="submit">Upload Photo</button>
+          </form>
+          ```
+
+          NB  input `name` has to be 'photo' `userId` should be the id of the user you want a photo of. 
+
+          Courtesy of ChatGPT. 
+
+          Haven't tested it! - you will need to have a `handleSubmit()` handler to add things such as auth etc.
+      tags:
+        - User
   /login:
     get:
       summary: Handle Login of user

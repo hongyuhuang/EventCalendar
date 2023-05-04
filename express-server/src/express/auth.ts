@@ -3,9 +3,20 @@ import assert from "assert";
 import acl from "express-acl";
 import { Pool } from "mysql2/promise";
 import { User } from "../entities";
+const bodyParser = require("body-parser");
 
-const pool: Pool = require("../sql-setup").pool;
+const pool: Pool = require("../helpers").pool;
 const authRouter = require("express").Router();
+
+// Set up reCaptcha for login
+const ReCaptcha = require("express-recaptcha").RecaptchaV2;
+const reCaptcha = new ReCaptcha(
+    process.env.RECAPTCHA_SITE_KEY,
+    process.env.RECAPTCHA_SECRET
+);
+authRouter.use(bodyParser.urlencoded({ extended: true }));
+
+const bcrypt = require("bcrypt");
 
 authRouter.use(
     basicAuth({
@@ -37,20 +48,18 @@ async function assignRequestRole(req, res, next) {
 /**
  * Gets the role for a user.
  *
- * Used for role based authentication/authorization
+ * Used for role based authentication/authorization. Since this comes after basic auth, passwords are not compared.
  *
  * @param email string for the role of a user
- * @param password string for the password of a user
  * @return string for the role of a user
  */
-async function getUserRole(email: string, password: string): Promise<string> {
+async function getUserRole(email: string): Promise<string> {
     try {
         const [results] = await pool.query<User[]>(
             `SELECT *
              FROM USER
-             WHERE email = ?
-               AND password = ?`,
-            [email, password]
+             WHERE email = ?`,
+            [email]
         );
         assert(results.length == 1, "There should be exactly one user found");
         return Boolean(results[0].isAdmin) ? "admin" : "user";
@@ -74,12 +83,15 @@ async function authorize(
     callback: (err: Error | null, authorized: boolean) => void
 ): Promise<void> {
     try {
-        const [results] = await pool.query<User[]>(
+        let [results] = await pool.query<User[]>(
             `SELECT *
              FROM USER
-             WHERE email = ?
-               AND password = ?`,
-            [email, password]
+             WHERE email = ?`,
+            [email]
+        );
+        // Now compare based on the password
+        results = results.filter((user) =>
+            bcrypt.compareSync(password, user.password)
         );
         return callback(null, results.length === 1);
     } catch (err) {
@@ -109,12 +121,28 @@ authRouter.use(acl.authorize);
  *
  * Basically just returns whether a user is an admin or not that a user has, given the headers. It is already assumed that their credentials are valid.
  */
-authRouter.get("/login", (req, res) => {
-    res.status(200).json({
-        // @ts-ignore
-        isAdmin: req.role === "admin",
-    });
-});
+authRouter.get(
+    "/login",
+    reCaptcha.middleware.verify,
+    (req, res, next) => {
+        if (
+            req.query["g-recaptcha-response"] ===
+            process.env.RECAPTCHA_TEST_TOKEN
+        ) {
+            return next();
+        }
+        if (!req.recaptcha || req.recaptcha.error) {
+            return res.status(422).send("Failed reCAPTCHA");
+        }
+        return next();
+    },
+    (req, res) => {
+        return res.status(200).json({
+            // @ts-ignore
+            isAdmin: req.role === "admin",
+        });
+    }
+);
 
 module.exports = {
     authRouter,
