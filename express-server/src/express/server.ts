@@ -1,6 +1,6 @@
 export {};
 
-const app = require("./express/server").app;
+const app = require("./app").app;
 
 // Final Setup
 const PORT = 3001;
