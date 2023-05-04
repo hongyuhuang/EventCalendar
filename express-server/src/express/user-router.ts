@@ -46,6 +46,9 @@ userRouter.post("/", async (req, res) => {
         const { insertId } = result;
         res.send({ userId: insertId });
     } catch (err) {
+        if (err.code === "ER_DUP_ENTRY") {
+            return res.status(409).send("User with email already exists");
+        }
         return handleDbError(
             err,
             res,

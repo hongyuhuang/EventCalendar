@@ -121,17 +121,28 @@ authRouter.use(acl.authorize);
  *
  * Basically just returns whether a user is an admin or not that a user has, given the headers. It is already assumed that their credentials are valid.
  */
-authRouter.get("/login", (req, res) => {
-    if (!req.recaptcha || req.recaptcha.error) {
-        console.log(req.recaptcha);
-        console.log(req.query);
-        return res.status(422).send("Failed reCAPTCHA");
+authRouter.get(
+    "/login",
+    reCaptcha.middleware.verify,
+    (req, res, next) => {
+        if (
+            req.query["g-recaptcha-response"] ===
+            process.env.RECAPTCHA_TEST_TOKEN
+        ) {
+            return next();
+        }
+        if (!req.recaptcha || req.recaptcha.error) {
+            return res.status(422).send("Failed reCAPTCHA");
+        }
+        return next();
+    },
+    (req, res) => {
+        return res.status(200).json({
+            // @ts-ignore
+            isAdmin: req.role === "admin",
+        });
     }
-    return res.status(200).json({
-        // @ts-ignore
-        isAdmin: req.role === "admin",
-    });
-});
+);
 
 module.exports = {
     authRouter,
