@@ -3,10 +3,19 @@ const request = require("supertest");
 const agent = request.agent(app);
 const authHeader = require("basic-auth-header");
 
+const dotenv = require("dotenv");
+dotenv.config();
+
+const { pool } = require("../src/helpers").pool;
+
 const createAuthHeader = (username, password) => {
     return {
         Authorization: authHeader(username, password),
     };
+};
+
+const reCaptchaQueryParam = {
+    "g-recaptcha-response": process.env.RECAPTCHA_TEST_TOKEN,
 };
 
 const adminPassword = "password123";
@@ -26,6 +35,10 @@ afterEach(async () => {
     await server.close();
 });
 
+afterAll(() => {
+    pool.end();
+});
+
 describe("Testing login route", () => {
     test("Test with admin user", async () => {
         expect.assertions(2);
@@ -40,6 +53,7 @@ describe("Testing login route", () => {
 
         const response = await agent
             .get("/login")
+            .query(reCaptchaQueryParam)
             .set(createAuthHeader(adminUsername, adminPassword))
             .send();
 
@@ -70,9 +84,10 @@ describe("Testing login route", () => {
         };
 
         let userId = null;
+        let createResponse = null;
 
         try {
-            const createResponse = await agent
+            createResponse = await agent
                 .post("/user")
                 .set(createAuthHeader(adminUsername, adminPassword))
                 .send(newUser);
@@ -83,6 +98,7 @@ describe("Testing login route", () => {
 
             const loginResponse = await agent
                 .get("/login")
+                .query(reCaptchaQueryParam)
                 .set(createAuthHeader(newUser.email, newUser.password))
                 .send();
 
@@ -92,7 +108,7 @@ describe("Testing login route", () => {
             const deleteResponse = await agent
                 .delete(`/user/${userId}`)
                 .set(createAuthHeader(adminUsername, adminPassword))
-                .send({ email: newUser.email });
+                .send();
 
             expect(deleteResponse.status).toBe(204);
         }
