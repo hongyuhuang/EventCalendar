@@ -3,7 +3,7 @@ import { Pool } from "mysql2/promise";
 import multer from "multer"; //for Form inputs
 import { OkPacket } from "mysql2";
 import bodyParser from "body-parser";
-const pool: Pool = require("../sql-setup").pool; // For SQL
+const pool: Pool = require("../helpers").pool; // For SQL
 
 // Getting routers
 const userRouter = require("./user-router").userRouter; // For user routes
@@ -27,7 +27,7 @@ app.use(
 app.use(bodyParser.json());
 
 // For parsing FORM inputs
-app.use(multer().none());
+// app.use(multer().none());  // TODO use this individually for each route that actually needs it
 
 /**
  * Registers a new user.

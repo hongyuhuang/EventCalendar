@@ -1,7 +1,8 @@
 {
   "devDependencies": {
     "@types/node": "^18.15.5",
-    "concurrently": "^8.0.1"
+    "concurrently": "^8.0.1",
+    "typescript": "^5.0.4"
   },
   "scripts": {
     "format": "prettier --write .",

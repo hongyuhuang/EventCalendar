@@ -2,6 +2,8 @@ import { Pool, RowDataPacket } from "mysql2/promise";
 
 import { ResultSetHeader } from "mysql2";
 import { User } from "../entities";
+import * as fs from "fs";
+const path = require("path");
 
 const { pool, handleDbError } = require("../helpers") as {
     pool: Pool;
@@ -12,7 +14,22 @@ const userRouter = express.Router();
 
 // Password encryption
 const bcrypt = require("bcrypt");
-const saltRounds = 10;
+
+// For file uploads
+const multer = require("multer");
+
+// For only accepting jpg uploads
+const fileFilter = function (req, file, cb) {
+    if (file.mimetype !== "image/jpeg") {
+        return cb(new Error("Only JPEG files are allowed"));
+    }
+    cb(null, true);
+};
+
+const upload = multer({
+    dest: "photos/",
+    fileFilter: fileFilter,
+});
 
 /**
  * Creates a new user
@@ -157,11 +174,6 @@ userRouter.get("/:userId/events", async (req, res) => {
 });
 
 /**
- * Returns a photo for a particular user.
- */
-userRouter.get("/:username/photo", (req, res) => {});
-
-/**
  * Changes a password. Only the user as themselves or an admin can change a password.
  */
 userRouter.patch("/:userId/password", async (req, res) => {
@@ -209,8 +221,78 @@ userRouter.patch("/:userId/password", async (req, res) => {
     }
 });
 
+/**
+ * Returns a photo for a particular user.
+ */
+userRouter.get("/:userId/photo", async (req, res) => {
+    if (
+        req.role !== "admin" &&
+        !(await checkUserIdMatchesUsername(
+            req.params.userId,
+            req.auth.username
+        ))
+    ) {
+        return res.status(403).send("Forbidden");
+    }
+    const photoDir = userPhotoDir(req.params.userId);
+
+    // Check if file exists
+    if (!fs.existsSync(photoDir)) {
+        return res.status(404).send("Photo not found");
+    }
+    return res.sendFile(`${process.cwd()}${path.sep}${photoDir}`); // Requires absolute path
+});
+
+/**
+ * Uploads a photo for a particular user, covers cases of updating and creating
+ */
+userRouter.post("/:userId/photo", upload.single("photo"), async (req, res) => {
+    if (
+        req.role !== "admin" &&
+        !(await checkUserIdMatchesUsername(
+            req.params.userId,
+            req.auth.username
+        ))
+    ) {
+        return res.status(403).send("Forbidden");
+    }
+
+    fs.renameSync(req.file.path, userPhotoDir(req.params.userId));
+
+    res.send("File uploaded successfully");
+});
+
+/**
+ * Checks if a user ID matches a username
+ *
+ * @param userId string
+ * @param username string
+ * @return Promise resolving to boolean
+ */
+async function checkUserIdMatchesUsername(
+    userId: string,
+    username: string
+): Promise<boolean> {
+    const [results] = await pool.query<[]>(
+        `SELECT * FROM USER WHERE userId = ? AND email = ?`,
+        [userId, username]
+    );
+    return results.length > 0;
+}
+
+/**
+ * Returns the directory for a saved user's photo, relative to the current file.
+ *
+ * @param userId string
+ * @return string
+ */
+function userPhotoDir(userId: string) {
+    return `photos\\user_${userId}.jpg`;
+}
+
 export {};
 
 module.exports = {
     userRouter,
+    checkUserIdMatchesUsername,
 };
