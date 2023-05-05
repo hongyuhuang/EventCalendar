@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import "./App.css";
 import Login from "./Login";
 import styled from "styled-components";
@@ -84,10 +84,10 @@ const Main = styled.main`
 `;
 
 const App: React.FC = () => {
+    const [loggedIn, setLoggedIn] = useState(false);
     const location = useLocation();
     const currentPath = location.pathname;
     const userRole = "admin"; // TODO: Replace this with the actual user role
-    const loggedIn: boolean = true; // TODO: Replace this with the actual logged in state
 
     const isLinkActive = (linkPath: string) => {
         return linkPath === "/"
@@ -114,39 +114,48 @@ const App: React.FC = () => {
                             >
                                 Events
                             </NavItem>
-                            {userRole === "admin" && ( <>
-                              <NavItem
-                                to={"/add-event"}
-                                className={
-                                    isLinkActive("/add-event") ? "active" : ""
-                                }
-                            >
-                                Add Event
-                            </NavItem>
-                            <NavItem
-                                to={"/user-list"}
-                                className={
-                                    isLinkActive("/user-list") ? "active" : ""
-                                }
-                            >
-                                Manage Users
-                            </NavItem>
-                            <NavItem
-                                to={"/add-user"}
-                                className={
-                                    isLinkActive("/add-user") ? "active" : ""
-                                }
-                            >
-                                Add User
-                            </NavItem>
-                            </>)}
+                            {userRole === "admin" && (
+                                <>
+                                    <NavItem
+                                        to={"/add-event"}
+                                        className={
+                                            isLinkActive("/add-event")
+                                                ? "active"
+                                                : ""
+                                        }
+                                    >
+                                        Add Event
+                                    </NavItem>
+                                    <NavItem
+                                        to={"/user-list"}
+                                        className={
+                                            isLinkActive("/user-list")
+                                                ? "active"
+                                                : ""
+                                        }
+                                    >
+                                        Manage Users
+                                    </NavItem>
+                                    <NavItem
+                                        to={"/add-user"}
+                                        className={
+                                            isLinkActive("/add-user")
+                                                ? "active"
+                                                : ""
+                                        }
+                                    >
+                                        Add User
+                                    </NavItem>
+                                </>
+                            )}
                         </>
                     )}
                 </Nav>
             </Header>
             <Main>
                 <Routes>
-                    <Route path="/" element={<Login />} />
+                    <Route path="/" element={<Login setLoggedIn={setLoggedIn} />} />
+                    {loggedIn === true && ( <>
                     <Route path="/events" element={<EventCalendar />} />
                     {userRole === "admin" && (
                         <>
@@ -159,6 +168,8 @@ const App: React.FC = () => {
                         </>
                     )}
                     <Route path="/event-details" element={<EventDetails />} />
+                    </>
+                    )}
                 </Routes>
             </Main>
         </Wrapper>

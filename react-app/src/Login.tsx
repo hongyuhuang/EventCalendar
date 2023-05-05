@@ -70,12 +70,16 @@ interface LoginFormData {
     password: string;
 }
 
+interface LoginProps {
+    setLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+  }
+
 const initialFormData: LoginFormData = {
     email: "",
     password: "",
 };
 
-function Login() {
+const Login: React.FC<LoginProps> = ({ setLoggedIn }) => {
     const [formData, setFormData] = useState<LoginFormData>(initialFormData);
     const [valid_token, setValidToken] = useState([]);
     const navigate = useNavigate();
@@ -127,6 +131,7 @@ function Login() {
                 params: { "g-recaptcha-response": token },
             });
             console.log(response.data);
+            setLoggedIn(true);
             navigate("/user-list");
         } catch (error) {
             console.error(error);
