@@ -155,21 +155,21 @@ const App: React.FC = () => {
             <Main>
                 <Routes>
                     <Route path="/" element={<Login setLoggedIn={setLoggedIn} />} />
-                    {loggedIn === true && ( <>
+                    {/* {loggedIn === true && ( <> */}
                     <Route path="/events" element={<EventCalendar />} />
-                    {userRole === "admin" && (
-                        <>
+                    {/* {userRole === "admin" && ( */}
+                        {/* <> */}
                             <Route path="/add-user" element={<SignupForm />} />
                             <Route
                                 path="/add-event"
                                 element={<CreateEventForm />}
                             />
                             <Route path="/user-list" element={<UserList />} />
-                        </>
-                    )}
+                        {/* </> */}
+                    {/* )} */}
                     <Route path="/event-details" element={<EventDetails />} />
-                    </>
-                    )}
+                    {/* </> */}
+                    {/* )} */}
                 </Routes>
             </Main>
         </Wrapper>
