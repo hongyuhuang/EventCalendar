@@ -61,6 +61,10 @@ const Button = styled.button`
     }
 `;
 
+const ErrorMessage = styled.span`
+    color: red;
+`
+
 interface LoginFormData {
     email: string;
     password: string;
@@ -161,14 +165,12 @@ function Login() {
                         value={formData.password}
                     />
                 </Label>
-                {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
-
+                <ErrorMessage>{errorMessage}</ErrorMessage>
                 <ReCAPTCHA
                     className="recaptcha"
                     ref={recaptchaRef}
                     sitekey={reCaptchaSiteKey}
                 />
-
                 <Button type="submit">LOG IN</Button>
             </Form>
         </Wrapper>

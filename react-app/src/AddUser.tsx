@@ -54,11 +54,16 @@ const Button = styled.button`
     }
 `;
 
+const ErrorMessage = styled.span`
+    color: red;
+`
+
 interface UserFormData {
     firstName: string;
     lastName: string;
     email: string;
     password: string;
+    confirmPassword: string;
 }
 
 const initialFormData: UserFormData = {
@@ -66,11 +71,14 @@ const initialFormData: UserFormData = {
     lastName: "",
     email: "",
     password: "",
+    confirmPassword: "",
 };
 
 function SignupForm() {
     const [formData, setFormData] = useState<UserFormData>(initialFormData);
     const navigate = useNavigate();
+
+    const [errorMessage, setErrorMessage] = useState("");
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({
@@ -81,6 +89,11 @@ function SignupForm() {
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+
+        if (formData.password !== formData.confirmPassword) {
+            setErrorMessage("Passwords do not match");
+            return;
+          }
 
         try {
             const response = await axios.post(
@@ -126,7 +139,7 @@ function SignupForm() {
                     />
                 </Label>
                 <Label>
-                    Password:
+                    New Password:
                     <Input
                         type="password"
                         name="password"
@@ -134,6 +147,16 @@ function SignupForm() {
                         onChange={handleChange}
                     />
                 </Label>
+                <Label>
+                    Confirm Password:
+                    <Input
+                        type="password"
+                        name="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                    />
+                </Label>
+                <ErrorMessage>{errorMessage}</ErrorMessage>
                 <Button type="submit">Create User</Button>
             </Form>
         </Wrapper>
