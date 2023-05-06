@@ -23,18 +23,24 @@ const Table = styled.table`
 `;
 
 const Heading = styled.h2`
-  color: var(--otago-blue-dark);
+    color: var(--otago-blue-dark);
 `;
 
 export interface User {
-    id: number;
+    userId: number;
     isAdmin: number;
     firstName: string;
     lastName: string;
     email: string;
 }
 
-function  UserList({ username, password }: { username: string; password: string }) {
+function UserList({
+    username,
+    password,
+}: {
+    username: string;
+    password: string;
+}) {
     const [users, setUsers] = useState<User[]>([]);
 
     const authHeader = (username: string, password: string) => {
@@ -57,6 +63,21 @@ function  UserList({ username, password }: { username: string; password: string 
             });
     }, []);
 
+    const handleDeleteUser = (userId: number) => {
+        axios
+            .delete(`http://localhost:3001/user/${userId}`, {
+                headers: headers,
+            })
+            .then(() => {
+                setUsers((prevUsers) =>
+                    prevUsers.filter((user) => user.userId !== userId)
+                );
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    };
+
     return (
         <div>
             <Heading>List of Users</Heading>
@@ -69,13 +90,25 @@ function  UserList({ username, password }: { username: string; password: string 
                     </tr>
                 </thead>
                 <tbody>
-                    {users.map((user) => (
-                        <tr key={user.id}>
-                            <td>{user.firstName}</td>
-                            <td>{user.lastName}</td>
-                            <td>{user.email}</td>
-                        </tr>
-                    ))}
+                    {users.map((user) => {
+                        console.log("User ID:", user.userId); // Add this line
+                        return (
+                            <tr key={user.userId}>
+                                <td>{user.firstName}</td>
+                                <td>{user.lastName}</td>
+                                <td>{user.email}</td>
+                                <td>
+                                    <button
+                                        onClick={() =>
+                                            handleDeleteUser(user.userId)
+                                        }
+                                    >
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </Table>
         </div>
