@@ -2,7 +2,13 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 import Login from "./Login";
 import styled from "styled-components";
-import { Routes, Route, NavLink, useLocation } from "react-router-dom";
+import {
+    Routes,
+    Route,
+    NavLink,
+    useLocation,
+    useNavigate,
+} from "react-router-dom";
 import EventCalendar from "./EventCalendar";
 import SignupForm from "./AddUser";
 import EventDetails from "./EventDetails";
@@ -83,10 +89,25 @@ const Main = styled.main`
     margin-top: 108.5px;
 `;
 
+const SignOutButton = styled.button`
+    color: white;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    margin-left: auto;
+    font-size: 14px;
+    margin-right: 10px;
+
+    &:hover {
+        text-decoration: underline;
+    }
+`;
+
 const App: React.FC = () => {
     const [loggedIn, setLoggedIn] = useState(false);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const navigate = useNavigate();
 
     const location = useLocation();
     const currentPath = location.pathname;
@@ -98,6 +119,13 @@ const App: React.FC = () => {
             : currentPath.startsWith(linkPath);
     };
 
+    const handleSignOut = () => {
+        setLoggedIn(false);
+        setUsername("");
+        setPassword("");
+        navigate("/");
+    };
+
     return (
         <Wrapper>
             <Header>
@@ -106,55 +134,60 @@ const App: React.FC = () => {
                     alt="University of Otago Logo"
                 />
                 <Title>Event Calendar</Title>
-                <Nav>
-                    {loggedIn === true && (
-                        <>
-                            <NavItem
-                                to={"/events"}
-                                className={
-                                    isLinkActive("/events") ? "active" : ""
-                                }
-                            >
-                                Events
-                            </NavItem>
-                            {userRole === "admin" && (
-                                <>
-                                    <NavItem
-                                        to={"/add-event"}
-                                        className={
-                                            isLinkActive("/add-event")
-                                                ? "active"
-                                                : ""
-                                        }
-                                    >
-                                        Add Event
-                                    </NavItem>
-                                    <NavItem
-                                        to={"/user-list"}
-                                        className={
-                                            isLinkActive("/user-list")
-                                                ? "active"
-                                                : ""
-                                        }
-                                    >
-                                        Manage Users
-                                    </NavItem>
-                                    <NavItem
-                                        to={"/add-user"}
-                                        className={
-                                            isLinkActive("/add-user")
-                                                ? "active"
-                                                : ""
-                                        }
-                                    >
-                                        Add User
-                                    </NavItem>
-                                </>
-                            )}
-                        </>
-                    )}
-                </Nav>
+                {loggedIn && (
+                    <>
+                        <SignOutButton onClick={handleSignOut}>
+                            Sign Out
+                        </SignOutButton>
+                    </>
+                )}
             </Header>
+            <Nav>
+                {loggedIn && (
+                    <>
+                        <NavItem
+                            to={"/events"}
+                            className={isLinkActive("/events") ? "active" : ""}
+                        >
+                            Events
+                        </NavItem>
+                        {userRole === "admin" && (
+                            <>
+                                <NavItem
+                                    to={"/add-event"}
+                                    className={
+                                        isLinkActive("/add-event")
+                                            ? "active"
+                                            : ""
+                                    }
+                                >
+                                    Add Event
+                                </NavItem>
+                                <NavItem
+                                    to={"/user-list"}
+                                    className={
+                                        isLinkActive("/user-list")
+                                            ? "active"
+                                            : ""
+                                    }
+                                >
+                                    Manage Users
+                                </NavItem>
+                                <NavItem
+                                    to={"/add-user"}
+                                    className={
+                                        isLinkActive("/add-user")
+                                            ? "active"
+                                            : ""
+                                    }
+                                >
+                                    Add User
+                                </NavItem>
+                            </>
+                        )}
+                    </>
+                )}
+            </Nav>
             <Main>
                 <Routes>
                     <Route
@@ -167,9 +200,17 @@ const App: React.FC = () => {
                             />
                         }
                     />
-                    {loggedIn === true && (
+                    {loggedIn && (
                         <>
-                            <Route path="/events" element={<EventCalendar username={username} password={password} />} />
+                            <Route
+                                path="/events"
+                                element={
+                                    <EventCalendar
+                                        username={username}
+                                        password={password}
+                                    />
+                                }
+                            />
                             {userRole === "admin" && (
                                 <>
                                     <Route
