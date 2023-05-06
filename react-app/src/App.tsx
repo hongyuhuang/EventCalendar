@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import Login from "./Login";
 import styled from "styled-components";
@@ -84,7 +84,18 @@ const Main = styled.main`
 `;
 
 const App: React.FC = () => {
-    const [loggedIn, setLoggedIn] = useState(false);
+    const [loggedIn, setLoggedIn] = useState(() => {
+        // Initialize loggedIn state from localStorage if available,
+        // otherwise default to false
+        const storedLoggedIn = localStorage.getItem('loggedIn');
+        return storedLoggedIn ? JSON.parse(storedLoggedIn) : false;
+    });
+
+    useEffect(() => {
+        // Update localStorage whenever loggedIn state changes
+        localStorage.setItem('loggedIn', JSON.stringify(loggedIn));
+    }, [loggedIn]);
+
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
@@ -98,8 +109,7 @@ const App: React.FC = () => {
             : currentPath.startsWith(linkPath);
     };
 
-    console.log("username: ", username);
-    console.log("password: ", password);
+    console.log(loggedIn);
 
     return (
         <Wrapper>
