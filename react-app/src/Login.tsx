@@ -72,6 +72,8 @@ interface LoginFormData {
 
 interface LoginProps {
     setLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+    setUsername: React.Dispatch<React.SetStateAction<string>>;
+    setPassword: React.Dispatch<React.SetStateAction<string>>;
   }
 
 const initialFormData: LoginFormData = {
@@ -79,7 +81,7 @@ const initialFormData: LoginFormData = {
     password: "",
 };
 
-const Login: React.FC<LoginProps> = ({ setLoggedIn }) => {
+const Login: React.FC<LoginProps> = ({ setLoggedIn, setUsername, setPassword }) => {
     const [formData, setFormData] = useState<LoginFormData>(initialFormData);
     const [valid_token, setValidToken] = useState([]);
     const navigate = useNavigate();
@@ -101,8 +103,8 @@ const Login: React.FC<LoginProps> = ({ setLoggedIn }) => {
         return `Basic ${base64Credentials}`;
     };
 
-    const username = "johndoe@email.com";
-    const password = "password123";
+    const username = formData.email;
+    const password = formData.password;
 
     const headers = {
         Authorization: authHeader(username, password),
@@ -132,7 +134,9 @@ const Login: React.FC<LoginProps> = ({ setLoggedIn }) => {
             });
             console.log(response.data);
             setLoggedIn(true);
-            navigate("/user-list");
+            setUsername(username);
+            setPassword(password);
+            navigate("/events");
         } catch (error) {
             console.error(error);
             // @ts-ignore

@@ -85,6 +85,9 @@ const Main = styled.main`
 
 const App: React.FC = () => {
     const [loggedIn, setLoggedIn] = useState(false);
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+
     const location = useLocation();
     const currentPath = location.pathname;
     const userRole = "admin"; // TODO: Replace this with the actual user role
@@ -94,6 +97,9 @@ const App: React.FC = () => {
             ? currentPath === linkPath
             : currentPath.startsWith(linkPath);
     };
+
+    console.log("username: ", username);
+    console.log("password: ", password);
 
     return (
         <Wrapper>
@@ -154,22 +160,51 @@ const App: React.FC = () => {
             </Header>
             <Main>
                 <Routes>
-                    <Route path="/" element={<Login setLoggedIn={setLoggedIn} />} />
-                    {/* {loggedIn === true && ( <> */}
-                    <Route path="/events" element={<EventCalendar />} />
-                    {/* {userRole === "admin" && ( */}
-                        {/* <> */}
-                            <Route path="/add-user" element={<SignupForm />} />
-                            <Route
-                                path="/add-event"
-                                element={<CreateEventForm />}
+                    <Route
+                        path="/"
+                        element={
+                            <Login
+                                setLoggedIn={setLoggedIn}
+                                setUsername={setUsername}
+                                setPassword={setPassword}
                             />
-                            <Route path="/user-list" element={<UserList />} />
-                        {/* </> */}
-                    {/* )} */}
-                    <Route path="/event-details" element={<EventDetails />} />
-                    {/* </> */}
-                    {/* )} */}
+                        }
+                    />
+                    {loggedIn === true && (
+                        <>
+                            <Route path="/events" element={<EventCalendar />} />
+                            {userRole === "admin" && (
+                                <>
+                                    <Route
+                                        path="/add-user"
+                                        element={<SignupForm />}
+                                    />
+                                    <Route
+                                        path="/add-event"
+                                        element={
+                                            <CreateEventForm
+                                                username={username}
+                                                password={password}
+                                            />
+                                        }
+                                    />
+                                    <Route
+                                        path="/user-list"
+                                        element={
+                                            <UserList
+                                                username={username}
+                                                password={password}
+                                            />
+                                        }
+                                    />
+                                </>
+                            )}
+                            <Route
+                                path="/event-details"
+                                element={<EventDetails />}
+                            />
+                        </>
+                    )}
                 </Routes>
             </Main>
         </Wrapper>

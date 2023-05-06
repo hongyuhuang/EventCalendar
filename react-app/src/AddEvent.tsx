@@ -74,7 +74,7 @@ const initialFormData: EventFormData = {
     description: "",
 };
 
-function CreateEventForm() {
+function CreateEventForm({ username, password }: { username: string; password: string }) {
     const [formData, setFormData] = useState<EventFormData>(initialFormData);
     const navigate = useNavigate();
 
@@ -101,9 +101,6 @@ function CreateEventForm() {
         const base64Credentials = btoa(`${username}:${password}`);
         return `Basic ${base64Credentials}`;
     };
-
-    const username = "johndoe@email.com";
-    const password = "password123";
 
     const headers = {
         Authorization: authHeader(username, password),

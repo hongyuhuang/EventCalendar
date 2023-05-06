@@ -33,16 +33,13 @@ export interface User {
     email: string;
 }
 
-function UserList() {
+function  UserList({ username, password }: { username: string; password: string }) {
     const [users, setUsers] = useState<User[]>([]);
 
     const authHeader = (username: string, password: string) => {
         const base64Credentials = btoa(`${username}:${password}`);
         return `Basic ${base64Credentials}`;
     };
-
-    const username = "johndoe@email.com";
-    const password = "password123";
 
     const headers = {
         Authorization: authHeader(username, password),
