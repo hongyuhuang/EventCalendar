@@ -6,12 +6,38 @@ let superTest = require("supertest");
 let app = require("../src/express/server").app;
 const axios = require("axios");
 const authHeader = require("basic-auth-header");
+const aws = require('aws-sdk');
 
 const username = "johndoe@email.com";
 const pwd = "password123";
 const headers = {
     Authorization: authHeader(username, pwd),
 };
+
+aws.config.update({
+    accessKeyId: process.env.AWS_SECRET_KEY,
+    secretAccessKey: process.env.AWS_ACCESS_KEY,
+    region: 'ap-southeast-2'
+  });
+const ses = new aws.SES(); //{ apiVersion: '2010-12-01' }
+
+const params = {
+    Destination: {
+      ToAddresses: ['cody_airey@icloud.com']
+    },
+    Message: {
+      Body: {
+        Text: {
+          Data: 'Hello, world!'
+        }
+      },
+      Subject: {
+        Data: 'Test email'
+      }
+    },
+    Source: 'airco879@student.otago.ac.nz'
+  };
+
 
 let request = superTest(app);
 

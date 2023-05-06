@@ -1,5 +1,5 @@
 import { Pool, RowDataPacket } from "mysql2/promise";
-
+import { sendEmail } from "./emails";
 import { Event, User } from "../entities";
 import { format } from "date-fns";
 import { OkPacket, ResultSetHeader } from "mysql2";
@@ -71,6 +71,10 @@ eventRouter.post("/", async (req, res) => {
             "INSERT INTO EVENT (title, location, startDate, endDate, description) VALUES (?, ?, ?, ?, ?)",
             [title, location, formattedStartDate, formattedEndDate, description]
         );
+
+        sendEmail("A new event has been added!", 
+            "cody_airey@icloud.com", 
+            ("Hi Cody, a new event has been made for you at" + location +".\nIt's start date is: " + startDate))
 
         const { insertId } = result;
         return res.status(201).send({ eventId: insertId });
