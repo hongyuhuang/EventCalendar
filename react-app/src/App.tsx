@@ -84,18 +84,7 @@ const Main = styled.main`
 `;
 
 const App: React.FC = () => {
-    const [loggedIn, setLoggedIn] = useState(() => {
-        // Initialize loggedIn state from localStorage if available,
-        // otherwise default to false
-        const storedLoggedIn = localStorage.getItem('loggedIn');
-        return storedLoggedIn ? JSON.parse(storedLoggedIn) : false;
-    });
-
-    useEffect(() => {
-        // Update localStorage whenever loggedIn state changes
-        localStorage.setItem('loggedIn', JSON.stringify(loggedIn));
-    }, [loggedIn]);
-
+    const [loggedIn, setLoggedIn] = useState(false);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
@@ -108,8 +97,6 @@ const App: React.FC = () => {
             ? currentPath === linkPath
             : currentPath.startsWith(linkPath);
     };
-
-    console.log(loggedIn);
 
     return (
         <Wrapper>
