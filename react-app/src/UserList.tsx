@@ -28,6 +28,7 @@ const Heading = styled.h2`
 
 export interface User {
     id: number;
+    isAdmin: number;
     firstName: string;
     lastName: string;
     email: string;

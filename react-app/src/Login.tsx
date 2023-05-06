@@ -70,16 +70,16 @@ interface LoginFormData {
     password: string;
 }
 
-interface LoginProps {
-    setLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
-    setUsername: React.Dispatch<React.SetStateAction<string>>;
-    setPassword: React.Dispatch<React.SetStateAction<string>>;
-  }
 
 const initialFormData: LoginFormData = {
     email: "",
     password: "",
 };
+interface LoginProps {
+    setLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+    setUsername: React.Dispatch<React.SetStateAction<string>>;
+    setPassword: React.Dispatch<React.SetStateAction<string>>;
+  }
 
 const Login: React.FC<LoginProps> = ({ setLoggedIn, setUsername, setPassword }) => {
     const [formData, setFormData] = useState<LoginFormData>(initialFormData);

@@ -182,7 +182,7 @@ const App: React.FC = () => {
                     />
                     {loggedIn === true && (
                         <>
-                            <Route path="/events" element={<EventCalendar />} />
+                            <Route path="/events" element={<EventCalendar username={username} password={password} />} />
                             {userRole === "admin" && (
                                 <>
                                     <Route
