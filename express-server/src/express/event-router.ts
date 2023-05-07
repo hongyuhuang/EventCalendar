@@ -72,9 +72,9 @@ eventRouter.post("/", async (req, res) => {
             [title, location, formattedStartDate, formattedEndDate, description]
         );
 
-        sendEmail("A new event has been added!", 
-            "cody_airey@icloud.com", 
-            ("Hi Cody, a new event has been made for you at" + location +".\nIt's start date is: " + startDate))
+        // sendEmail("A new event has been added!", 
+        //     "cody_airey@icloud.com", 
+        //     ("Hi Cody, a new event has been made for you at" + location +".\nIt's start date is: " + startDate))
 
         const { insertId } = result;
         return res.status(201).send({ eventId: insertId });
