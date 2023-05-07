@@ -42,6 +42,9 @@ function UserList({
     password: string;
 }) {
     const [users, setUsers] = useState<User[]>([]);
+    const [eventCounts, setEventCounts] = useState<{
+        [userId: number]: number;
+    }>({});
 
     const authHeader = (username: string, password: string) => {
         const base64Credentials = btoa(`${username}:${password}`);
@@ -62,6 +65,41 @@ function UserList({
                 console.log(error);
             });
     }, []);
+
+    useEffect(() => {
+        const fetchEventCounts = async () => {
+            try {
+                const counts: { [userId: number]: number } = {};
+                for (const user of users) {
+                    console.log("User ID:", user.userId);
+                    try {
+                        const response = await axios.get(
+                            `http://localhost:3001/${user.userId}/events`,
+                            { headers }
+                        );
+                        const events = response.data;
+                        console.log("Assigned Events:", events.length);
+                        counts[user.userId] = events.length;
+                    } catch (error) {
+                        if ((error as any).response &&(error as any).response.status === 404) {
+                            counts[user.userId] = 0; // Set event count to 0 for the user
+                        } else {
+                            console.log(
+                                "Error fetching events for user ID:",
+                                user.userId
+                            );
+                            console.log(error);
+                        }
+                    }
+                }
+                setEventCounts(counts);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        fetchEventCounts();
+    }, [users]);
 
     const handleDeleteUser = (userId: number) => {
         axios
@@ -87,16 +125,18 @@ function UserList({
                         <th>First Name</th>
                         <th>Last Name</th>
                         <th>Email</th>
+                        <th>Number of Events</th> {/* Added column header */}
                     </tr>
                 </thead>
                 <tbody>
                     {users.map((user) => {
-                        console.log("User ID:", user.userId); // Add this line
+                        console.log("User ID:", user.userId);
                         return (
                             <tr key={user.userId}>
                                 <td>{user.firstName}</td>
                                 <td>{user.lastName}</td>
                                 <td>{user.email}</td>
+                                <td>{eventCounts[user.userId]}</td>
                                 <td>
                                     <button
                                         onClick={() =>
