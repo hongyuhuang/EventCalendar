@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
+import { Event } from "./EventCalendar";
 
 const Wrapper = styled.div`
     background-color: #ffffff;
@@ -66,13 +67,6 @@ interface EventFormData {
     description: string;
 }
 
-interface User {
-    userId: number;
-    email: string;
-    firstName: string;
-    lastName: string;
-  }
-
 const initialFormData: EventFormData = {
     title: "",
     location: "",
@@ -81,42 +75,17 @@ const initialFormData: EventFormData = {
     description: "",
 };
 
-
-function CreateEventForm({ username, password }: { username: string; password: string }) {
-    const [formData, setFormData] = useState<EventFormData>(initialFormData);
+function EditEventForm({ username, password }: { username: string; password: string }) {
     const navigate = useNavigate();
-    const [users, setUsers] = useState<User[]>([]);
-
-    const authHeader = (username: string, password: string) => {
-        const base64Credentials = btoa(`${username}:${password}`);
-        return `Basic ${base64Credentials}`;
-    };
-
-    const headers = {
-        Authorization: authHeader(username, password),
-    };
-
-    useEffect(() => {
-        const fetchUsers = async () => {
-          try {
-            const response = await axios.get("http://localhost:3001/user", {
-              headers: {
-                Authorization: authHeader(username, password),
-              },
-            });
-            console.log(response.data)
-            setUsers(response.data);
-          } catch (error) {
-            console.error(error);
-          }
-        };
-      
-        fetchUsers();
-      }, [username, password]);
-
-    const [selectedUser, setSelectedUser] = useState("");
-
-
+    const location = useLocation();
+    const event: Event = location.state.event;
+    const [formData, setFormData] = useState<EventFormData>({
+        title: event.title,
+        location: event.location,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        description: event.description,
+    });
     const handleChange = (
         event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
@@ -136,25 +105,25 @@ function CreateEventForm({ username, password }: { username: string; password: s
         }
     };
 
+    const authHeader = (username: string, password: string) => {
+        const base64Credentials = btoa(`${username}:${password}`);
+        return `Basic ${base64Credentials}`;
+    };
+
+    const headers = {
+        Authorization: authHeader(username, password),
+    };
+
     const handleSubmit = async (eventForm: React.FormEvent<HTMLFormElement>) => {
         eventForm.preventDefault();
 
         try {
-            const response = await axios.post(
-                "http://localhost:3001/event",
+            const response = await axios.patch(
+                `http://localhost:3001/event/${event.eventId}`,
                 formData,
                 { headers: headers }
             );
-            // console.log(response.data);
-            
-            const eventId = response.data.eventId;
-            const userId = selectedUser;
-
-            const responseUserAssigned = await axios.post(
-                `http://localhost:3001/event/${eventId}/assign/${userId}`,
-                {},
-                { headers: headers }
-            );
+            console.log(response.data);
             navigate("/events");
         } catch (error) {
             console.error(error);
@@ -209,22 +178,10 @@ function CreateEventForm({ username, password }: { username: string; password: s
                         onChange={handleChange}
                     />
                 </Label>
-                <Label>
-                    User:
-                    <select value={selectedUser} onChange={(e) => setSelectedUser(e.target.value)}>
-                        <option value="">Select a user</option>
-                        {users.map((user) => (
-                            <option key={user.userId} value={user.userId}>
-                                {user.firstName + " " + user.lastName}
-                            </option>
-                        ))}
-                    </select>
-                </Label>
-
-                <Button type="submit">CREATE EVENT</Button>
+                <Button type="submit">UPDATE EVENT</Button>
             </Form>
         </Wrapper>
     );
 }
 
-export default CreateEventForm;
+export default EditEventForm;
