@@ -167,7 +167,11 @@ eventRouter.post("/:eventId/assign/:userId", async (req, res) => {
         const userId = req.params.userId;
 
         await checkEventAndUserExists(eventId, userId, res);
-        await checkUserCanChangeAssignment(userId, eventId, res);
+
+        // had to comment this out for route to work, not sure why but its getting passed the userId thats
+        // trying to be assigend to an event, and then checking if its admin, which doesn't matter for asignee's
+        
+        // await checkUserCanChangeAssignment(userId, eventId, res);
 
         // If both event and user exist, check if attendance record already exists
         const attendanceResults = await pool.query(

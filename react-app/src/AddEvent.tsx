@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
@@ -66,6 +66,13 @@ interface EventFormData {
     description: string;
 }
 
+interface User {
+    userId: number;
+    email: string;
+    firstName: string;
+    lastName: string;
+  }
+
 const initialFormData: EventFormData = {
     title: "",
     location: "",
@@ -74,9 +81,41 @@ const initialFormData: EventFormData = {
     description: "",
 };
 
+
 function CreateEventForm({ username, password }: { username: string; password: string }) {
     const [formData, setFormData] = useState<EventFormData>(initialFormData);
     const navigate = useNavigate();
+    const [users, setUsers] = useState<User[]>([]);
+
+    const authHeader = (username: string, password: string) => {
+        const base64Credentials = btoa(`${username}:${password}`);
+        return `Basic ${base64Credentials}`;
+    };
+
+    const headers = {
+        Authorization: authHeader(username, password),
+    };
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+          try {
+            const response = await axios.get("http://localhost:3001/user", {
+              headers: {
+                Authorization: authHeader(username, password),
+              },
+            });
+            console.log(response.data)
+            setUsers(response.data);
+          } catch (error) {
+            console.error(error);
+          }
+        };
+      
+        fetchUsers();
+      }, [username, password]);
+
+    const [selectedUser, setSelectedUser] = useState("");
+
 
     const handleChange = (
         event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -97,15 +136,6 @@ function CreateEventForm({ username, password }: { username: string; password: s
         }
     };
 
-    const authHeader = (username: string, password: string) => {
-        const base64Credentials = btoa(`${username}:${password}`);
-        return `Basic ${base64Credentials}`;
-    };
-
-    const headers = {
-        Authorization: authHeader(username, password),
-    };
-
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -115,7 +145,16 @@ function CreateEventForm({ username, password }: { username: string; password: s
                 formData,
                 { headers: headers }
             );
-            console.log(response.data);
+            // console.log(response.data);
+            
+            const eventId = response.data.eventId;
+            const userId = selectedUser;
+
+            const responseUserAssigned = await axios.post(
+                `http://localhost:3001/event/${eventId}/assign/${userId}`,
+                {},
+                { headers: headers }
+            );
             navigate("/events");
         } catch (error) {
             console.error(error);
@@ -170,6 +209,18 @@ function CreateEventForm({ username, password }: { username: string; password: s
                         onChange={handleChange}
                     />
                 </Label>
+                <Label>
+                    User:
+                    <select value={selectedUser} onChange={(e) => setSelectedUser(e.target.value)}>
+                        <option value="">Select a user</option>
+                        {users.map((user) => (
+                            <option key={user.userId} value={user.userId}>
+                                {user.firstName + " " + user.lastName}
+                            </option>
+                        ))}
+                    </select>
+                </Label>
+
                 <Button type="submit">Create Event</Button>
             </Form>
         </Wrapper>
