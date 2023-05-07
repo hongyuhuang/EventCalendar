@@ -38,7 +38,7 @@ userRouter.post("/", async (req, res) => {
     try {
         const passwordHashSalt = bcrypt.hashSync(req.body.password, 10);
 
-        const { firstName, lastName, isAdmin, email, password } = req.body;
+        const { firstName, lastName, isAdmin, email} = req.body;
         const [result] = await pool.query<ResultSetHeader>(
             "INSERT INTO USER (firstName, lastName, isAdmin, email, password) VALUES (?, ?, ?, ?, ?)",
             [firstName, lastName, isAdmin, email, passwordHashSalt]

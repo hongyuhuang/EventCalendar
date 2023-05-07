@@ -17,7 +17,9 @@ CREATE TABLE EVENT(
     startDate DATETIME NOT NULL,
     endDate DATETIME NOT NULL,
     description VARCHAR(1000) NOT NULL,
-    PRIMARY KEY (eventId)
+    PRIMARY KEY (eventId),
+    CONSTRAINT chk_start_end_time CHECK (startDate <= endDate),
+    CONSTRAINT uc_event_time_location UNIQUE (location, startDate, endDate)
 );
 
 CREATE TABLE ATTENDANCE_RECORD(
