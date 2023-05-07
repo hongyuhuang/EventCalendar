@@ -67,6 +67,12 @@ eventRouter.post("/", async (req, res) => {
             "yyyy-MM-dd HH:mm:ss"
         );
 
+        const validEvent: boolean = await checkEventIsValid(location, formattedStartDate, formattedEndDate)
+
+        if (!validEvent){
+            return res.status(400).send("Event overlaps with an existing event.");
+        }
+
         const [result] = await pool.query<ResultSetHeader>(
             "INSERT INTO EVENT (title, location, startDate, endDate, description) VALUES (?, ?, ?, ?, ?)",
             [title, location, formattedStartDate, formattedEndDate, description]
@@ -308,6 +314,36 @@ async function checkEventAndUserExists(eventId: string, userId: string, res) {
     }
     return;
 }
+
+
+
+async function checkEventIsValid(eventLoc, eventStart, eventEnd) {
+    try {
+        // Ensures event does not have overlapping time for existing event of same location.
+        const eventResults = await pool.query<Event[]>(
+            `SELECT *
+                FROM EVENT
+                WHERE location = ?
+                AND (
+                    (startDate BETWEEN ? AND ?)
+                    OR (endDate BETWEEN ? AND ?)
+                    OR (startDate < ? AND endDate > ?)
+                )`,
+            [eventLoc, eventStart, eventEnd, eventStart, eventEnd, eventStart, eventEnd]
+        );
+        if ((eventResults as RowDataPacket[])[0].length === 0) {
+            return true;
+        }else{
+            console.log("Attempted event overlaps with an existing one.")
+            // console.log((eventResults as RowDataPacket[])[0])
+            return false;
+        }
+
+    } catch (error) {
+        console.log(error)
+        throw new createHttpError(500, "Server error");
+    }
+};
 
 export {};
 
