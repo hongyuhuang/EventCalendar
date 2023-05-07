@@ -106,8 +106,8 @@ function CreateEventForm({ username, password }: { username: string; password: s
         Authorization: authHeader(username, password),
     };
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
+    const handleSubmit = async (eventForm: React.FormEvent<HTMLFormElement>) => {
+        eventForm.preventDefault();
 
         try {
             const response = await axios.post(

@@ -7,6 +7,7 @@ import axios from "axios";
 
 const localizer = momentLocalizer(moment);
 export interface Event {
+    eventId: number;
     title: string;
     location: string;
     startDate: Date;

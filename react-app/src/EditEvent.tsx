@@ -114,12 +114,12 @@ function EditEventForm({ username, password }: { username: string; password: str
         Authorization: authHeader(username, password),
     };
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
+    const handleSubmit = async (eventForm: React.FormEvent<HTMLFormElement>) => {
+        eventForm.preventDefault();
 
         try {
-            const response = await axios.post(
-                "http://localhost:3001/event",
+            const response = await axios.patch(
+                `http://localhost:3001/event/${event.eventId}`,
                 formData,
                 { headers: headers }
             );
@@ -178,7 +178,7 @@ function EditEventForm({ username, password }: { username: string; password: str
                         onChange={handleChange}
                     />
                 </Label>
-                <Button type="submit">EDIT EVENT</Button>
+                <Button type="submit">UPDATE EVENT</Button>
             </Form>
         </Wrapper>
     );
