@@ -1,6 +1,17 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+
+
+const Wrapper = styled.div`
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    width: 960px;
+`;
 
 const Table = styled.table`
     border-collapse: collapse;
@@ -13,10 +24,6 @@ const Table = styled.table`
         padding: 8px;
     }
 
-    th {
-        background-color: #f2f2f2;
-    }
-
     tr:nth-child(even) {
         background-color: #f2f2f2;
     }
@@ -24,6 +31,20 @@ const Table = styled.table`
 
 const Heading = styled.h2`
     color: var(--otago-blue-dark);
+`;
+
+const TrashIcon = styled(FontAwesomeIcon)`
+    margin-right: 8px;
+`;
+
+const IconWrapper = styled.div`
+    display: flex;
+    align-items: center;
+
+    &:hover ${TrashIcon} {
+        color: red;
+        cursor: pointer;
+    }
 `;
 
 export interface User {
@@ -117,7 +138,7 @@ function UserList({
     };
 
     return (
-        <div>
+        <Wrapper>
             <Heading>List of Users</Heading>
             <Table>
                 <thead>
@@ -125,7 +146,8 @@ function UserList({
                         <th>First Name</th>
                         <th>Last Name</th>
                         <th>Email</th>
-                        <th>Number of Events</th> {/* Added column header */}
+                        <th>Number of Events</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -138,20 +160,16 @@ function UserList({
                                 <td>{user.email}</td>
                                 <td>{eventCounts[user.userId]}</td>
                                 <td>
-                                    <button
-                                        onClick={() =>
-                                            handleDeleteUser(user.userId)
-                                        }
-                                    >
-                                        Delete
-                                    </button>
+                                    <IconWrapper>
+                                        <TrashIcon icon={faTrashAlt} onClick={() => handleDeleteUser(user.userId)} />
+                                    </IconWrapper>
                                 </td>
                             </tr>
                         );
                     })}
                 </tbody>
             </Table>
-        </div>
+        </Wrapper>
     );
 }
 

@@ -105,7 +105,7 @@ const SignOutButton = styled.button`
 `;
 
 const App: React.FC = () => {
-    const [loggedIn, setLoggedIn] = useState(true); // TODO: Set this to back to false when development isn't happening
+    const [loggedIn, setLoggedIn] = useState(false);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
