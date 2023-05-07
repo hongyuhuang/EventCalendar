@@ -13,7 +13,7 @@ const Wrapper = styled.div`
 `;
 
 const Heading = styled.h2`
-  color: var(--otago-blue-dark);
+    color: var(--otago-blue-dark);
 `;
 
 const Form = styled.form`
@@ -67,7 +67,13 @@ interface EventFormData {
     description: string;
 }
 
-function EditEventForm({ username, password }: { username: string; password: string }) {
+function EditEventForm({
+    username,
+    password,
+}: {
+    username: string;
+    password: string;
+}) {
     const navigate = useNavigate();
     const location = useLocation();
     const event: Event = location.state.event;
@@ -82,19 +88,10 @@ function EditEventForm({ username, password }: { username: string; password: str
         event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
         const { name, value } = event.target;
-
-        if (name === "startDate" || name === "endDate") {
-            const date = new Date(value);
-            setFormData({
-                ...formData,
-                [name]: date,
-            });
-        } else {
-            setFormData({
-                ...formData,
-                [name]: value,
-            });
-        }
+        setFormData({
+            ...formData,
+            [name]: value,
+        });
     };
 
     const authHeader = (username: string, password: string) => {
@@ -106,7 +103,9 @@ function EditEventForm({ username, password }: { username: string; password: str
         Authorization: authHeader(username, password),
     };
 
-    const handleSubmit = async (eventForm: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (
+        eventForm: React.FormEvent<HTMLFormElement>
+    ) => {
         eventForm.preventDefault();
 
         try {

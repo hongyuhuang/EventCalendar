@@ -99,6 +99,7 @@ function CreateEventForm({
     const [formData, setFormData] = useState<EventFormData>(initialFormData);
     const navigate = useNavigate();
     const [users, setUsers] = useState<User[]>([]);
+    const [selectedUser, setSelectedUser] = useState("");
 
     const authHeader = (username: string, password: string) => {
         const base64Credentials = btoa(`${username}:${password}`);
@@ -127,25 +128,14 @@ function CreateEventForm({
         fetchUsers();
     }, [username, password]);
 
-    const [selectedUser, setSelectedUser] = useState("");
-
     const handleChange = (
         event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
         const { name, value } = event.target;
-
-        if (name === "startDate" || name === "endDate") {
-            const date = new Date(value);
-            setFormData({
-                ...formData,
-                [name]: date,
-            });
-        } else {
             setFormData({
                 ...formData,
                 [name]: value,
             });
-        }
     };
 
     const handleSubmit = async (
@@ -202,7 +192,6 @@ function CreateEventForm({
                     <Input
                         type="datetime-local"
                         name="startDate"
-                        value={formData.startDate.toISOString().slice(0, 16)}
                         onChange={handleChange}
                     />
                 </Label>
@@ -211,10 +200,10 @@ function CreateEventForm({
                     <Input
                         type="datetime-local"
                         name="endDate"
-                        value={formData.endDate.toISOString().slice(0, 16)}
                         onChange={handleChange}
                     />
                 </Label>
+
                 <Label>
                     Description:
                     <Textarea
