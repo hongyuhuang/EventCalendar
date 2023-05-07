@@ -12,7 +12,7 @@ const Wrapper = styled.div`
 `;
 
 const Heading = styled.h2`
-  color: var(--otago-blue-dark);
+    color: var(--otago-blue-dark);
 `;
 
 const Form = styled.form`
@@ -44,6 +44,14 @@ const Textarea = styled.textarea`
     resize: vertical;
 `;
 
+const Select = styled.select`
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+`;
+
 const Button = styled.button`
     padding: 0.5rem;
     background-color: #f9c003;
@@ -71,7 +79,7 @@ interface User {
     email: string;
     firstName: string;
     lastName: string;
-  }
+}
 
 const initialFormData: EventFormData = {
     title: "",
@@ -81,8 +89,13 @@ const initialFormData: EventFormData = {
     description: "",
 };
 
-
-function CreateEventForm({ username, password }: { username: string; password: string }) {
+function CreateEventForm({
+    username,
+    password,
+}: {
+    username: string;
+    password: string;
+}) {
     const [formData, setFormData] = useState<EventFormData>(initialFormData);
     const navigate = useNavigate();
     const [users, setUsers] = useState<User[]>([]);
@@ -98,24 +111,23 @@ function CreateEventForm({ username, password }: { username: string; password: s
 
     useEffect(() => {
         const fetchUsers = async () => {
-          try {
-            const response = await axios.get("http://localhost:3001/user", {
-              headers: {
-                Authorization: authHeader(username, password),
-              },
-            });
-            console.log(response.data)
-            setUsers(response.data);
-          } catch (error) {
-            console.error(error);
-          }
+            try {
+                const response = await axios.get("http://localhost:3001/user", {
+                    headers: {
+                        Authorization: authHeader(username, password),
+                    },
+                });
+                console.log(response.data);
+                setUsers(response.data);
+            } catch (error) {
+                console.error(error);
+            }
         };
-      
+
         fetchUsers();
-      }, [username, password]);
+    }, [username, password]);
 
     const [selectedUser, setSelectedUser] = useState("");
-
 
     const handleChange = (
         event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -136,7 +148,9 @@ function CreateEventForm({ username, password }: { username: string; password: s
         }
     };
 
-    const handleSubmit = async (eventForm: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (
+        eventForm: React.FormEvent<HTMLFormElement>
+    ) => {
         eventForm.preventDefault();
 
         try {
@@ -146,7 +160,7 @@ function CreateEventForm({ username, password }: { username: string; password: s
                 { headers: headers }
             );
             // console.log(response.data);
-            
+
             const eventId = response.data.eventId;
             const userId = selectedUser;
 
@@ -211,14 +225,17 @@ function CreateEventForm({ username, password }: { username: string; password: s
                 </Label>
                 <Label>
                     User:
-                    <select value={selectedUser} onChange={(e) => setSelectedUser(e.target.value)}>
+                    <Select
+                        value={selectedUser}
+                        onChange={(e) => setSelectedUser(e.target.value)}
+                    >
                         <option value="">Select a user</option>
                         {users.map((user) => (
                             <option key={user.userId} value={user.userId}>
                                 {user.firstName + " " + user.lastName}
                             </option>
                         ))}
-                    </select>
+                    </Select>
                 </Label>
 
                 <Button type="submit">CREATE EVENT</Button>

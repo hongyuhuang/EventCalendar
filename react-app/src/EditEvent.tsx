@@ -67,14 +67,6 @@ interface EventFormData {
     description: string;
 }
 
-const initialFormData: EventFormData = {
-    title: "",
-    location: "",
-    startDate: new Date(),
-    endDate: new Date(),
-    description: "",
-};
-
 function EditEventForm({ username, password }: { username: string; password: string }) {
     const navigate = useNavigate();
     const location = useLocation();
@@ -82,8 +74,8 @@ function EditEventForm({ username, password }: { username: string; password: str
     const [formData, setFormData] = useState<EventFormData>({
         title: event.title,
         location: event.location,
-        startDate: event.startDate,
-        endDate: event.endDate,
+        startDate: new Date(event.startDate),
+        endDate: new Date(event.endDate),
         description: event.description,
     });
     const handleChange = (
