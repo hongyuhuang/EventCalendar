@@ -105,7 +105,7 @@ const SignOutButton = styled.button`
 `;
 
 const App: React.FC = () => {
-    const [loggedIn, setLoggedIn] = useState(true); // TODO: Set this to false
+    const [loggedIn, setLoggedIn] = useState(true); // TODO: Set this to back to false when development isn't happening
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
@@ -248,7 +248,7 @@ const App: React.FC = () => {
                                     <EditEventForm
                                         username={username}
                                         password={password}
-                                                                          />
+                                    />
                                 }
                             />
                         </>
