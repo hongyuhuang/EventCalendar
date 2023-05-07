@@ -14,6 +14,7 @@ import SignupForm from "./AddUser";
 import EventDetails from "./EventDetails";
 import CreateEventForm from "./AddEvent";
 import UserList from "./UserList";
+import EditEventForm from "./EditEvent";
 
 const Wrapper = styled.div`
     display: flex;
@@ -104,7 +105,7 @@ const SignOutButton = styled.button`
 `;
 
 const App: React.FC = () => {
-    const [loggedIn, setLoggedIn] = useState(false);
+    const [loggedIn, setLoggedIn] = useState(true); // TODO: Set this to false
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
@@ -240,6 +241,15 @@ const App: React.FC = () => {
                             <Route
                                 path="/event-details"
                                 element={<EventDetails />}
+                            />
+                            <Route
+                                path="/edit-event"
+                                element={
+                                    <EditEventForm
+                                        username={username}
+                                        password={password}
+                                                                          />
+                                }
                             />
                         </>
                     )}

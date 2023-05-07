@@ -1,46 +1,77 @@
 import React from "react";
 import { Event } from "./EventCalendar";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+
 
 const Wrapper = styled.div`
     background-color: #ffffff;
     border-radius: 8px;
-    -webkit-box-shadow: 0 4px 6px rgba(0, 0, 0, 0.7);
-    -moz-box-shadow: 0 4px 6px rgba(0, 0, 0, 0.7);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     padding: 16px;
+    width: 960px;
 `;
 
-const Title = styled.h2`
-    font-size: 24px;
+const Heading = styled.h2`
+    color: var(--otago-blue-dark);
+`;
+
+const Label = styled.label`
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+    width: 100%;
+`;
+
+const Text = styled.p`
+    font-size: 16px;
     margin-bottom: 8px;
 `;
 
-const Location = styled.p`
-    font-size: 14px;
-`;
+const Button = styled.button`
+    padding: 0.5rem;
+    background-color: #f9c003;
+    color: black;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
 
-const Description = styled.p`
-    font-size: 14px;
-    margin-bottom: 16px;
-`;
-
-const Time = styled.p`
-    font-size: 14px;
+    &:hover {
+        background-color: #e3af03;
+        color: white;
+    }
 `;
 
 function EventDetails() {
     const location = useLocation();
     const event: Event = location.state.event;
+    const navigate = useNavigate();
+
+    const handleButtonClick = () => {
+        navigate("/edit-event", { state: { event } }); // Pass the event as state
+    };
 
     return (
         <Wrapper>
-            <Title>{event.title}</Title>
-            <Location>Location: {event.location}</Location>
-            <Description>Description: {event.description}</Description>
-            <Time>Start Time: {event.startDate.toLocaleString()}</Time>
-            <Time>End Time: {event.endDate.toLocaleString()}</Time>
+            <Heading>{event.title}</Heading>
+            <Label>
+                Location:
+                <Text>{event.location}</Text>
+            </Label>
+            <Label>
+                Description:
+                <Text>{event.description}</Text>
+            </Label>
+            <Label>
+                Start Time:
+                <Text>{event.startDate.toLocaleString()}</Text>
+            </Label>
+            <Label>
+                End Time:
+                <Text>{event.endDate.toLocaleString()}</Text>
+            </Label>
+            <Button onClick={handleButtonClick}>EDIT EVENT</Button>
         </Wrapper>
     );
 }

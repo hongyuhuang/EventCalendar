@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
+import { Event } from "./EventCalendar";
 
 const Wrapper = styled.div`
     background-color: #ffffff;
@@ -74,10 +75,17 @@ const initialFormData: EventFormData = {
     description: "",
 };
 
-function CreateEventForm({ username, password }: { username: string; password: string }) {
-    const [formData, setFormData] = useState<EventFormData>(initialFormData);
+function EditEventForm({ username, password }: { username: string; password: string }) {
     const navigate = useNavigate();
-
+    const location = useLocation();
+    const event: Event = location.state.event;
+    const [formData, setFormData] = useState<EventFormData>({
+        title: event.title,
+        location: event.location,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        description: event.description,
+    });
     const handleChange = (
         event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
@@ -170,10 +178,10 @@ function CreateEventForm({ username, password }: { username: string; password: s
                         onChange={handleChange}
                     />
                 </Label>
-                <Button type="submit">CREATE EVENT</Button>
+                <Button type="submit">EDIT EVENT</Button>
             </Form>
         </Wrapper>
     );
 }
 
-export default CreateEventForm;
+export default EditEventForm;
