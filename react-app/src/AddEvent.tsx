@@ -164,7 +164,7 @@ function CreateEventForm({
             const eventId = response.data.eventId;
             const userId = selectedUser;
 
-            const responseUserAssigned = await axios.post(
+            await axios.post(
                 `http://localhost:3001/event/${eventId}/assign/${userId}`,
                 {},
                 { headers: headers }
