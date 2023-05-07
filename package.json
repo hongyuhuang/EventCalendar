@@ -13,6 +13,7 @@
     "clear-cache": "npm cache clean --force && cd react-app && npm cache clean --force && cd ../express-server && npm cache clean --force"
   },
   "dependencies": {
+    "bcrypt": "^5.1.0",
     "prettier": "^2.8.5"
   },
   "prettier": {
