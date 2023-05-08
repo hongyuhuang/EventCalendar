@@ -65,11 +65,11 @@ function EventDetails() {
             </Label>
             <Label>
                 Start Time:
-                <Text>{event.startDate.toLocaleString()}</Text>
+                <Text>{new Date(event.startDate).toLocaleString()}</Text>
             </Label>
             <Label>
                 End Time:
-                <Text>{event.endDate.toLocaleString()}</Text>
+                <Text>{new Date(event.endDate).toLocaleString()}</Text>
             </Label>
             <Button onClick={handleButtonClick}>EDIT EVENT</Button>
         </Wrapper>

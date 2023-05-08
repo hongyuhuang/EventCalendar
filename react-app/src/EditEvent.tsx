@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { Event } from "./EventCalendar";
+import { format } from 'date-fns';
 
 const Wrapper = styled.div`
     background-color: #ffffff;
@@ -13,7 +14,7 @@ const Wrapper = styled.div`
 `;
 
 const Heading = styled.h2`
-  color: var(--otago-blue-dark);
+    color: var(--otago-blue-dark);
 `;
 
 const Form = styled.form`
@@ -62,39 +63,37 @@ const Button = styled.button`
 interface EventFormData {
     title: string;
     location: string;
-    startDate: Date;
-    endDate: Date;
+    startDate: string;
+    endDate: string;
     description: string;
 }
 
-function EditEventForm({ username, password }: { username: string; password: string }) {
+function EditEventForm({
+    username,
+    password,
+}: {
+    username: string;
+    password: string;
+}) {
     const navigate = useNavigate();
     const location = useLocation();
     const event: Event = location.state.event;
     const [formData, setFormData] = useState<EventFormData>({
         title: event.title,
         location: event.location,
-        startDate: new Date(event.startDate),
-        endDate: new Date(event.endDate),
+        startDate: format(new Date(event.startDate), "yyyy-MM-dd'T'HH:mm"),
+        endDate: format(new Date(event.endDate), "yyyy-MM-dd'T'HH:mm"),
         description: event.description,
     });
+
     const handleChange = (
         event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
         const { name, value } = event.target;
-
-        if (name === "startDate" || name === "endDate") {
-            const date = new Date(value);
-            setFormData({
-                ...formData,
-                [name]: date,
-            });
-        } else {
-            setFormData({
-                ...formData,
-                [name]: value,
-            });
-        }
+        setFormData({
+            ...formData,
+            [name]: value,
+        });
     };
 
     const authHeader = (username: string, password: string) => {
@@ -106,13 +105,22 @@ function EditEventForm({ username, password }: { username: string; password: str
         Authorization: authHeader(username, password),
     };
 
-    const handleSubmit = async (eventForm: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (
+        eventForm: React.FormEvent<HTMLFormElement>
+    ) => {
         eventForm.preventDefault();
 
         try {
+            const finalFormData = {
+                title: formData.title,
+                location: formData.location,
+                startDate: formData.startDate,
+                endDate: formData.endDate,
+                description: formData.description,
+            };
             const response = await axios.patch(
                 `http://localhost:3001/event/${event.eventId}`,
-                formData,
+                finalFormData,
                 { headers: headers }
             );
             console.log(response.data);
@@ -149,7 +157,7 @@ function EditEventForm({ username, password }: { username: string; password: str
                     <Input
                         type="datetime-local"
                         name="startDate"
-                        value={formData.startDate.toISOString().slice(0, 16)}
+                        value={formData.startDate}
                         onChange={handleChange}
                     />
                 </Label>
@@ -158,7 +166,7 @@ function EditEventForm({ username, password }: { username: string; password: str
                     <Input
                         type="datetime-local"
                         name="endDate"
-                        value={formData.endDate.toISOString().slice(0, 16)}
+                        value={formData.endDate}
                         onChange={handleChange}
                     />
                 </Label>

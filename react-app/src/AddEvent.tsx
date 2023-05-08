@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { format } from "date-fns";
 
 const Wrapper = styled.div`
     background-color: #ffffff;
@@ -69,8 +70,8 @@ const Button = styled.button`
 interface EventFormData {
     title: string;
     location: string;
-    startDate: Date;
-    endDate: Date;
+    startDate: string;
+    endDate: string;
     description: string;
 }
 
@@ -84,8 +85,8 @@ interface User {
 const initialFormData: EventFormData = {
     title: "",
     location: "",
-    startDate: new Date(),
-    endDate: new Date(),
+    startDate: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
+    endDate: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
     description: "",
 };
 
@@ -99,6 +100,7 @@ function CreateEventForm({
     const [formData, setFormData] = useState<EventFormData>(initialFormData);
     const navigate = useNavigate();
     const [users, setUsers] = useState<User[]>([]);
+    const [selectedUser, setSelectedUser] = useState("");
 
     const authHeader = (username: string, password: string) => {
         const base64Credentials = btoa(`${username}:${password}`);
@@ -127,25 +129,14 @@ function CreateEventForm({
         fetchUsers();
     }, [username, password]);
 
-    const [selectedUser, setSelectedUser] = useState("");
-
     const handleChange = (
         event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
         const { name, value } = event.target;
-
-        if (name === "startDate" || name === "endDate") {
-            const date = new Date(value);
-            setFormData({
-                ...formData,
-                [name]: date,
-            });
-        } else {
             setFormData({
                 ...formData,
                 [name]: value,
             });
-        }
     };
 
     const handleSubmit = async (
@@ -154,13 +145,18 @@ function CreateEventForm({
         eventForm.preventDefault();
 
         try {
+            const finalFormData = {
+                title: formData.title,
+                location: formData.location,
+                startDate: formData.startDate,
+                endDate: formData.endDate,
+                description: formData.description,
+            };
             const response = await axios.post(
                 "http://localhost:3001/event",
-                formData,
+                finalFormData,
                 { headers: headers }
             );
-            // console.log(response.data);
-
             const eventId = response.data.eventId;
             const userId = selectedUser;
 
@@ -202,7 +198,7 @@ function CreateEventForm({
                     <Input
                         type="datetime-local"
                         name="startDate"
-                        value={formData.startDate.toISOString().slice(0, 16)}
+                        value={formData.startDate}
                         onChange={handleChange}
                     />
                 </Label>
@@ -211,10 +207,11 @@ function CreateEventForm({
                     <Input
                         type="datetime-local"
                         name="endDate"
-                        value={formData.endDate.toISOString().slice(0, 16)}
+                        value={formData.endDate}
                         onChange={handleChange}
                     />
                 </Label>
+
                 <Label>
                     Description:
                     <Textarea
