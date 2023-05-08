@@ -55,12 +55,11 @@ const Title = styled.span`
 `;
 
 const Nav = styled.nav`
-    position: absolute;
-    background: var(--otago-grey-dark);
-    width: 100%;
-    margin-top: 70px;
-    top: 0;
-    left: 0;
+  position: fixed;
+  background: var(--otago-grey-dark);
+  width: 100%;
+  top: 70px;
+  left: 0;
 `;
 
 const NavItem = styled(NavLink)`
