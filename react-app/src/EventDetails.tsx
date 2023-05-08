@@ -2,7 +2,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { Event } from "./types";
-
+import axios from "axios";
 
 const Wrapper = styled.div`
     background-color: #ffffff;
@@ -28,6 +28,11 @@ const Text = styled.p`
     margin-bottom: 8px;
 `;
 
+const ButtonContainer = styled.div`
+    display: flex;
+    gap: 8px;
+`;
+
 const Button = styled.button`
     padding: 0.5rem;
     background-color: #f9c003;
@@ -43,13 +48,39 @@ const Button = styled.button`
     }
 `;
 
-function EventDetails() {
+function EventDetails({
+    username,
+    password,
+}: {
+    username: string;
+    password: string;
+}) {
     const location = useLocation();
     const event: Event = location.state.event;
     const navigate = useNavigate();
 
-    const handleButtonClick = () => {
+    const authHeader = (username: string, password: string) => {
+        const base64Credentials = btoa(`${username}:${password}`);
+        return `Basic ${base64Credentials}`;
+    };
+
+    const headers = {
+        Authorization: authHeader(username, password),
+    };
+
+    const editEvent = () => {
         navigate("/edit-event", { state: { event } }); // Pass the event as state
+    };
+
+    const deleteEvent = async () => {
+        try {
+            await axios.delete(`http://localhost:3001/event/${event.eventId}`, {
+                headers: headers,
+            });
+            navigate("/events");
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     return (
@@ -71,7 +102,10 @@ function EventDetails() {
                 End Time:
                 <Text>{new Date(event.endDate).toLocaleString()}</Text>
             </Label>
-            <Button onClick={handleButtonClick}>EDIT EVENT</Button>
+            <ButtonContainer>
+                <Button onClick={editEvent}>EDIT EVENT</Button>
+                <Button onClick={deleteEvent}>DELETE EVENT</Button>
+            </ButtonContainer>
         </Wrapper>
     );
 }

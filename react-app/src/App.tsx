@@ -240,7 +240,7 @@ const App: React.FC = () => {
                             )}
                             <Route
                                 path="/event-details"
-                                element={<EventDetails />}
+                                element={<EventDetails username={username} password={password} />}
                             />
                             <Route
                                 path="/edit-event"
