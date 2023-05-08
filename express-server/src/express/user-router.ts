@@ -150,7 +150,7 @@ userRouter.get("/:userId/events", async (req, res) => {
 
     let query = `SELECT e.eventId, e.title, e.location, e.startDate, e.endDate, e.description
                  FROM EVENT e
-                          INNER JOIN ATTENDANCE_RECORD ar ON e.eventId = ar.eventId
+                 INNER JOIN ATTENDANCE_RECORD ar ON e.eventId = ar.eventId
                  WHERE ar.userId = ?`;
     let values = [userId];
 
@@ -162,8 +162,9 @@ userRouter.get("/:userId/events", async (req, res) => {
     try {
         const [results] = await pool.query<[]>(query, values);
 
+        // Check if the user is assigned to 0 events
         if (results.length === 0) {
-            res.status(404).send("Event not found");
+            res.send([]); // Return an empty array
         } else {
             res.send(results);
         }
@@ -175,6 +176,7 @@ userRouter.get("/:userId/events", async (req, res) => {
         );
     }
 });
+
 
 /**
  * Changes a password. Only the user as themselves or an admin can change a password.
