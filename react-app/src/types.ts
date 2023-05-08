@@ -16,6 +16,7 @@ export interface EventFormData {
 }
 
 export interface User {
+    isAdmin: boolean;
     userId: number;
     email: string;
     firstName: string;
