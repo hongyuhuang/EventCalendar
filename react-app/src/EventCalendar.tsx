@@ -8,8 +8,31 @@ import { Event } from "./types";
 
 const localizer = momentLocalizer(moment);
 
-function EventCalendar({ username, password }: { username: string; password: string }) {
+export async function getUserID(
+    username: string,
+): Promise<number> {
+    try {
+        const response = await axios.get(
+            `http://localhost:3001/user?includeAdmins=true`
+        );
+        const users = response.data;
+        const user = users.find((user: any) => user.email === username);
+        return user.userId;
+    } catch (error) {
+        console.error("Error getting user ID:", error);
+        return -1;
+    }
+}
+
+function EventCalendar({
+    username,
+    password,
+}: {
+    username: string;
+    password: string;
+}) {
     const [events, setEvents] = useState<Event[]>([]);
+    const [showAssignedEvents, setShowAssignedEvents] = useState(false); // State for the toggle
 
     const authHeader = (username: string, password: string) => {
         const base64Credentials = btoa(`${username}:${password}`);
@@ -20,39 +43,70 @@ function EventCalendar({ username, password }: { username: string; password: str
         Authorization: authHeader(username, password),
     };
 
-    useEffect(() => {
-        axios
-            .get("http://localhost:3001/event", { headers: headers })
-            .then((response) => {
-                const parsedEvents = response.data.map((event: Event) => {
-                    return {
-                        ...event,
-                        startDate: new Date(event.startDate),
-                        endDate: new Date(event.endDate),
-                    };
-                });
-                setEvents(parsedEvents);
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-    }, []);
-
     const navigate = useNavigate();
 
     const handleSelectEvent = (event: Event) => {
         navigate("/event-details", { state: { event } });
     };
 
+    const fetchEvents = async () => {
+        try {
+            const response = await axios.get("http://localhost:3001/event", {
+                headers: headers,
+            });
+            const parsedEvents = response.data.map((event: Event) => ({
+                ...event,
+                startDate: new Date(event.startDate),
+                endDate: new Date(event.endDate),
+            }));
+            setEvents(parsedEvents);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const getAssignedEvents = async (username: string) => {
+        try {
+            const userID = await getUserID(username);
+            const response = await axios.get(
+                `http://localhost:3001/user/${userID}/events`,
+                { headers: headers }
+            );
+            const assignedEvents = response.data;
+            setEvents(assignedEvents);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    useEffect(() => {
+        if (showAssignedEvents) {
+            getAssignedEvents(username);
+        } else {
+            fetchEvents();
+        }
+    }, [showAssignedEvents]);
+
     return (
-        <Calendar
-            localizer={localizer}
-            events={events}
-            startAccessor="startDate"
-            endAccessor="endDate"
-            onSelectEvent={handleSelectEvent}
-            style={{ height: window.innerHeight - 150, width: "95vw" }}
-        />
+        <div>
+            <label>
+                Show Assigned Events:
+                <input
+                    type="checkbox"
+                    checked={showAssignedEvents}
+                    onChange={(e) => setShowAssignedEvents(e.target.checked)}
+                />
+            </label>
+
+            <Calendar
+                localizer={localizer}
+                events={events}
+                startAccessor="startDate"
+                endAccessor="endDate"
+                onSelectEvent={handleSelectEvent}
+                style={{ height: window.innerHeight - 150, width: "95vw" }}
+            />
+        </div>
     );
 }
 

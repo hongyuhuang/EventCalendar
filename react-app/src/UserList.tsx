@@ -84,7 +84,6 @@ function UserList({
             try {
                 const counts: { [userId: number]: number } = {};
                 for (const user of users) {
-                    console.log("User ID:", user.userId);
                     try {
                         const response = await axios.get(
                             `http://localhost:3001/user/${user.userId}/events`,
