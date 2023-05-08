@@ -55,11 +55,11 @@ const Title = styled.span`
 `;
 
 const Nav = styled.nav`
-  position: fixed;
-  background: var(--otago-grey-dark);
-  width: 100%;
-  top: 70px;
-  left: 0;
+    position: fixed;
+    background: var(--otago-grey-dark);
+    width: 100%;
+    top: 70px;
+    left: 0;
 `;
 
 const NavItem = styled(NavLink)`
@@ -241,7 +241,13 @@ const App: React.FC = () => {
                             )}
                             <Route
                                 path="/event-details"
-                                element={<EventDetails username={username} password={password} />}
+                                element={
+                                    <EventDetails
+                                        username={username}
+                                        password={password}
+                                        isAdmin={isAdmin}
+                                    />
+                                }
                             />
                             <Route
                                 path="/edit-event"

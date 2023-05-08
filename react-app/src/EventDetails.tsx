@@ -51,9 +51,11 @@ const Button = styled.button`
 function EventDetails({
     username,
     password,
+    isAdmin,
 }: {
     username: string;
     password: string;
+    isAdmin: boolean;
 }) {
     const location = useLocation();
     const event: Event = location.state.event;
@@ -102,10 +104,14 @@ function EventDetails({
                 End Time:
                 <Text>{new Date(event.endDate).toLocaleString()}</Text>
             </Label>
-            <ButtonContainer>
-                <Button onClick={editEvent}>EDIT EVENT</Button>
-                <Button onClick={deleteEvent}>DELETE EVENT</Button>
-            </ButtonContainer>
+            {isAdmin && (
+                <>
+                    <ButtonContainer>
+                        <Button onClick={editEvent}>EDIT EVENT</Button>
+                        <Button onClick={deleteEvent}>DELETE EVENT</Button>
+                    </ButtonContainer>
+                </>
+            )}
         </Wrapper>
     );
 }
