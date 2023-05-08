@@ -5,7 +5,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { User } from "./types";
 
-
 const Wrapper = styled.div`
     background-color: #ffffff;
     border-radius: 8px;
@@ -88,22 +87,13 @@ function UserList({
                     console.log("User ID:", user.userId);
                     try {
                         const response = await axios.get(
-                            `http://localhost:3001/${user.userId}/events`,
-                            { headers }
+                            `http://localhost:3001/user/${user.userId}/events`,
+                            { headers: headers}
                         );
                         const events = response.data;
-                        console.log("Assigned Events:", events.length);
                         counts[user.userId] = events.length;
                     } catch (error) {
-                        if ((error as any).response &&(error as any).response.status === 404) {
-                            counts[user.userId] = 0; // Set event count to 0 for the user
-                        } else {
-                            console.log(
-                                "Error fetching events for user ID:",
-                                user.userId
-                            );
-                            console.log(error);
-                        }
+                        console.log(error);
                     }
                 }
                 setEventCounts(counts);
@@ -154,7 +144,12 @@ function UserList({
                                 <td>{eventCounts[user.userId]}</td>
                                 <td>
                                     <IconWrapper>
-                                        <TrashIcon icon={faTrashAlt} onClick={() => handleDeleteUser(user.userId)} />
+                                        <TrashIcon
+                                            icon={faTrashAlt}
+                                            onClick={() =>
+                                                handleDeleteUser(user.userId)
+                                            }
+                                        />
                                     </IconWrapper>
                                 </td>
                             </tr>
