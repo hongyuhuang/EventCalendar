@@ -138,18 +138,7 @@ const Login: React.FC<LoginProps> = ({
                 params: { "g-recaptcha-response": token },
             });
 
-            // Check if the logged-in user is an admin
-            const includeAdmins = true; // Set to true to include admins in the response
-            const isAdminResponse = await axios.get(
-                "http://localhost:3001/users",
-                {
-                    headers: headers,
-                    params: { includeAdmins },
-                }
-            );
-            const isAdmin = isAdminResponse.data.some(
-                (user: User) => user.email === username && user.isAdmin
-            );
+            const isAdmin = response.data.isAdmin;
             console.log(response.data);
             setLoggedIn(true);
             setIsAdmin(isAdmin);
