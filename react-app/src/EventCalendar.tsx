@@ -8,22 +8,6 @@ import { Event } from "./types";
 
 const localizer = momentLocalizer(moment);
 
-export async function getUserID(
-    username: string,
-): Promise<number> {
-    try {
-        const response = await axios.get(
-            `http://localhost:3001/user?includeAdmins=true`
-        );
-        const users = response.data;
-        const user = users.find((user: any) => user.email === username);
-        return user.userId;
-    } catch (error) {
-        console.error("Error getting user ID:", error);
-        return -1;
-    }
-}
-
 function EventCalendar({
     username,
     password,
@@ -67,7 +51,7 @@ function EventCalendar({
 
     const getAssignedEvents = async (username: string) => {
         try {
-            const userID = await getUserID(username);
+            const userID = 3; // TODO: Get the user ID from local storage
             const response = await axios.get(
                 `http://localhost:3001/user/${userID}/events`,
                 { headers: headers }

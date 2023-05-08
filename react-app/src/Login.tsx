@@ -98,7 +98,7 @@ const Login: React.FC<LoginProps> = ({
         });
     };
 
-    const mounted = useRef(true);
+    useRef(true);
 
     const recaptchaRef = useRef<ReCAPTCHA>(null);
     const reCaptchaSiteKey = "6LfWCMglAAAAACnMy3Ma_Kp_9nJPHPZOQj2Y-8jC";
@@ -139,7 +139,6 @@ const Login: React.FC<LoginProps> = ({
             });
 
             const isAdmin = response.data.isAdmin;
-            console.log(response.data);
             setLoggedIn(true);
             setIsAdmin(isAdmin);
             setUsername(username);
