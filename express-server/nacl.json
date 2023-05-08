@@ -18,6 +18,11 @@
         "action" : "allow"
       },
       {
+        "resource": "event",
+        "methods": ["GET"],
+        "action" : "allow"
+      },
+      {
         "resource": "login",
         "methods": ["GET"],
         "action" : "allow"
