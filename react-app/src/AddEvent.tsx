@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { format } from "date-fns";
+import { EventFormData, User } from "./types";
 
 const Wrapper = styled.div`
     background-color: #ffffff;
@@ -67,20 +68,6 @@ const Button = styled.button`
         color: white;
     }
 `;
-interface EventFormData {
-    title: string;
-    location: string;
-    startDate: string;
-    endDate: string;
-    description: string;
-}
-
-interface User {
-    userId: number;
-    email: string;
-    firstName: string;
-    lastName: string;
-}
 
 const initialFormData: EventFormData = {
     title: "",
@@ -119,7 +106,6 @@ function CreateEventForm({
                         Authorization: authHeader(username, password),
                     },
                 });
-                console.log(response.data);
                 setUsers(response.data);
             } catch (error) {
                 console.error(error);
@@ -145,16 +131,9 @@ function CreateEventForm({
         eventForm.preventDefault();
 
         try {
-            const finalFormData = {
-                title: formData.title,
-                location: formData.location,
-                startDate: formData.startDate,
-                endDate: formData.endDate,
-                description: formData.description,
-            };
             const response = await axios.post(
                 "http://localhost:3001/event",
-                finalFormData,
+                formData,
                 { headers: headers }
             );
             const eventId = response.data.eventId;

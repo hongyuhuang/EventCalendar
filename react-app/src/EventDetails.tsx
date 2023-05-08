@@ -1,7 +1,7 @@
 import React from "react";
-import { Event } from "./EventCalendar";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { Event } from "./types";
 
 
 const Wrapper = styled.div`

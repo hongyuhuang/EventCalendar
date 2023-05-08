@@ -4,16 +4,9 @@ import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Event } from "./types";
 
 const localizer = momentLocalizer(moment);
-export interface Event {
-    eventId: number;
-    title: string;
-    location: string;
-    startDate: string;
-    endDate: string;
-    description: string;
-}
 
 function EventCalendar({ username, password }: { username: string; password: string }) {
     const [events, setEvents] = useState<Event[]>([]);

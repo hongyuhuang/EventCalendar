@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
-import { Event } from "./EventCalendar";
 import { format } from 'date-fns';
+import { Event } from "./types";
 
 const Wrapper = styled.div`
     background-color: #ffffff;
@@ -111,16 +111,9 @@ function EditEventForm({
         eventForm.preventDefault();
 
         try {
-            const finalFormData = {
-                title: formData.title,
-                location: formData.location,
-                startDate: formData.startDate,
-                endDate: formData.endDate,
-                description: formData.description,
-            };
             const response = await axios.patch(
                 `http://localhost:3001/event/${event.eventId}`,
-                finalFormData,
+                formData,
                 { headers: headers }
             );
             console.log(response.data);

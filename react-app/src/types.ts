@@ -1,17 +1,23 @@
-export type EventType = {
-    eventId?: number;
+export interface Event {
+    eventId: number;
     title: string;
     location: string;
-    startDate: Date;
-    endDate: Date;
-    description: String;
+    startDate: string;
+    endDate: string;
+    description: string;
 }
 
-export type UserType = {
-    id?: number;
+export interface EventFormData {
+    title: string;
+    location: string;
+    startDate: string;
+    endDate: string;
+    description: string;
+}
+
+export interface User {
+    userId: number;
+    email: string;
     firstName: string;
     lastName: string;
-    isAdmin: Boolean;
-    email: String;
-    password: String;
 }
