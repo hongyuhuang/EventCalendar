@@ -100,7 +100,6 @@ function SignupForm() {
                 "http://localhost:3001/register",
                 formData
             );
-            console.log(response.data);
             navigate("/user-list");
         } catch (error) {
             console.error(error);

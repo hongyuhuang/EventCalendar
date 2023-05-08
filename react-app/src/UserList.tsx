@@ -134,7 +134,6 @@ function UserList({
                 </thead>
                 <tbody>
                     {users.map((user) => {
-                        console.log("User ID:", user.userId);
                         return (
                             <tr key={user.userId}>
                                 <td>{user.firstName}</td>
