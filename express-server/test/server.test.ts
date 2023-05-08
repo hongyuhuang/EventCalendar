@@ -19,25 +19,6 @@ aws.config.update({
     secretAccessKey: process.env.AWS_ACCESS_KEY,
     region: 'ap-southeast-2'
   });
-const ses = new aws.SES(); //{ apiVersion: '2010-12-01' }
-
-const params = {
-    Destination: {
-      ToAddresses: ['cody_airey@icloud.com']
-    },
-    Message: {
-      Body: {
-        Text: {
-          Data: 'Hello, world!'
-        }
-      },
-      Subject: {
-        Data: 'Test email'
-      }
-    },
-    Source: 'airco879@student.otago.ac.nz'
-  };
-
 
 let request = superTest(app);
 
