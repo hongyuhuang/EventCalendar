@@ -67,10 +67,16 @@ eventRouter.post("/", async (req, res) => {
             "yyyy-MM-dd HH:mm:ss"
         );
 
-        const validEvent: boolean = await checkEventIsValid(location, formattedStartDate, formattedEndDate)
+        const validEvent: boolean = await checkEventIsValid(
+            location,
+            formattedStartDate,
+            formattedEndDate
+        );
 
-        if (!validEvent){
-            return res.status(400).send("Event overlaps with an existing event.");
+        if (!validEvent) {
+            return res
+                .status(400)
+                .send("Event overlaps with an existing event.");
         }
 
         const [result] = await pool.query<ResultSetHeader>(
@@ -78,8 +84,8 @@ eventRouter.post("/", async (req, res) => {
             [title, location, formattedStartDate, formattedEndDate, description]
         );
 
-        // sendEmail("A new event has been added!", 
-        //     "cody_airey@icloud.com", 
+        // sendEmail("A new event has been added!",
+        //     "cody_airey@icloud.com",
         //     ("Hi Cody, a new event has been made for you at" + location +".\nIt's start date is: " + startDate))
 
         const { insertId } = result;
@@ -117,8 +123,14 @@ eventRouter.patch("/:eventId", async (req, res) => {
     try {
         const eventId = req.params.eventId;
         const { title, location, startDate, endDate, description } = req.body;
-        const formattedStartDate = format(new Date(startDate), "yyyy-MM-dd");
-        const formattedEndDate = format(new Date(endDate), "yyyy-MM-dd");
+        const formattedStartDate = format(
+            new Date(startDate),
+            "yyyy-MM-dd HH:mm:ss"
+        );
+        const formattedEndDate = format(
+            new Date(endDate),
+            "yyyy-MM-dd HH:mm:ss"
+        );
 
         const findResults = await pool.query<Event[]>(
             `SELECT *
@@ -170,7 +182,7 @@ eventRouter.post("/:eventId/assign/:userId", async (req, res) => {
 
         // had to comment this out for route to work, not sure why but its getting passed the userId thats
         // trying to be assigend to an event, and then checking if its admin, which doesn't matter for asignee's
-        
+
         // await checkUserCanChangeAssignment(userId, eventId, res);
 
         // If both event and user exist, check if attendance record already exists
@@ -319,8 +331,6 @@ async function checkEventAndUserExists(eventId: string, userId: string, res) {
     return;
 }
 
-
-
 async function checkEventIsValid(eventLoc, eventStart, eventEnd) {
     try {
         // Ensures event does not have overlapping time for existing event of same location.
@@ -333,21 +343,28 @@ async function checkEventIsValid(eventLoc, eventStart, eventEnd) {
                     OR (endDate BETWEEN ? AND ?)
                     OR (startDate < ? AND endDate > ?)
                 )`,
-            [eventLoc, eventStart, eventEnd, eventStart, eventEnd, eventStart, eventEnd]
+            [
+                eventLoc,
+                eventStart,
+                eventEnd,
+                eventStart,
+                eventEnd,
+                eventStart,
+                eventEnd,
+            ]
         );
         if ((eventResults as RowDataPacket[])[0].length === 0) {
             return true;
-        }else{
-            console.log("Attempted event overlaps with an existing one.")
+        } else {
+            console.log("Attempted event overlaps with an existing one.");
             // console.log((eventResults as RowDataPacket[])[0])
             return false;
         }
-
     } catch (error) {
-        console.log(error)
+        console.log(error);
         throw new createHttpError(500, "Server error");
     }
-};
+}
 
 export {};
 

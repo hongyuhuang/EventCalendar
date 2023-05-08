@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { Event } from "./EventCalendar";
+import { format } from 'date-fns';
 
 const Wrapper = styled.div`
     background-color: #ffffff;
@@ -62,8 +63,8 @@ const Button = styled.button`
 interface EventFormData {
     title: string;
     location: string;
-    startDate: Date;
-    endDate: Date;
+    startDate: string;
+    endDate: string;
     description: string;
 }
 
@@ -80,10 +81,11 @@ function EditEventForm({
     const [formData, setFormData] = useState<EventFormData>({
         title: event.title,
         location: event.location,
-        startDate: new Date(event.startDate),
-        endDate: new Date(event.endDate),
+        startDate: format(new Date(event.startDate), "yyyy-MM-dd'T'HH:mm"),
+        endDate: format(new Date(event.endDate), "yyyy-MM-dd'T'HH:mm"),
         description: event.description,
     });
+
     const handleChange = (
         event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
@@ -109,9 +111,16 @@ function EditEventForm({
         eventForm.preventDefault();
 
         try {
+            const finalFormData = {
+                title: formData.title,
+                location: formData.location,
+                startDate: formData.startDate,
+                endDate: formData.endDate,
+                description: formData.description,
+            };
             const response = await axios.patch(
                 `http://localhost:3001/event/${event.eventId}`,
-                formData,
+                finalFormData,
                 { headers: headers }
             );
             console.log(response.data);
@@ -148,7 +157,7 @@ function EditEventForm({
                     <Input
                         type="datetime-local"
                         name="startDate"
-                        value={formData.startDate.toISOString().slice(0, 16)}
+                        value={formData.startDate}
                         onChange={handleChange}
                     />
                 </Label>
@@ -157,7 +166,7 @@ function EditEventForm({
                     <Input
                         type="datetime-local"
                         name="endDate"
-                        value={formData.endDate.toISOString().slice(0, 16)}
+                        value={formData.endDate}
                         onChange={handleChange}
                     />
                 </Label>
