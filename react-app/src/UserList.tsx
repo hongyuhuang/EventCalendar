@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { User } from "./types";
 
 
 const Wrapper = styled.div`
@@ -46,14 +47,6 @@ const IconWrapper = styled.div`
         cursor: pointer;
     }
 `;
-
-export interface User {
-    userId: number;
-    isAdmin: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-}
 
 function UserList({
     username,
