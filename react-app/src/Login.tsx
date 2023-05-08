@@ -1,9 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import styled from "styled-components";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 import ReCAPTCHA from "react-google-recaptcha";
+import { User } from "./types";
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -63,13 +64,12 @@ const Button = styled.button`
 
 const ErrorMessage = styled.span`
     color: red;
-`
+`;
 
 interface LoginFormData {
     email: string;
     password: string;
 }
-
 
 const initialFormData: LoginFormData = {
     email: "",
@@ -77,13 +77,18 @@ const initialFormData: LoginFormData = {
 };
 interface LoginProps {
     setLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+    setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>;
     setUsername: React.Dispatch<React.SetStateAction<string>>;
     setPassword: React.Dispatch<React.SetStateAction<string>>;
-  }
+}
 
-const Login: React.FC<LoginProps> = ({ setLoggedIn, setUsername, setPassword }) => {
+const Login: React.FC<LoginProps> = ({
+    setLoggedIn,
+    setIsAdmin,
+    setUsername,
+    setPassword,
+}) => {
     const [formData, setFormData] = useState<LoginFormData>(initialFormData);
-    const [valid_token, setValidToken] = useState([]);
     const navigate = useNavigate();
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,8 +137,11 @@ const Login: React.FC<LoginProps> = ({ setLoggedIn, setUsername, setPassword }) 
                 headers: headers,
                 params: { "g-recaptcha-response": token },
             });
+
+            const isAdmin = response.data.isAdmin;
             console.log(response.data);
             setLoggedIn(true);
+            setIsAdmin(isAdmin);
             setUsername(username);
             setPassword(password);
             navigate("/events");
@@ -184,6 +192,6 @@ const Login: React.FC<LoginProps> = ({ setLoggedIn, setUsername, setPassword }) 
             </Form>
         </Wrapper>
     );
-}
+};
 
 export default Login;

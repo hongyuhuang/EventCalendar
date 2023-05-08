@@ -105,13 +105,13 @@ const SignOutButton = styled.button`
 
 const App: React.FC = () => {
     const [loggedIn, setLoggedIn] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
 
     const location = useLocation();
     const currentPath = location.pathname;
-    const userRole = "admin"; // TODO: Replace this with the actual user role
 
     const isLinkActive = (linkPath: string) => {
         return linkPath === "/"
@@ -121,6 +121,7 @@ const App: React.FC = () => {
 
     const handleSignOut = () => {
         setLoggedIn(false);
+        setIsAdmin(false);
         setUsername("");
         setPassword("");
         navigate("/");
@@ -151,7 +152,7 @@ const App: React.FC = () => {
                         >
                             Events
                         </NavItem>
-                        {userRole === "admin" && (
+                        {isAdmin && (
                             <>
                                 <NavItem
                                     to={"/add-event"}
@@ -195,6 +196,7 @@ const App: React.FC = () => {
                         element={
                             <Login
                                 setLoggedIn={setLoggedIn}
+                                setIsAdmin={setIsAdmin}
                                 setUsername={setUsername}
                                 setPassword={setPassword}
                             />
@@ -211,7 +213,7 @@ const App: React.FC = () => {
                                     />
                                 }
                             />
-                            {userRole === "admin" && (
+                            {isAdmin && (
                                 <>
                                     <Route
                                         path="/add-user"
