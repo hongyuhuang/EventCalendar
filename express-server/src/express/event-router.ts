@@ -285,7 +285,7 @@ eventRouter.get("/:eventId/users", async (req, res) => {
              WHERE ar.eventId = ?;`,
             [eventId]
         );
-        console.log(results)
+        // console.log(results)
 
         res.send(results);
     } catch (err) {
@@ -309,7 +309,7 @@ eventRouter.delete("/:eventId/attendance/:userId", async (req, res) => {
       );
   
       if ((attendanceResults as RowDataPacket[])[0].length === 0) {
-        console.log(attendanceResults)
+        // console.log(attendanceResults)
         return res
           .status(404)
           .send("Attendance record for user at event not found");
