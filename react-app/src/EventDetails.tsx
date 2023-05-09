@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { Event } from "./types";
+import { Event, User } from "./types";
 import axios from "axios";
 
 const Wrapper = styled.div`
@@ -60,6 +60,7 @@ function EventDetails({
     const location = useLocation();
     const event: Event = location.state.event;
     const navigate = useNavigate();
+    const [user, setUsers] = useState<User[]>([]);
 
     const authHeader = (username: string, password: string) => {
         const base64Credentials = btoa(`${username}:${password}`);
@@ -73,6 +74,25 @@ function EventDetails({
     const editEvent = () => {
         navigate("/edit-event", { state: { event } }); // Pass the event as state
     };
+
+    useEffect(() => {
+        const retrieveData = async () => {
+          try {
+            const userIdResponse = await axios.get(`http://localhost:3001/event/${event.eventId}/users`, {
+              headers: {
+                Authorization: authHeader(username, password),
+              },
+            });
+            if (userIdResponse.data[0]) {
+                const user = userIdResponse.data;
+              setUsers(user);
+            }
+          } catch (error) {
+            console.error(error);
+          }
+        };
+        retrieveData();
+      }, []);
 
     const deleteEvent = async () => {
         try {
@@ -104,6 +124,11 @@ function EventDetails({
                 End Time:
                 <Text>{new Date(event.endDate).toLocaleString()}</Text>
             </Label>
+            <Label>
+                Assigned User:
+                <Text>{user[0] ? user[0].firstName + " " + user[0].lastName : "None"}</Text>
+            </Label>
+
             {isAdmin && (
                 <>
                     <ButtonContainer>
