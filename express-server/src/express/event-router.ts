@@ -272,6 +272,68 @@ eventRouter.delete("/:eventId/assign/:userId", async (req, res) => {
 });
 
 /**
+ * Retrieves all users assigned to a particular event
+ */
+eventRouter.get("/:eventId/users", async (req, res) => {
+    const eventId = req.params.eventId;
+
+    try {
+        const [results] = await pool.query<User[]>(
+            `SELECT u.*
+             FROM USER u
+             JOIN ATTENDANCE_RECORD ar ON u.userId = ar.userId
+             WHERE ar.eventId = ?;`,
+            [eventId]
+        );
+        console.log(results)
+
+        res.send(results);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("An error occurred while getting the users assigned to the event");
+    }
+});
+
+/**
+ * Deletes an attendance record for a user at an event
+ */
+eventRouter.delete("/:eventId/attendance/:userId", async (req, res) => {
+    try {
+      const eventId = req.params.eventId;
+      const userId = req.params.userId;
+  
+      // Check if the attendance record exists
+      const [attendanceResults] = await pool.query(
+        "SELECT * FROM ATTENDANCE_RECORD WHERE eventId = ? AND userId = ?",
+        [eventId, userId]
+      );
+  
+      if ((attendanceResults as RowDataPacket[])[0].length === 0) {
+        console.log(attendanceResults)
+        return res
+          .status(404)
+          .send("Attendance record for user at event not found");
+      }
+  
+      // Delete the attendance record
+      await pool.query(
+        "DELETE FROM ATTENDANCE_RECORD WHERE eventId = ? AND userId = ?",
+        [eventId, userId]
+      );
+  
+      return res.status(200).send("Attendance record deleted successfully");
+    } catch (err) {
+      return handleDbError(
+        err,
+        res,
+        "An error occurred while deleting the attendance record"
+      );
+    }
+  });
+  
+
+
+/**
  * Checks if a user can change an assignment or not
  *
  * If not, a response is automatically sent back to client

@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { format } from 'date-fns';
-import { Event } from "./types";
+import { Event, User } from "./types";
 
 const Wrapper = styled.div`
     background-color: #ffffff;
@@ -60,6 +60,15 @@ const Button = styled.button`
         color: white;
     }
 `;
+
+const Select = styled.select`
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+`;
+
 interface EventFormData {
     title: string;
     location: string;
@@ -78,6 +87,9 @@ function EditEventForm({
     const navigate = useNavigate();
     const location = useLocation();
     const event: Event = location.state.event;
+    const [users, setUsers] = useState<User[]>([]);
+    const [selectedUser, setSelectedUser] = useState("");
+    const [assignedUserId, setAssignedUserId] = useState("");
     const [formData, setFormData] = useState<EventFormData>({
         title: event.title,
         location: event.location,
@@ -85,6 +97,42 @@ function EditEventForm({
         endDate: format(new Date(event.endDate), "yyyy-MM-dd'T'HH:mm"),
         description: event.description,
     });
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const response = await axios.get("http://localhost:3001/user", {
+                    headers: {
+                        Authorization: authHeader(username, password),
+                    },
+                });
+                setUsers(response.data);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        fetchUsers();
+    }, [username, password]);
+
+    useEffect(() => {
+        const retrieveData = async () => {
+          try {
+            const userIdResponse = await axios.get(`http://localhost:3001/event/${event.eventId}/users`, {
+              headers: {
+                Authorization: authHeader(username, password),
+              },
+            });
+            if (userIdResponse.data[0]) {
+              setSelectedUser(userIdResponse.data[0].userId);
+              setAssignedUserId(userIdResponse.data[0].userId);
+            }
+          } catch (error) {
+            console.error(error);
+          }
+        };
+        retrieveData();
+      }, [event]);
 
     const handleChange = (
         event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -116,7 +164,27 @@ function EditEventForm({
                 formData,
                 { headers: headers }
             );
-            console.log(response.data);
+            // console.log(response.data);
+            
+            //try catch is definetly not the way to go about this. but its 8pm and ive been working all day
+            try {
+                const response2 = await axios.delete(
+                    `http://localhost:3001/event/${event.eventId}/attendance/${assignedUserId}`,
+                    {headers: headers }
+                )
+                // console.log(response2.data);
+            }catch(err){
+                
+            }
+
+            const response3 = await axios.post(
+                `http://localhost:3001/event/${event.eventId}/assign/${selectedUser}`,
+                {},
+                {headers: headers}
+            )
+            // console.log(response3.data);
+            
+            
             navigate("/events");
         } catch (error) {
             console.error(error);
@@ -170,6 +238,23 @@ function EditEventForm({
                         value={formData.description}
                         onChange={handleChange}
                     />
+                </Label>
+                <Label>
+                    User:
+                    <Select
+                        value={selectedUser}
+                        onChange={(e) => setSelectedUser(e.target.value)}
+                        >
+                        <option value="">Select a user</option>
+                        {users.map((user) => (
+                            <option
+                            key={user.userId}
+                            value={user.userId}
+                            >
+                            {user.firstName} {user.lastName}
+                            </option>
+                        ))}
+                        </Select>
                 </Label>
                 <Button type="submit">UPDATE EVENT</Button>
             </Form>
