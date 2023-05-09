@@ -86,7 +86,7 @@ eventRouter.post("/", async (req, res) => {
 
         // sendEmail("A new event has been added!",
         //     "cody_airey@icloud.com",
-        //     ("Hi Cody, a new event has been made for you at" + location +".\nIt's start date is: " + startDate))
+        //     ("Hi Cody, a new event has been made for you.\n\nLocation: " + location +".\nStart date is: " + startDate + "\nEnd date is: " + endDate + "\n\nDescription:\n" + description))
 
         const { insertId } = result;
         return res.status(201).send({ eventId: insertId });
@@ -160,6 +160,11 @@ eventRouter.patch("/:eventId", async (req, res) => {
                 eventId,
             ]
         );
+
+        // sendEmail("One of your events has been edited!",
+        //     "cody_airey@icloud.com",
+        //     ("Hi Cody, an event with your involvement has been changed.\n\n Location: " + location +".\nStart date is: " + startDate + "\nEnd date is: " + endDate + "\n\nDescription:\n" + description))
+
         return res.send("Event updated successfully");
     } catch (err) {
         return handleDbError(
