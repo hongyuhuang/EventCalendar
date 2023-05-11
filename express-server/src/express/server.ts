@@ -1,5 +1,8 @@
 import express from "express";
 
+const dotenv = require("dotenv");
+dotenv.config();
+
 export {};
 
 const app = require("./app").app;
