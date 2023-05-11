@@ -6,15 +6,15 @@ import styled from "styled-components";
 const Wrapper = styled.div`
     background-color: #ffffff;
     border-radius: 8px;
-    -webkit-box-shadow: 0 4px 6px rgba(0, 0, 0, .7);
-    -moz-box-shadow: 0 4px 6px rgba(0, 0, 0, .7);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, .3);
+    -webkit-box-shadow: 0 4px 6px rgba(0, 0, 0, 0.7);
+    -moz-box-shadow: 0 4px 6px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     padding: 16px;
     width: 960px;
 `;
 
 const Heading = styled.h2`
-  color: var(--otago-blue-dark);
+    color: var(--otago-blue-dark);
 `;
 
 const Form = styled.form`
@@ -56,7 +56,7 @@ const Button = styled.button`
 
 const ErrorMessage = styled.span`
     color: red;
-`
+`;
 
 interface UserFormData {
     firstName: string;
@@ -93,13 +93,10 @@ function SignupForm() {
         if (formData.password !== formData.confirmPassword) {
             setErrorMessage("Passwords do not match");
             return;
-          }
+        }
 
         try {
-            const response = await axios.post(
-                "http://localhost:3001/register",
-                formData
-            );
+            const response = await axios.post("/register", formData);
             navigate("/user-list");
         } catch (error) {
             console.error(error);

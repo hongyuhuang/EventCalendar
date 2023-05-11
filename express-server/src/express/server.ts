@@ -1,3 +1,5 @@
+import express from "express";
+
 export {};
 
 const app = require("./app").app;

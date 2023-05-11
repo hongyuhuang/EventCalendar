@@ -77,26 +77,29 @@ function EventDetails({
 
     useEffect(() => {
         const retrieveData = async () => {
-          try {
-            const userIdResponse = await axios.get(`http://localhost:3001/event/${event.eventId}/users`, {
-              headers: {
-                Authorization: authHeader(username, password),
-              },
-            });
-            if (userIdResponse.data[0]) {
-                const user = userIdResponse.data;
-              setUsers(user);
+            try {
+                const userIdResponse = await axios.get(
+                    `/event/${event.eventId}/users`,
+                    {
+                        headers: {
+                            Authorization: authHeader(username, password),
+                        },
+                    }
+                );
+                if (userIdResponse.data[0]) {
+                    const user = userIdResponse.data;
+                    setUsers(user);
+                }
+            } catch (error) {
+                console.error(error);
             }
-          } catch (error) {
-            console.error(error);
-          }
         };
         retrieveData();
-      }, []);
+    }, []);
 
     const deleteEvent = async () => {
         try {
-            await axios.delete(`http://localhost:3001/event/${event.eventId}`, {
+            await axios.delete(`/event/${event.eventId}`, {
                 headers: headers,
             });
             navigate("/events");
@@ -126,7 +129,11 @@ function EventDetails({
             </Label>
             <Label>
                 Assigned User:
-                <Text>{user[0] ? user[0].firstName + " " + user[0].lastName : "None"}</Text>
+                <Text>
+                    {user[0]
+                        ? user[0].firstName + " " + user[0].lastName
+                        : "None"}
+                </Text>
             </Label>
 
             {isAdmin && (
