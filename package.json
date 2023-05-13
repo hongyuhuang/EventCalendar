@@ -7,6 +7,7 @@
   "scripts": {
     "format": "prettier --write .",
     "start": "cd express-server && npm start",
+    "build" : "cd react-app && npm run build && cd ../ && npm run install-deps",
     "install-deps": "npm install && cd react-app && npm install && cd ../express-server && npm install",
     "clear-cache": "npm cache clean --force && cd react-app && npm cache clean --force && cd ../express-server && npm cache clean --force"
   },
