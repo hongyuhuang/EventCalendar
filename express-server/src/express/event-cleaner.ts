@@ -42,7 +42,7 @@ async function deleteFinishedEvents() {
 function startCronJob() {
     //every min: '* * * * *'  <- use for demo
     //every hour '0 * * * *'
-    const task = cron.schedule('* * * * *', async () => {
+    const task = cron.schedule('0 * * * *', async () => {
         console.log("attempting...")
         try {
             const deletedCount = await deleteFinishedEvents();
