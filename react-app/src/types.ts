@@ -22,3 +22,9 @@ export interface User {
     firstName: string;
     lastName: string;
 }
+
+export interface RepeatFormData {
+    repeat: boolean;
+    repeatInterval: string;
+    repeatEndDate: string;
+}

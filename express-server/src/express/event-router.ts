@@ -6,6 +6,7 @@ import { OkPacket, ResultSetHeader } from "mysql2";
 const express = require("express");
 const eventRouter = express.Router();
 const eventCleaner = require('./event-cleaner');
+const recurringHandler = require("./repeat-event-handler");
 
 const { pool, handleDbError } = require("../helpers") as {
     pool: Pool;
@@ -148,6 +149,17 @@ eventRouter.post("/", async (req, res) => {
             "An error occurred while creating the event"
         );
     }
+});
+
+eventRouter.post("/:eventId/repeat", async (req, res) => {
+    console.log("showing payloadd.")
+    console.log(req.body)
+    console.log("showing le id")
+    console.log(req.body.eventId)
+    const response = recurringHandler.createRecurringEventSuffix(req.body.eventId, req.body.startDate, req.body.endDate, req.body.repeatData.repeatInterval, req.body.repeatData.repeatEndDate);
+    console.log("somehow ran the create recurring function")
+    console.log(response)
+    return res.status(201)
 });
 
 /**
