@@ -3,6 +3,7 @@ import { sendEmail } from "./emails";
 import { Event, User } from "../entities";
 import { format } from "date-fns";
 import { OkPacket, ResultSetHeader } from "mysql2";
+import PoolCluster from "mysql2/typings/mysql/lib/PoolCluster";
 const express = require("express");
 const eventRouter = express.Router();
 const eventCleaner = require('./event-cleaner');
@@ -16,6 +17,39 @@ const { pool, handleDbError } = require("../helpers") as {
 const createHttpError = require("http-errors");
 eventCleaner.startCronJob();
 
+eventRouter.get(`/retrieve-recurring-suffixes`, async (req, res) => {
+    try {
+        const [result] = await pool.query(`SELECT * FROM RECURRING_EVENT_SUFFIX`, []);
+
+        return res.status(201).send(result)
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("An error occurred while retrieving recurring suffixes");
+    }
+});
+
+eventRouter.post('/retrieve-recurring-events', async (req, res) => {
+    try {
+      const eventIds = req.body;
+      const placeholders = eventIds.map(() => '?').join(',');
+  
+      const [response] = await pool.query(`
+        SELECT e.*, re.startDate, re.endDate
+        FROM RECURRING_EVENT_SUFFIX AS res
+        JOIN RECURRING_EVENT AS re ON res.recurringEventSuffixId = re.recurringEventSuffixId
+        JOIN EVENT AS e ON res.eventId = e.eventId
+        WHERE res.eventId IN (${placeholders})`, 
+        eventIds);
+
+        console.log(response)
+  
+      return res.status(201).send(response);
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("An error occurred while retrieving recurring events");
+    }
+  });
+  
 
 
 /*
@@ -41,6 +75,8 @@ eventRouter.get("/:id", async (req, res) => {
     }
 });
 
+
+
 /**
  * Route to get all events
  */
@@ -64,7 +100,6 @@ eventRouter.get("/", async (req, res) => {
 eventRouter.delete("/", async (req, res) => {
     try {
         // Fetch all events from the database
-        console.log("!")
         const [rows] = await pool.query("SELECT eventId, endDate FROM EVENT");
         
         const events = rows as { eventId: number, endDate: string }[];
@@ -99,7 +134,6 @@ eventRouter.delete("/", async (req, res) => {
         );
     }
 });
-
 
 
 
@@ -151,16 +185,15 @@ eventRouter.post("/", async (req, res) => {
     }
 });
 
-eventRouter.post("/:eventId/repeat", async (req, res) => {
-    console.log("showing payloadd.")
-    console.log(req.body)
-    console.log("showing le id")
-    console.log(req.body.eventId)
+eventRouter.post("/:eventId/repeat", async (req, res) => {    
     const response = recurringHandler.createRecurringEventSuffix(req.body.eventId, req.body.startDate, req.body.endDate, req.body.repeatData.repeatInterval, req.body.repeatData.repeatEndDate);
-    console.log("somehow ran the create recurring function")
-    console.log(response)
-    return res.status(201)
+    return res.status(201).send("Recurring event created.")
 });
+
+
+
+
+
 
 /**
  * Deletes an event by ID

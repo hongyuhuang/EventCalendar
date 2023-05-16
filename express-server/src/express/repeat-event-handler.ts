@@ -7,21 +7,6 @@ const { pool, handleDbError } = require("../helpers") as {
 
 async function createRecurringEventSuffix(eventId, startDate, endDate, selectedInterval, endRecurringStartDate){
 
-    // [0] {
-    //     [0]   title: 'test',
-    //     [0]   location: 'test3',
-    //     [0]   startDate: '2023-05-15T20:44',
-    //     [0]   endDate: '2023-06-06T20:44',
-    //     [0]   description: 'test',
-    //     [0]   repeatData: {
-    //     [0]     repeat: true,
-    //     [0]     repeatInterval: 'weekly',
-    //     [0]     repeatEndDate: '2023-06-06T20:44'
-    //     [0]   },
-    //     [0]   eventId: 131
-    //     [0] }
-
-
     try {
 
         let startDates: Date[] = [];
@@ -35,8 +20,6 @@ async function createRecurringEventSuffix(eventId, startDate, endDate, selectedI
         console.log(typeof(endRecurringDate) + " " + endRecurringDate)
 
         // could use a switch/case, but this works fine.
-
-
         while (currentStartDate < endRecurringDate) {
 
             console.log(currentStartDate + " -> " + currentEndDate)
@@ -94,8 +77,6 @@ async function createRecurringEventSuffix(eventId, startDate, endDate, selectedI
             VALUES (?, ?, ?);`, [suffixId, insertStartDateValue, insertEndDateValue]);
             console.log(recurringEventResult);
         }
-
-
         
     } catch (error) {
         throw new Error("idk man: " + error);

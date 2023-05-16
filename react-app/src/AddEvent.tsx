@@ -222,16 +222,12 @@ function CreateEventForm({
                 eventId: response.data.eventId
               };
 
-              console.log("Showing event ID")
-              console.log(response.data.eventId)
-              console.log("Showing Payload")
-              console.log(repeatPayload)
-
               await axios.post(
                 `http://localhost:3001/event/${eventId}/repeat`,
                 repeatPayload,
                 { headers: headers }
               );
+
             }
 
             navigate("/events");
