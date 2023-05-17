@@ -26,15 +26,11 @@ async function deleteFinishedEvents() {
             }
         });
 
-        // console.log("events to delete: " + eventsToDelete)
-
         const [dontDeleteResult] = await pool.query("SELECT eventId FROM RECURRING_EVENT_SUFFIX");
         const dontDeleteIds = (dontDeleteResult as { eventId: number }[]).map(row => row.eventId);
 
         // Remove events that have a matching ID in dontDeleteResult
         const filteredEventsToDelete = eventsToDelete.filter(eventId => !dontDeleteIds.includes(eventId));
-
-        // console.log("filteredEventsToDelete" + filteredEventsToDelete)
 
         // Delete the remaining events from the database
         if (filteredEventsToDelete.length > 0) {
@@ -44,7 +40,6 @@ async function deleteFinishedEvents() {
 
         const [recurringEvents] = await pool.query("SELECT recurringEventId, endDate FROM RECURRING_EVENT")
 
-        // console.log(recurringEvents)
 
         const recurringEventsToDelete = (recurringEvents as { recurringEventId: number, endDate: string }[])
             .filter(recurringEvent => {
@@ -53,8 +48,7 @@ async function deleteFinishedEvents() {
                 return formattedEndDate <= currentTime;
             })
             .map(recurringEvent => recurringEvent.recurringEventId);
-
-        // console.log(recurringEventsToDelete)
+            
 
         // Delete the recurring events from the database
         if (recurringEventsToDelete.length > 0) {
