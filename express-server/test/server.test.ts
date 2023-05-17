@@ -7,6 +7,7 @@ let app = require("../src/express/server").app;
 const axios = require("axios");
 const authHeader = require("basic-auth-header");
 const aws = require('aws-sdk');
+const { pool } = require("../src/helpers").pool;
 
 const username = "johndoe@email.com";
 const pwd = "password123";
@@ -21,6 +22,10 @@ aws.config.update({
   });
 
 let request = superTest(app);
+
+afterAll(() => {
+    pool.end();
+});
 
 describe("Test authorization", () => {
     test("Test Normally", async () => {
