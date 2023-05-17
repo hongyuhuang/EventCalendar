@@ -5,17 +5,17 @@ import { format } from "date-fns";
 import { OkPacket, ResultSetHeader } from "mysql2";
 const express = require("express");
 const eventRouter = express.Router();
-const eventCleaner = require('./event-cleaner');
+const eventCleaner = require("./event-cleaner");
 
-const { pool, handleDbError } = require("../helpers") as {
-    pool: Pool;
-    handleDbError: any;
-};
+const { pool, handleApiError, checkUserPermissions } =
+    require("../helpers") as {
+        pool: Pool;
+        handleApiError: any;
+        checkUserPermissions: any;
+    };
 
 const createHttpError = require("http-errors");
 eventCleaner.startCronJob();
-
-
 
 /*
  * Route to return event with a given id
@@ -63,17 +63,17 @@ eventRouter.get("/", async (req, res) => {
 eventRouter.delete("/", async (req, res) => {
     try {
         // Fetch all events from the database
-        console.log("!")
+        console.log("!");
         const [rows] = await pool.query("SELECT eventId, endDate FROM EVENT");
-        
-        const events = rows as { eventId: number, endDate: string }[];
+
+        const events = rows as { eventId: number; endDate: string }[];
 
         const currentTime = new Date();
 
         const eventsToDelete = [];
 
         // Check each event's endDate and collect the IDs of events to be deleted
-        events.forEach(event => {
+        events.forEach((event) => {
             const { eventId, endDate } = event;
             const formattedEndDate = new Date(endDate);
 
@@ -84,24 +84,22 @@ eventRouter.delete("/", async (req, res) => {
 
         // Delete the events from the database
         if (eventsToDelete.length > 0) {
-            await pool.query("DELETE FROM EVENT WHERE eventId IN (?)", [eventsToDelete]);
+            await pool.query("DELETE FROM EVENT WHERE eventId IN (?)", [
+                eventsToDelete,
+            ]);
         }
 
         const deleteCount = eventsToDelete.length;
-        console.log("Deleting: " + deleteCount)
+        console.log("Deleting: " + deleteCount);
         return res.send(`${deleteCount} event(s) deleted`);
     } catch (err) {
-        return handleDbError(
+        return handleApiError(
             err,
             res,
             "An error occurred while deleting the events"
         );
     }
 });
-
-
-
-
 
 /**
  * Creates a new event
@@ -142,7 +140,7 @@ eventRouter.post("/", async (req, res) => {
         const { insertId } = result;
         return res.status(201).send({ eventId: insertId });
     } catch (err) {
-        return handleDbError(
+        return handleApiError(
             err,
             res,
             "An error occurred while creating the event"
@@ -159,7 +157,7 @@ eventRouter.delete("/:eventId", async (req, res) => {
         await pool.query("DELETE FROM EVENT WHERE eventId = ?", [eventId]);
         res.send(`Event with ID ${eventId} deleted`);
     } catch (err) {
-        return handleDbError(
+        return handleApiError(
             err,
             res,
             "An error occurred while deleting the event"
@@ -218,7 +216,7 @@ eventRouter.patch("/:eventId", async (req, res) => {
 
         return res.send("Event updated successfully");
     } catch (err) {
-        return handleDbError(
+        return handleApiError(
             err,
             res,
             "An error occurred while updating the event"
@@ -239,7 +237,7 @@ eventRouter.post("/:eventId/assign/:userId", async (req, res) => {
         // had to comment this out for route to work, not sure why but its getting passed the userId thats
         // trying to be assigend to an event, and then checking if its admin, which doesn't matter for asignee's
 
-        // await checkUserCanChangeAssignment(userId, eventId, res);
+        await checkUserPermissions(req.role, userId, res.auth.username);
 
         // If both event and user exist, check if attendance record already exists
         const attendanceResults = await pool.query(
@@ -263,7 +261,7 @@ eventRouter.post("/:eventId/assign/:userId", async (req, res) => {
         );
         return res.status(201).send("User assigned to event successfully");
     } catch (err) {
-        return handleDbError(
+        return handleApiError(
             err,
             res,
             "An error occurred while assigning the user to the event"
@@ -291,7 +289,7 @@ eventRouter.get("/:eventId/assign", async (req, res) => {
         );
         return res.send(userResults);
     } catch (err) {
-        return handleDbError(
+        return handleApiError(
             err,
             res,
             "An error occurred while getting the users assigned to the event"
@@ -307,7 +305,7 @@ eventRouter.delete("/:eventId/assign/:userId", async (req, res) => {
         const { eventId, userId } = req.params;
 
         await checkEventAndUserExists(eventId, userId, res);
-        await checkUserCanChangeAssignment(userId, eventId, res);
+        await checkUserPermissions(req.role, userId, res.auth.username);
 
         const [results] = await pool.query(
             "DELETE FROM ATTENDANCE_RECORD WHERE eventId = ? AND userId = ?",
@@ -319,7 +317,7 @@ eventRouter.delete("/:eventId/assign/:userId", async (req, res) => {
         }
         return res.send("User un-assigned from event successfully");
     } catch (err) {
-        return handleDbError(
+        return handleApiError(
             err,
             res,
             "An error occurred while un-assigning the user from the event"
@@ -346,7 +344,9 @@ eventRouter.get("/:eventId/users", async (req, res) => {
         res.send(results);
     } catch (err) {
         console.error(err);
-        res.status(500).send("An error occurred while getting the users assigned to the event");
+        res.status(500).send(
+            "An error occurred while getting the users assigned to the event"
+        );
     }
 });
 
@@ -355,64 +355,37 @@ eventRouter.get("/:eventId/users", async (req, res) => {
  */
 eventRouter.delete("/:eventId/attendance/:userId", async (req, res) => {
     try {
-      const eventId = req.params.eventId;
-      const userId = req.params.userId;
-  
-      // Check if the attendance record exists
-      const [attendanceResults] = await pool.query(
-        "SELECT * FROM ATTENDANCE_RECORD WHERE eventId = ? AND userId = ?",
-        [eventId, userId]
-      );
-  
-      if ((attendanceResults as RowDataPacket[])[0].length === 0) {
-        // console.log(attendanceResults)
-        return res
-          .status(404)
-          .send("Attendance record for user at event not found");
-      }
-  
-      // Delete the attendance record
-      await pool.query(
-        "DELETE FROM ATTENDANCE_RECORD WHERE eventId = ? AND userId = ?",
-        [eventId, userId]
-      );
-  
-      return res.status(200).send("Attendance record deleted successfully");
-    } catch (err) {
-      return handleDbError(
-        err,
-        res,
-        "An error occurred while deleting the attendance record"
-      );
-    }
-  });
-  
+        const eventId = req.params.eventId;
+        const userId = req.params.userId;
 
-
-/**
- * Checks if a user can change an assignment or not
- *
- * If not, a response is automatically sent back to client
- *
- * @param req express Request
- * @param res express Response
- * @param userId id of the user to check permissions
- */
-async function checkUserCanChangeAssignment(req, res, userId) {
-    // If the user is not an admin, check if the auth username matches the user being assigned
-    if (req.role !== "admin") {
-        const results = await pool.query<User[]>(
-            `SELECT * 
-                         FROM USER
-                         WHERE email = ? AND userId = ?`,
-            [req.auth.username, userId]
+        // Check if the attendance record exists
+        const [attendanceResults] = await pool.query(
+            "SELECT * FROM ATTENDANCE_RECORD WHERE eventId = ? AND userId = ?",
+            [eventId, userId]
         );
-        if ((results as RowDataPacket[])[0].length === 0) {
-            throw new createHttpError(403, "User cannot change assignment");
+
+        if ((attendanceResults as RowDataPacket[])[0].length === 0) {
+            // console.log(attendanceResults)
+            return res
+                .status(404)
+                .send("Attendance record for user at event not found");
         }
+
+        // Delete the attendance record
+        await pool.query(
+            "DELETE FROM ATTENDANCE_RECORD WHERE eventId = ? AND userId = ?",
+            [eventId, userId]
+        );
+
+        return res.status(200).send("Attendance record deleted successfully");
+    } catch (err) {
+        return handleApiError(
+            err,
+            res,
+            "An error occurred while deleting the attendance record"
+        );
     }
-    return;
-}
+});
 
 /**
  * Checks if a user and event exist before assigning a user to an event
