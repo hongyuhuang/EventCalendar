@@ -70,7 +70,7 @@ function UserList({
 
     useEffect(() => {
         axios
-            .get("http://localhost:3001/user", { headers: headers })
+            .get("/user", { headers: headers })
             .then((response) => {
                 setUsers(response.data);
             })
@@ -86,8 +86,8 @@ function UserList({
                 for (const user of users) {
                     try {
                         const response = await axios.get(
-                            `http://localhost:3001/user/${user.userId}/events`,
-                            { headers: headers}
+                            `/user/${user.userId}/events`,
+                            { headers: headers }
                         );
                         const events = response.data;
                         counts[user.userId] = events.length;
@@ -106,7 +106,7 @@ function UserList({
 
     const handleDeleteUser = (userId: number) => {
         axios
-            .delete(`http://localhost:3001/user/${userId}`, {
+            .delete(`/user/${userId}`, {
                 headers: headers,
             })
             .then(() => {

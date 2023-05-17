@@ -35,7 +35,7 @@ function EventCalendar({
 
     const fetchEvents = async () => {
         try {
-            const response = await axios.get("http://localhost:3001/event", {
+            const response = await axios.get("/event", {
                 headers: headers,
             });
             const parsedEvents = response.data.map((event: Event) => ({
@@ -52,10 +52,9 @@ function EventCalendar({
     const getAssignedEvents = async (username: string) => {
         try {
             const userID = 3; // TODO: Get the user ID from local storage
-            const response = await axios.get(
-                `http://localhost:3001/user/${userID}/events`,
-                { headers: headers }
-            );
+            const response = await axios.get(`/user/${userID}/events`, {
+                headers: headers,
+            });
             const assignedEvents = response.data;
             setEvents(assignedEvents);
         } catch (error) {

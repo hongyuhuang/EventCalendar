@@ -133,7 +133,7 @@ const Login: React.FC<LoginProps> = ({
             }
 
             // Actually logging in
-            const response = await axios.get("http://localhost:3001/login", {
+            const response = await axios.get("/login", {
                 headers: headers,
                 params: { "g-recaptcha-response": token },
             });

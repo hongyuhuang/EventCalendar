@@ -13,6 +13,9 @@ const authRouter = require("./auth").authRouter; // For auth routes
 // Create express app
 const app = express();
 
+// Add react app to public
+app.use(express.static("../react-app/build"));
+
 const bcrypt = require("bcrypt");
 
 // Adding CORS(Cross Origin Resource Sharing) express

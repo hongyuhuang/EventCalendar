@@ -101,7 +101,7 @@ function CreateEventForm({
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await axios.get("http://localhost:3001/user", {
+                const response = await axios.get("/user", {
                     headers: {
                         Authorization: authHeader(username, password),
                     },
@@ -119,10 +119,10 @@ function CreateEventForm({
         event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
         const { name, value } = event.target;
-            setFormData({
-                ...formData,
-                [name]: value,
-            });
+        setFormData({
+            ...formData,
+            [name]: value,
+        });
     };
 
     const handleSubmit = async (
@@ -131,16 +131,14 @@ function CreateEventForm({
         eventForm.preventDefault();
 
         try {
-            const response = await axios.post(
-                "http://localhost:3001/event",
-                formData,
-                { headers: headers }
-            );
+            const response = await axios.post("/event", formData, {
+                headers: headers,
+            });
             const eventId = response.data.eventId;
             const userId = selectedUser;
 
             await axios.post(
-                `http://localhost:3001/event/${eventId}/assign/${userId}`,
+                `/event/${eventId}/assign/${userId}`,
                 {},
                 { headers: headers }
             );

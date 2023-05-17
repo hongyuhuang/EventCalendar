@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
-import { format } from 'date-fns';
+import { format } from "date-fns";
 import { Event, User } from "./types";
 
 const Wrapper = styled.div`
@@ -101,7 +101,7 @@ function EditEventForm({
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await axios.get("http://localhost:3001/user", {
+                const response = await axios.get("/user", {
                     headers: {
                         Authorization: authHeader(username, password),
                     },
@@ -117,22 +117,25 @@ function EditEventForm({
 
     useEffect(() => {
         const retrieveData = async () => {
-          try {
-            const userIdResponse = await axios.get(`http://localhost:3001/event/${event.eventId}/users`, {
-              headers: {
-                Authorization: authHeader(username, password),
-              },
-            });
-            if (userIdResponse.data[0]) {
-              setSelectedUser(userIdResponse.data[0].userId);
-              setAssignedUserId(userIdResponse.data[0].userId);
+            try {
+                const userIdResponse = await axios.get(
+                    `/event/${event.eventId}/users`,
+                    {
+                        headers: {
+                            Authorization: authHeader(username, password),
+                        },
+                    }
+                );
+                if (userIdResponse.data[0]) {
+                    setSelectedUser(userIdResponse.data[0].userId);
+                    setAssignedUserId(userIdResponse.data[0].userId);
+                }
+            } catch (error) {
+                console.error(error);
             }
-          } catch (error) {
-            console.error(error);
-          }
         };
         retrieveData();
-      }, [event]);
+    }, [event]);
 
     const handleChange = (
         event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -160,31 +163,28 @@ function EditEventForm({
 
         try {
             const response = await axios.patch(
-                `http://localhost:3001/event/${event.eventId}`,
+                `/event/${event.eventId}`,
                 formData,
                 { headers: headers }
             );
             // console.log(response.data);
-            
+
             //try catch is definetly not the way to go about this. but its 8pm and ive been working all day
             try {
                 const response2 = await axios.delete(
-                    `http://localhost:3001/event/${event.eventId}/attendance/${assignedUserId}`,
-                    {headers: headers }
-                )
+                    `/event/${event.eventId}/attendance/${assignedUserId}`,
+                    { headers: headers }
+                );
                 // console.log(response2.data);
-            }catch(err){
-                
-            }
+            } catch (err) {}
 
             const response3 = await axios.post(
-                `http://localhost:3001/event/${event.eventId}/assign/${selectedUser}`,
+                `/event/${event.eventId}/assign/${selectedUser}`,
                 {},
-                {headers: headers}
-            )
+                { headers: headers }
+            );
             // console.log(response3.data);
-            
-            
+
             navigate("/events");
         } catch (error) {
             console.error(error);
@@ -244,17 +244,14 @@ function EditEventForm({
                     <Select
                         value={selectedUser}
                         onChange={(e) => setSelectedUser(e.target.value)}
-                        >
+                    >
                         <option value="">Select a user</option>
                         {users.map((user) => (
-                            <option
-                            key={user.userId}
-                            value={user.userId}
-                            >
-                            {user.firstName} {user.lastName}
+                            <option key={user.userId} value={user.userId}>
+                                {user.firstName} {user.lastName}
                             </option>
                         ))}
-                        </Select>
+                    </Select>
                 </Label>
                 <Button type="submit">UPDATE EVENT</Button>
             </Form>
