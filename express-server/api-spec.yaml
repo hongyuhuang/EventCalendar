@@ -244,6 +244,25 @@ paths:
         User must have permissions in order to update.
       tags:
         - User
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - firstName
+                - lastName
+                - email
+                - password
   '/user/{userId}/events':
     parameters:
       - schema:
@@ -294,6 +313,22 @@ paths:
       description: 'Creates a new user, returns an ID of the newly created user'
       tags:
         - User
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                isAdmin:
+                  type: string
+                email:
+                  type: string
+                'password ':
+                  type: string
     get:
       summary: Get all users
       operationId: get-user
