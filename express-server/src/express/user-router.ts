@@ -125,11 +125,9 @@ userRouter.patch("/:userId", async (req, res) => {
     try {
         const { firstName, lastName, email, password } = req.body;
 
-        await checkUserPermissions(
-            req.role,
-            req.params.userId,
-            req.auth.username
-        );
+        console.log(`${req.role} ${req.params.userId} ${req.auth.user}`);
+
+        await checkUserPermissions(req.role, req.params.userId, req.auth.user);
 
         const passwordHashSalt = bcrypt.hashSync(password, 10);
 
@@ -219,11 +217,7 @@ userRouter.get("/:userId/events", async (req, res) => {
  */
 userRouter.patch("/:userId/password", async (req, res) => {
     try {
-        await checkUserPermissions(
-            req.role,
-            req.params.userId,
-            res.auth.username
-        );
+        await checkUserPermissions(req.role, req.params.userId, res.auth.user);
 
         const passwordHashSalt = bcrypt.hashSync(req.body.newPassword, 10);
 
@@ -232,7 +226,7 @@ userRouter.patch("/:userId/password", async (req, res) => {
 
         if (req.role !== "admin") {
             // Need to check value of email too, if user is not an admin
-            queryParams.push(req.auth.username);
+            queryParams.push(req.auth.user);
             whereClause.concat(`AND email = ?`);
         }
 
@@ -263,7 +257,7 @@ userRouter.patch("/:userId/password", async (req, res) => {
  * Returns a photo for a particular user.
  */
 userRouter.get("/:userId/photo", async (req, res) => {
-    await checkUserPermissions(req.role, req.params.userId, res.auth.username);
+    await checkUserPermissions(req.role, req.params.userId, res.auth.user);
     const photoDir = userPhotoDir(req.params.userId);
 
     // Check if file exists
@@ -277,7 +271,7 @@ userRouter.get("/:userId/photo", async (req, res) => {
  * Uploads a photo for a particular user, covers cases of updating and creating
  */
 userRouter.post("/:userId/photo", upload.single("photo"), async (req, res) => {
-    await checkUserPermissions(req.role, req.params.userId, res.auth.username);
+    await checkUserPermissions(req.role, req.params.userId, res.auth.user);
 
     fs.renameSync(req.file.path, userPhotoDir(req.params.userId));
 
@@ -298,5 +292,4 @@ export {};
 
 module.exports = {
     userRouter,
-    checkUserIdMatchesUsername,
 };
