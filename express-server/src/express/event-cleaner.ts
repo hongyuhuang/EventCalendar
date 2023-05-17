@@ -9,7 +9,7 @@ async function deleteFinishedEvents() {
     try {
         // Fetch all events from the database
         const [rows] = await pool.query("SELECT eventId, endDate FROM EVENT");
-        
+
         const events = rows as { eventId: number, endDate: string }[];
 
         const currentTime = new Date();
@@ -26,18 +26,48 @@ async function deleteFinishedEvents() {
             }
         });
 
-        // Delete the events from the database
-        if (eventsToDelete.length > 0) {
-            await pool.query("DELETE FROM EVENT WHERE eventId IN (?)", [eventsToDelete]);
+        // console.log("events to delete: " + eventsToDelete)
+
+        const [dontDeleteResult] = await pool.query("SELECT eventId FROM RECURRING_EVENT_SUFFIX");
+        const dontDeleteIds = (dontDeleteResult as { eventId: number }[]).map(row => row.eventId);
+
+        // Remove events that have a matching ID in dontDeleteResult
+        const filteredEventsToDelete = eventsToDelete.filter(eventId => !dontDeleteIds.includes(eventId));
+
+        // console.log("filteredEventsToDelete" + filteredEventsToDelete)
+
+        // Delete the remaining events from the database
+        if (filteredEventsToDelete.length > 0) {
+            await pool.query("DELETE FROM EVENT WHERE eventId IN (?)", [filteredEventsToDelete]);
         }
 
-        const deleteCount = eventsToDelete.length;
-        // console.log("Deleting: " + deleteCount);
+
+        const [recurringEvents] = await pool.query("SELECT recurringEventId, endDate FROM RECURRING_EVENT")
+
+        // console.log(recurringEvents)
+
+        const recurringEventsToDelete = (recurringEvents as { recurringEventId: number, endDate: string }[])
+            .filter(recurringEvent => {
+                const { recurringEventId, endDate } = recurringEvent;
+                const formattedEndDate = new Date(endDate);
+                return formattedEndDate <= currentTime;
+            })
+            .map(recurringEvent => recurringEvent.recurringEventId);
+
+        // console.log(recurringEventsToDelete)
+
+        // Delete the recurring events from the database
+        if (recurringEventsToDelete.length > 0) {
+            await pool.query("DELETE FROM RECURRING_EVENT WHERE recurringEventId IN (?)", [recurringEventsToDelete]);
+        }
+
+        const deleteCount = filteredEventsToDelete.length + recurringEventsToDelete.length;
         return deleteCount;
     } catch (err) {
         throw new Error("An error occurred while deleting the events: " + err);
     }
 }
+
 
 function startCronJob() {
     //every min: '* * * * *'  <- use for demo

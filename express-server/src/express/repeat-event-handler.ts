@@ -15,10 +15,6 @@ async function createRecurringEventSuffix(eventId, startDate, endDate, selectedI
         var currentEndDate = new Date(endDate);
         var endRecurringDate = new Date(endRecurringStartDate);
 
-        console.log(typeof(currentStartDate) + " " + currentStartDate)
-        console.log(typeof(currentEndDate) + " " + currentEndDate)
-        console.log(typeof(endRecurringDate) + " " + endRecurringDate)
-
         // could use a switch/case, but this works fine.
         while (currentStartDate < endRecurringDate) {
 
@@ -52,30 +48,21 @@ async function createRecurringEventSuffix(eventId, startDate, endDate, selectedI
             endDates.push(newEndDate);
           }
 
-        console.log(startDates)
-        console.log(endDates)
 
         const [suffixResult] = await pool.query<ResultSetHeader>(`INSERT INTO RECURRING_EVENT_SUFFIX(eventId, type, endRecurringDate)
         VALUES (?, ?, ?);`, [eventId, selectedInterval, endRecurringStartDate]);
 
-        console.log(suffixResult)
-
         const { insertId } = suffixResult;
         const suffixId = insertId;
 
-        for(let i = 0; i < startDates.length; i++){
-
-            console.log(i)
+        for(let i = 0; i < startDates.length - 1; i++){
 
             let insertStartDateValue = startDates[i];
             let insertEndDateValue = endDates[i];
 
-            console.log(insertStartDateValue)
-            console.log(insertEndDateValue)
-
             const [recurringEventResult] = await pool.query<ResultSetHeader>(`INSERT INTO RECURRING_EVENT(recurringEventSuffixId, startDate, endDate)
             VALUES (?, ?, ?);`, [suffixId, insertStartDateValue, insertEndDateValue]);
-            console.log(recurringEventResult);
+            // console.log(recurringEventResult);
         }
         
     } catch (error) {

@@ -41,7 +41,7 @@ eventRouter.post('/retrieve-recurring-events', async (req, res) => {
         WHERE res.eventId IN (${placeholders})`, 
         eventIds);
 
-        console.log(response)
+        // console.log(response)
   
       return res.status(201).send(response);
     } catch (error) {

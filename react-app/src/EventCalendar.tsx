@@ -38,44 +38,46 @@ function EventCalendar({
             const response = await axios.get("http://localhost:3001/event", {
                 headers: headers,
             });
-
+    
             const suffix_response = await axios.get("http://localhost:3001/event/retrieve-recurring-suffixes", {
                 headers: headers,
             });
-
+    
             const eventIds = suffix_response.data.map((suffix: any) => suffix.eventId);
-
-            //I have no idea how to get this workign with get, when i use it, i cant pass the array for the LIFE of me.
-            const recurring_response = await axios.post("http://localhost:3001/event/retrieve-recurring-events", 
+    
+            let recurring_events = [];
+            
+            if (eventIds.length > 0) {
+                const recurring_response = await axios.post("http://localhost:3001/event/retrieve-recurring-events", 
                 eventIds,
-                {headers: headers}
-              );
-
-            const recurring_events = recurring_response.data;
+                { headers: headers });
+    
+                recurring_events = recurring_response.data;
+            }
             
             const parsedEvents = response.data.map((event: Event) => ({
                 ...event,
                 startDate: new Date(event.startDate),
                 endDate: new Date(event.endDate),
             }));
-
+    
             // so gross
             for (const repeatEvent of recurring_events) {
                 const eventId = repeatEvent.eventId;
                 const originalEvent = parsedEvents.find((event: Event) => event.eventId === eventId);
                 
                 if (originalEvent) {
-                  const repeatStartDate = repeatEvent.startDate;
-                  const repeatEndDate = repeatEvent.endDate;
-
-                  const repeatEventCopy = { ...originalEvent }; // Create a shallow copy of the original event
-                  repeatEventCopy.startDate = new Date(repeatStartDate);
-                  repeatEventCopy.endDate = new Date(repeatEndDate);
+                    const repeatStartDate = repeatEvent.startDate;
+                    const repeatEndDate = repeatEvent.endDate;
+    
+                    const repeatEventCopy = { ...originalEvent }; // Create a shallow copy of the original event
+                    repeatEventCopy.startDate = new Date(repeatStartDate);
+                    repeatEventCopy.endDate = new Date(repeatEndDate);
               
-                  parsedEvents.push(repeatEventCopy);
+                    parsedEvents.push(repeatEventCopy);
                 }
-              }
- 
+            }
+    
             setEvents(parsedEvents);
         } catch (error) {
             console.log(error);
