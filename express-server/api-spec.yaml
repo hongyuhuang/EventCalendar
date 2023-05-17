@@ -26,8 +26,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Event'
+        '201':
+          description: Created
         '401':
           $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
         '404':
           description: Event not found
       operationId: get-event-eventId
@@ -41,6 +45,8 @@ paths:
           description: Event updated
         '401':
           $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
         '404':
           description: Event not found
       description: Updates an event with the given ID
@@ -59,6 +65,8 @@ paths:
           description: Event deleted
         '401':
           $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
         '404':
           description: Event not found
       description: Deletes an event with the given ID
@@ -80,6 +88,8 @@ paths:
                     type: string
         '401':
           $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
       description: |-
         Creates a new event.
 
@@ -126,6 +136,8 @@ paths:
                     type: string
         '401':
           $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
         '404':
           description: Event or user not found
       operationId: get-event-eventId-assign-userId
@@ -136,6 +148,8 @@ paths:
       responses:
         '200':
           description: OK
+        '403':
+          $ref: '#/components/responses/403'
         '404':
           description: No assignment was found - so not deleted. Double check that eventId and userId actually reference an event and user
       description: Removes an assignment from a user to an event
@@ -162,6 +176,8 @@ paths:
                 $ref: '#/components/schemas/User'
         '401':
           $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
         '404':
           description: Event not found
       operationId: get-event-eventId-assign
@@ -184,6 +200,8 @@ paths:
                 $ref: '#/components/schemas/User'
         '401':
           $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
         '404':
           description: User not found
       operationId: get-user-userId
@@ -198,9 +216,32 @@ paths:
           description: User deleted
         '401':
           $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
         '404':
           description: User not found
-      description: Deletes a user with a given ID
+      description: |-
+        Deletes a user with a given ID
+
+        User must have necessary permissions
+      tags:
+        - User
+    patch:
+      summary: Updates a user
+      operationId: patch-user-userId
+      responses:
+        '204':
+          description: User successfully updated
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          description: Not Found
+      description: |-
+        Updates a user
+
+        User must have permissions in order to update.
       tags:
         - User
   '/user/{userId}/events':
@@ -226,6 +267,8 @@ paths:
                   $ref: '#/components/schemas/Event'
         '401':
           $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
         '404':
           description: User not found
       operationId: get-user-userId-events
@@ -246,6 +289,8 @@ paths:
                     type: string
         '401':
           $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
       description: 'Creates a new user, returns an ID of the newly created user'
       tags:
         - User
@@ -263,6 +308,8 @@ paths:
                   $ref: '#/components/schemas/User'
         '401':
           $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
       description: |-
         Gets all users
 
@@ -299,6 +346,8 @@ paths:
                 properties: {}
         '401':
           $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
         '404':
           description: Photo not found
       operationId: get-user-userOId
@@ -311,6 +360,8 @@ paths:
           description: OK
         '401':
           $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
       description: Updates or creates a photo
       requestBody:
         content:
@@ -357,6 +408,8 @@ paths:
                     type: boolean
         '401':
           $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
       operationId: get-login
       description: |-
         Basically returns a body whether a user is an admin or not. If credentials are correct in auth header, then all it does is return body as specified below. 
@@ -471,11 +524,11 @@ components:
           type: string
       description: Represents an Event within the domain
   securitySchemes:
-    Authorization:
+    Basic Auth:
+      name: Authorization
       type: apiKey
       in: header
-      description: 'Authorization header. "Basic base64(username:password)"'
-      name: Auth
+      description: Use basic auth
   responses:
     '401':
       description: Unauthorized
@@ -485,5 +538,13 @@ components:
             type: string
             default: Unauthorized
             example: Unauthorized
+    '403':
+      description: Example response
+      content:
+        application/json:
+          schema:
+            properties:
+              id:
+                type: string
 security:
   - Authorization: []
