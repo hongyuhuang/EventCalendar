@@ -35,6 +35,8 @@ function handleApiError(err: any, res, msg: string) {
  *
  * If they are not an admin, their username(email) needs to match the provided id
  *
+ * Throws a 403 if the user does not have permissions
+ *
  * @param userRole role of the user to check permissions
  * @param userId id of the user to check permissions
  * @param username username of the user to check permissions
