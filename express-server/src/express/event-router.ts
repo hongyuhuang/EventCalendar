@@ -5,12 +5,17 @@ import { format } from "date-fns";
 import { OkPacket, ResultSetHeader } from "mysql2";
 const express = require("express");
 const eventRouter = express.Router();
+const eventCleaner = require('./event-cleaner');
+
 const { pool, handleDbError } = require("../helpers") as {
     pool: Pool;
     handleDbError: any;
 };
 
 const createHttpError = require("http-errors");
+eventCleaner.startCronJob();
+
+
 
 /*
  * Route to return event with a given id
@@ -51,6 +56,52 @@ eventRouter.get("/", async (req, res) => {
         res.status(500).send("An error occurred while getting the events");
     }
 });
+
+/**
+ * Deletes events whose endDate has passed the current time
+ */
+eventRouter.delete("/", async (req, res) => {
+    try {
+        // Fetch all events from the database
+        console.log("!")
+        const [rows] = await pool.query("SELECT eventId, endDate FROM EVENT");
+        
+        const events = rows as { eventId: number, endDate: string }[];
+
+        const currentTime = new Date();
+
+        const eventsToDelete = [];
+
+        // Check each event's endDate and collect the IDs of events to be deleted
+        events.forEach(event => {
+            const { eventId, endDate } = event;
+            const formattedEndDate = new Date(endDate);
+
+            if (formattedEndDate <= currentTime) {
+                eventsToDelete.push(eventId);
+            }
+        });
+
+        // Delete the events from the database
+        if (eventsToDelete.length > 0) {
+            await pool.query("DELETE FROM EVENT WHERE eventId IN (?)", [eventsToDelete]);
+        }
+
+        const deleteCount = eventsToDelete.length;
+        console.log("Deleting: " + deleteCount)
+        return res.send(`${deleteCount} event(s) deleted`);
+    } catch (err) {
+        return handleDbError(
+            err,
+            res,
+            "An error occurred while deleting the events"
+        );
+    }
+});
+
+
+
+
 
 /**
  * Creates a new event
