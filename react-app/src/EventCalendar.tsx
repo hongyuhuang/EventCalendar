@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -17,6 +17,8 @@ function EventCalendar({
 }) {
     const [events, setEvents] = useState<Event[]>([]);
     const [showAssignedEvents, setShowAssignedEvents] = useState(false); // State for the toggle
+    // var recurringEventIds: number[] = []
+    const recurringEventIdsRef = useRef<number[]>([]);
 
     const authHeader = (username: string, password: string) => {
         const base64Credentials = btoa(`${username}:${password}`);
@@ -30,26 +32,32 @@ function EventCalendar({
     const navigate = useNavigate();
 
     const handleSelectEvent = (event: Event) => {
-        navigate("/event-details", { state: { event } });
-    };
-
+        console.log(recurringEventIdsRef.current);
+        const isRecurring = recurringEventIdsRef.current.includes(event.eventId);
+        console.log(isRecurring);
+        navigate("/event-details", { state: { event, isRecurring } });
+      };
     const fetchEvents = async () => {
         try {
-            const response = await axios.get("http://localhost:3001/event", {
-                headers: headers,
-            });
-    
+            
             const suffix_response = await axios.get("http://localhost:3001/event/retrieve-recurring-suffixes", {
                 headers: headers,
             });
-    
-            const eventIds = suffix_response.data.map((suffix: any) => suffix.eventId);
-    
+            
+            const recurringEventIds = suffix_response.data.map((suffix: any) => suffix.eventId);
+            recurringEventIdsRef.current = recurringEventIds;
+
+            console.log(recurringEventIds)
+            
+            const response = await axios.get("http://localhost:3001/event", {
+                headers: headers,
+            });
+
             let recurring_events = [];
             
-            if (eventIds.length > 0) {
+            if (recurringEventIds.length > 0) {
                 const recurring_response = await axios.post("http://localhost:3001/event/retrieve-recurring-events", 
-                eventIds,
+                recurringEventIds,
                 { headers: headers });
     
                 recurring_events = recurring_response.data;
