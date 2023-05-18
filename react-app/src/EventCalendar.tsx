@@ -21,11 +21,11 @@ function EventCalendar() {
     };
 
     let username = "";
-    let userID = 0;
+    let userId = 0;
     if(userData) {
         const user: User = JSON.parse(userData);
         username = user.email;
-        userID = user.userId;
+        userId = user.userId;
     }
 
     const headers = {
@@ -56,7 +56,7 @@ function EventCalendar() {
 
     const getAssignedEvents = async (username: string) => {
         try {
-            const response = await axios.get(`/user/${userID}/events`, {
+            const response = await axios.get(`/user/${userId}/events`, {
                 headers: headers,
             });
             const assignedEvents = response.data;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import Login from "./Login";
 import styled from "styled-components";
@@ -104,150 +104,108 @@ const SignOutButton = styled.button`
 `;
 
 const App: React.FC = () => {
-    const userData = sessionStorage.getItem("userData");
-    const isLoggedIn = sessionStorage.getItem("loggedIn") === "true";
-    const isAdmin = userData ? JSON.parse(userData).isAdmin : false;
-    const navigate = useNavigate();
+  const userData = sessionStorage.getItem("userData");
+  const isLoggedIn = sessionStorage.getItem("loggedIn") === "true";
+  const isAdmin = userData ? JSON.parse(userData).isAdmin : false;
+  const navigate = useNavigate();
 
-    const location = useLocation();
-    const currentPath = location.pathname;
+  const location = useLocation();
+  const currentPath = location.pathname;
 
-    const isLinkActive = (linkPath: string) => {
-        return linkPath === "/"
-            ? currentPath === linkPath
-            : currentPath.startsWith(linkPath);
+  const isLinkActive = (linkPath: string) => {
+    return linkPath === "/"
+      ? currentPath === linkPath
+      : currentPath.startsWith(linkPath);
+  };
+
+  const handleSignOut = () => {
+    sessionStorage.removeItem("userData");
+    sessionStorage.removeItem("password");
+    sessionStorage.removeItem("loggedIn");
+    navigate("/");
+  };
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      sessionStorage.clear();
     };
 
-    const handleSignOut = () => {
-        sessionStorage.removeItem("userData");
-        sessionStorage.removeItem("password");
-        sessionStorage.removeItem("loggedIn");
-        navigate("/");
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
+  }, []);
 
-    return (
-        <Wrapper>
-            <Header>
-                <Logo
-                    src={"/images/university-of-otago-logo.png"}
-                    alt="University of Otago Logo"
-                />
-                <Title>Event Calendar</Title>
-                {isLoggedIn && (
-                    <>
-                        <SignOutButton onClick={handleSignOut}>
-                            Sign Out
-                        </SignOutButton>
-                    </>
-                )}
-            </Header>
-            <Nav>
-                {isLoggedIn && (
-                    <>
-                        <NavItem
-                            to={"/events"}
-                            className={isLinkActive("/events") ? "active" : ""}
-                        >
-                            Events
-                        </NavItem>
-                        {isAdmin && (
-                            <>
-                                <NavItem
-                                    to={"/add-event"}
-                                    className={
-                                        isLinkActive("/add-event")
-                                            ? "active"
-                                            : ""
-                                    }
-                                >
-                                    Add Event
-                                </NavItem>
-                                <NavItem
-                                    to={"/user-list"}
-                                    className={
-                                        isLinkActive("/user-list")
-                                            ? "active"
-                                            : ""
-                                    }
-                                >
-                                    Manage Users
-                                </NavItem>
-                                <NavItem
-                                    to={"/add-user"}
-                                    className={
-                                        isLinkActive("/add-user")
-                                            ? "active"
-                                            : ""
-                                    }
-                                >
-                                    Add User
-                                </NavItem>
-                            </>
-                        )}
-                    </>
-                )}
-            </Nav>
-            <Main>
-                <Routes>
-                    <Route
-                        path="/"
-                        element={
-                            <Login
-                            />
-                        }
-                    />
-                    {isLoggedIn && (
-                        <>
-                            <Route
-                                path="/events"
-                                element={
-                                    <EventCalendar
-                                    />
-                                }
-                            />
-                            {isAdmin && (
-                                <>
-                                    <Route
-                                        path="/add-user"
-                                        element={<SignupForm />}
-                                    />
-                                    <Route
-                                        path="/add-event"
-                                        element={
-                                            <CreateEventForm
-
-                                            />
-                                        }
-                                    />
-                                    <Route
-                                        path="/user-list"
-                                        element={
-                                            <UserList
-                                            />
-                                        }
-                                    />
-                                </>
-                            )}
-                            <Route
-                                path="/event-details"
-                                element={
-                                    <EventDetails
-                                    />
-                                }
-                            />
-                            <Route
-                                path="/edit-event"
-                                element={
-                                    <EditEventForm
-                                    />
-                                }
-                            />
-                        </>
-                    )}
-                </Routes>
-            </Main>
-        </Wrapper>
-    );
+  return (
+    <Wrapper>
+      <Header>
+        <Logo
+          src={"/images/university-of-otago-logo.png"}
+          alt="University of Otago Logo"
+        />
+        <Title>Event Calendar</Title>
+        {isLoggedIn && (
+          <>
+            <SignOutButton onClick={handleSignOut}>Sign Out</SignOutButton>
+          </>
+        )}
+      </Header>
+      <Nav>
+        {isLoggedIn && (
+          <>
+            <NavItem
+              to={"/events"}
+              className={isLinkActive("/events") ? "active" : ""}
+            >
+              Events
+            </NavItem>
+            {isAdmin && (
+              <>
+                <NavItem
+                  to={"/add-event"}
+                  className={isLinkActive("/add-event") ? "active" : ""}
+                >
+                  Add Event
+                </NavItem>
+                <NavItem
+                  to={"/user-list"}
+                  className={isLinkActive("/user-list") ? "active" : ""}
+                >
+                  Manage Users
+                </NavItem>
+                <NavItem
+                  to={"/add-user"}
+                  className={isLinkActive("/add-user") ? "active" : ""}
+                >
+                  Add User
+                </NavItem>
+              </>
+            )}
+          </>
+        )}
+      </Nav>
+      <Main>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          {isLoggedIn && (
+            <>
+              <Route path="/events" element={<EventCalendar />} />
+              {isAdmin && (
+                <>
+                  <Route path="/add-user" element={<SignupForm />} />
+                  <Route path="/add-event" element={<CreateEventForm />} />
+                  <Route path="/user-list" element={<UserList />} />
+                </>
+              )}
+              <Route path="/event-details" element={<EventDetails />} />
+              <Route path="/edit-event" element={<EditEventForm />} />
+            </>
+          )}
+        </Routes>
+      </Main>
+    </Wrapper>
+  );
 };
 
 export default App;

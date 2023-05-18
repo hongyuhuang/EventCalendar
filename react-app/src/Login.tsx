@@ -108,7 +108,6 @@ const Login = () =>{
         event.preventDefault();
 
         try {
-
             // Using reCaptcha
             // @ts-ignore
             const token = recaptchaRef.current.getValue();
@@ -126,23 +125,15 @@ const Login = () =>{
                 params: { "g-recaptcha-response": token },
             });
             const isAdmin = login.data.isAdmin;
-            const userID = login.data.userID;
-
-            // Get user data
-            const user = await axios.get(`/users/${userID}`, {
-                headers: headers,
-                params: { "g-recaptcha-response": token }, 
-            });
-            const firstName = user.data.firstName;
-            const lastName = user.data.lastName;
+            const userId = login.data.userId;
 
             // Set session storage
             const userData: User = {
                 isAdmin: isAdmin,
-                userId: userID,
+                userId: userId,
                 email: username,
-                firstName: firstName,
-                lastName: lastName,
+                firstName: "",
+                lastName: "",
             };
             sessionStorage.setItem("userData", JSON.stringify(userData));
             sessionStorage.setItem("password", password);
