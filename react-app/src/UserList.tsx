@@ -47,18 +47,20 @@ const IconWrapper = styled.div`
     }
 `;
 
-function UserList({
-    username,
-    password,
-}: {
-    username: string;
-    password: string;
-}) {
+function UserList() {
     const [users, setUsers] = useState<User[]>([]);
     const [eventCounts, setEventCounts] = useState<{
         [userId: number]: number;
     }>({});
 
+    const userData = sessionStorage.getItem("userData");
+    const password = sessionStorage.getItem("password") || "";
+
+    let username = "";
+    if (userData) {
+        const user: User = JSON.parse(userData);
+        username = user.email;
+    }
     const authHeader = (username: string, password: string) => {
         const base64Credentials = btoa(`${username}:${password}`);
         return `Basic ${base64Credentials}`;

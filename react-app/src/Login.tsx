@@ -75,19 +75,8 @@ const initialFormData: LoginFormData = {
     email: "",
     password: "",
 };
-interface LoginProps {
-    setLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
-    setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>;
-    setUsername: React.Dispatch<React.SetStateAction<string>>;
-    setPassword: React.Dispatch<React.SetStateAction<string>>;
-}
 
-const Login: React.FC<LoginProps> = ({
-    setLoggedIn,
-    setIsAdmin,
-    setUsername,
-    setPassword,
-}) => {
+const Login = () =>{
     const [formData, setFormData] = useState<LoginFormData>(initialFormData);
     const navigate = useNavigate();
 
@@ -133,16 +122,32 @@ const Login: React.FC<LoginProps> = ({
             }
 
             // Actually logging in
-            const response = await axios.get("/login", {
+            const login = await axios.get("/login", {
                 headers: headers,
                 params: { "g-recaptcha-response": token },
             });
+            const isAdmin = login.data.isAdmin;
+            const userID = login.data.userID;
 
-            const isAdmin = response.data.isAdmin;
-            setLoggedIn(true);
-            setIsAdmin(isAdmin);
-            setUsername(username);
-            setPassword(password);
+            // Get user data
+            const user = await axios.get(`/users/${userID}`, {
+                headers: headers,
+                params: { "g-recaptcha-response": token }, 
+            });
+            const firstName = user.data.firstName;
+            const lastName = user.data.lastName;
+
+            // Set session storage
+            const userData: User = {
+                isAdmin: isAdmin,
+                userId: userID,
+                email: username,
+                firstName: firstName,
+                lastName: lastName,
+            };
+            sessionStorage.setItem("userData", JSON.stringify(userData));
+            sessionStorage.setItem("password", username);
+            sessionStorage.setItem("loggedIn", "true");
             navigate("/events");
         } catch (error) {
             console.error(error);

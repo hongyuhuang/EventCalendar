@@ -77,13 +77,7 @@ interface EventFormData {
     description: string;
 }
 
-function EditEventForm({
-    username,
-    password,
-}: {
-    username: string;
-    password: string;
-}) {
+function EditEventForm() {
     const navigate = useNavigate();
     const location = useLocation();
     const event: Event = location.state.event;
@@ -97,6 +91,15 @@ function EditEventForm({
         endDate: format(new Date(event.endDate), "yyyy-MM-dd'T'HH:mm"),
         description: event.description,
     });
+
+    const userData = sessionStorage.getItem("userData");
+    const password = sessionStorage.getItem("password") || "";
+
+    let username = "";
+    if (userData) {
+        const user: User = JSON.parse(userData);
+        username = user.email;
+    }
 
     useEffect(() => {
         const fetchUsers = async () => {
