@@ -441,13 +441,15 @@ paths:
                 properties:
                   isAdmin:
                     type: boolean
+                  userId:
+                    type: string
         '401':
           $ref: '#/components/responses/401'
         '403':
           $ref: '#/components/responses/403'
       operationId: get-login
       description: |-
-        Basically returns a body whether a user is an admin or not. If credentials are correct in auth header, then all it does is return body as specified below. 
+        Basically returns a body whether a user is an admin or not, along with a user Id. If credentials are correct in auth header, then all it does is return body as specified below. 
 
         However, to handle case where creds are incorrrect (e.g. user has entered wrong username, password combination), then a 401 will be returned. Hence on front end, will need to handle case where request is 401, or if request is 200 - then check if a user is an admin or not.
       requestBody:
@@ -574,7 +576,7 @@ components:
             default: Unauthorized
             example: Unauthorized
     '403':
-      description: Example response
+      description: Forbidden
       content:
         application/json:
           schema:
