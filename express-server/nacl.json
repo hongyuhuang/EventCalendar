@@ -33,7 +33,7 @@
         "action": "allow"
       },
       {
-        "resource": "user/:userId",
+        "resource": "user/:userid",
         "methods": ["GET", "PATCH"],
         "action" : "allow"
       },
