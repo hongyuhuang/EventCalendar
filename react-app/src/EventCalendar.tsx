@@ -4,24 +4,29 @@ import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Event } from "./types";
+import { Event, User } from "./types";
 
 const localizer = momentLocalizer(moment);
 
-function EventCalendar({
-    username,
-    password,
-}: {
-    username: string;
-    password: string;
-}) {
+function EventCalendar() {
     const [events, setEvents] = useState<Event[]>([]);
     const [showAssignedEvents, setShowAssignedEvents] = useState(false); // State for the toggle
+
+    const userData = sessionStorage.getItem("userData");
+    const password = sessionStorage.getItem("password") || "";
 
     const authHeader = (username: string, password: string) => {
         const base64Credentials = btoa(`${username}:${password}`);
         return `Basic ${base64Credentials}`;
     };
+
+    let username = "";
+    let userID = 0;
+    if(userData) {
+        const user: User = JSON.parse(userData);
+        username = user.email;
+        userID = user.userId;
+    }
 
     const headers = {
         Authorization: authHeader(username, password),
@@ -51,7 +56,6 @@ function EventCalendar({
 
     const getAssignedEvents = async (username: string) => {
         try {
-            const userID = 3; // TODO: Get the user ID from local storage
             const response = await axios.get(`/user/${userID}/events`, {
                 headers: headers,
             });

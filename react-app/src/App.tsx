@@ -104,10 +104,9 @@ const SignOutButton = styled.button`
 `;
 
 const App: React.FC = () => {
-    const [loggedIn, setLoggedIn] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+    const userData = sessionStorage.getItem("userData");
+    const isLoggedIn = sessionStorage.getItem("loggedIn") === "true";
+    const isAdmin = userData ? JSON.parse(userData).isAdmin : false;
     const navigate = useNavigate();
 
     const location = useLocation();
@@ -120,10 +119,9 @@ const App: React.FC = () => {
     };
 
     const handleSignOut = () => {
-        setLoggedIn(false);
-        setIsAdmin(false);
-        setUsername("");
-        setPassword("");
+        sessionStorage.removeItem("userData");
+        sessionStorage.removeItem("password");
+        sessionStorage.removeItem("loggedIn");
         navigate("/");
     };
 
@@ -135,7 +133,7 @@ const App: React.FC = () => {
                     alt="University of Otago Logo"
                 />
                 <Title>Event Calendar</Title>
-                {loggedIn && (
+                {isLoggedIn && (
                     <>
                         <SignOutButton onClick={handleSignOut}>
                             Sign Out
@@ -144,7 +142,7 @@ const App: React.FC = () => {
                 )}
             </Header>
             <Nav>
-                {loggedIn && (
+                {isLoggedIn && (
                     <>
                         <NavItem
                             to={"/events"}
@@ -195,21 +193,15 @@ const App: React.FC = () => {
                         path="/"
                         element={
                             <Login
-                                setLoggedIn={setLoggedIn}
-                                setIsAdmin={setIsAdmin}
-                                setUsername={setUsername}
-                                setPassword={setPassword}
                             />
                         }
                     />
-                    {loggedIn && (
+                    {isLoggedIn && (
                         <>
                             <Route
                                 path="/events"
                                 element={
                                     <EventCalendar
-                                        username={username}
-                                        password={password}
                                     />
                                 }
                             />
@@ -223,8 +215,7 @@ const App: React.FC = () => {
                                         path="/add-event"
                                         element={
                                             <CreateEventForm
-                                                username={username}
-                                                password={password}
+
                                             />
                                         }
                                     />
@@ -232,8 +223,6 @@ const App: React.FC = () => {
                                         path="/user-list"
                                         element={
                                             <UserList
-                                                username={username}
-                                                password={password}
                                             />
                                         }
                                     />
@@ -243,9 +232,6 @@ const App: React.FC = () => {
                                 path="/event-details"
                                 element={
                                     <EventDetails
-                                        username={username}
-                                        password={password}
-                                        isAdmin={isAdmin}
                                     />
                                 }
                             />
@@ -253,8 +239,6 @@ const App: React.FC = () => {
                                 path="/edit-event"
                                 element={
                                     <EditEventForm
-                                        username={username}
-                                        password={password}
                                     />
                                 }
                             />

@@ -48,19 +48,21 @@ const Button = styled.button`
     }
 `;
 
-function EventDetails({
-    username,
-    password,
-    isAdmin,
-}: {
-    username: string;
-    password: string;
-    isAdmin: boolean;
-}) {
+function EventDetails() {
     const location = useLocation();
     const event: Event = location.state.event;
     const navigate = useNavigate();
     const [user, setUsers] = useState<User[]>([]);
+
+    const userData = sessionStorage.getItem("userData");
+    const password = sessionStorage.getItem("password") || "";
+    const isAdmin = userData ? JSON.parse(userData).isAdmin : false;
+
+    let username = "";
+    if (userData) {
+        const user: User = JSON.parse(userData);
+        username = user.email;
+    }
 
     const authHeader = (username: string, password: string) => {
         const base64Credentials = btoa(`${username}:${password}`);
