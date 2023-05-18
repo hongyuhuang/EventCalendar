@@ -87,8 +87,6 @@ const Login = () =>{
         });
     };
 
-    useRef(true);
-
     const recaptchaRef = useRef<ReCAPTCHA>(null);
     const reCaptchaSiteKey = "6LfWCMglAAAAACnMy3Ma_Kp_9nJPHPZOQj2Y-8jC";
 
@@ -110,6 +108,7 @@ const Login = () =>{
         event.preventDefault();
 
         try {
+
             // Using reCaptcha
             // @ts-ignore
             const token = recaptchaRef.current.getValue();
@@ -146,7 +145,7 @@ const Login = () =>{
                 lastName: lastName,
             };
             sessionStorage.setItem("userData", JSON.stringify(userData));
-            sessionStorage.setItem("password", username);
+            sessionStorage.setItem("password", password);
             sessionStorage.setItem("loggedIn", "true");
             navigate("/events");
         } catch (error) {
