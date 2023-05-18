@@ -17,29 +17,6 @@ const { pool, handleApiError, checkUserPermissions } =
 const createHttpError = require("http-errors");
 eventCleaner.startCronJob();
 
-/*
- * Route to return event with a given id
- */
-eventRouter.get("/:id", async (req, res) => {
-    const eventId = req.params.id;
-
-    try {
-        const [results] = await pool.query<Event[]>(
-            "SELECT * FROM EVENT WHERE eventId = ?",
-            [eventId]
-        );
-        if (results.length === 0) {
-            res.status(404).send("Event not found");
-        } else {
-            const event = results[0];
-            res.json(event);
-        }
-    } catch (err) {
-        console.error(err);
-        res.redirect("/404");
-    }
-});
-
 /**
  * Route to get all events
  */
@@ -148,6 +125,29 @@ eventRouter.post("/", async (req, res) => {
     }
 });
 
+/*
+ * Route to return event with a given id
+ */
+eventRouter.get("/:eventId", async (req, res) => {
+    const eventId = req.params.eventId;
+
+    try {
+        const [results] = await pool.query<Event[]>(
+            "SELECT * FROM EVENT WHERE eventId = ?",
+            [eventId]
+        );
+        if (results.length === 0) {
+            res.status(404).send("Event not found");
+        } else {
+            const event = results[0];
+            res.json(event);
+        }
+    } catch (err) {
+        console.error(err);
+        res.redirect("/404");
+    }
+});
+
 /**
  * Deletes an event by ID
  */
@@ -225,6 +225,34 @@ eventRouter.patch("/:eventId", async (req, res) => {
 });
 
 /**
+ * Finds all the users that are assigned to an event
+ */
+eventRouter.get("/:eventId/assign", async (req, res) => {
+    try {
+        // Checks if the event exists
+        const eventResults = await pool.query<Event[]>(
+            `SELECT * FROM EVENT WHERE eventId = ?`
+        );
+        if ((eventResults as RowDataPacket[])[0].length === 0) {
+            return res.status(404).send("Event not found");
+        }
+        const userResults = pool.query<User[]>(
+            `SELECT U.userId, firstName, lastName
+                FROM ATTENDANCE_RECORD ar JOIN USER U on U.userId = ar.userId
+                WHERE eventId = ?`,
+            [req.params.eventId]
+        );
+        return res.send(userResults);
+    } catch (err) {
+        return handleApiError(
+            err,
+            res,
+            "An error occurred while getting the users assigned to the event"
+        );
+    }
+});
+
+/**
  * Assigns a user to a particular event
  */
 eventRouter.post("/:eventId/assign/:userId", async (req, res) => {
@@ -270,51 +298,20 @@ eventRouter.post("/:eventId/assign/:userId", async (req, res) => {
 });
 
 /**
- * Finds all the users that are assigned to an event
- */
-eventRouter.get("/:eventId/assign", async (req, res) => {
-    try {
-        // Checks if the event exists
-        const eventResults = await pool.query<Event[]>(
-            `SELECT * FROM EVENT WHERE eventId = ?`
-        );
-        if ((eventResults as RowDataPacket[])[0].length === 0) {
-            return res.status(404).send("Event not found");
-        }
-        const userResults = pool.query<User[]>(
-            `SELECT U.userId, firstName, lastName
-                FROM ATTENDANCE_RECORD ar JOIN USER U on U.userId = ar.userId
-                WHERE eventId = ?`,
-            [req.params.eventId]
-        );
-        return res.send(userResults);
-    } catch (err) {
-        return handleApiError(
-            err,
-            res,
-            "An error occurred while getting the users assigned to the event"
-        );
-    }
-});
-
-/**
  * Removes an assignment for a user to an event
  */
 eventRouter.delete("/:eventId/assign/:userId", async (req, res) => {
     try {
         const { eventId, userId } = req.params;
+        await checkUserPermissions(req.role, userId, res.auth.user);
 
         await checkEventAndUserExists(eventId, userId, res);
-        await checkUserPermissions(req.role, userId, res.auth.user);
+        await attendanceRecordExists(eventId, userId);
 
         const [results] = await pool.query(
             "DELETE FROM ATTENDANCE_RECORD WHERE eventId = ? AND userId = ?",
             [eventId, userId]
         );
-        // @ts-ignore
-        if (results.affectedRows === 0) {
-            return res.status(404).send("User not assigned to event");
-        }
         return res.send("User un-assigned from event successfully");
     } catch (err) {
         return handleApiError(
@@ -326,66 +323,22 @@ eventRouter.delete("/:eventId/assign/:userId", async (req, res) => {
 });
 
 /**
- * Retrieves all users assigned to a particular event
+ * Checks if an attendance record exists
+ *
+ * @param eventId string for an event
+ * @param userId string for a user
  */
-eventRouter.get("/:eventId/users", async (req, res) => {
-    const eventId = req.params.eventId;
+async function attendanceRecordExists(eventId: string, userId: string) {
+    // Check if the attendance record exists
+    const [attendanceResults] = await pool.query(
+        "SELECT * FROM ATTENDANCE_RECORD WHERE eventId = ? AND userId = ?",
+        [eventId, userId]
+    );
 
-    try {
-        const [results] = await pool.query<User[]>(
-            `SELECT u.*
-             FROM USER u
-             JOIN ATTENDANCE_RECORD ar ON u.userId = ar.userId
-             WHERE ar.eventId = ?;`,
-            [eventId]
-        );
-        // console.log(results)
-
-        res.send(results);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send(
-            "An error occurred while getting the users assigned to the event"
-        );
+    if ((attendanceResults as RowDataPacket[])[0].length === 0) {
+        throw new createHttpError(404, "Attendance record not found");
     }
-});
-
-/**
- * Deletes an attendance record for a user at an event
- */
-eventRouter.delete("/:eventId/attendance/:userId", async (req, res) => {
-    try {
-        const eventId = req.params.eventId;
-        const userId = req.params.userId;
-
-        // Check if the attendance record exists
-        const [attendanceResults] = await pool.query(
-            "SELECT * FROM ATTENDANCE_RECORD WHERE eventId = ? AND userId = ?",
-            [eventId, userId]
-        );
-
-        if ((attendanceResults as RowDataPacket[])[0].length === 0) {
-            // console.log(attendanceResults)
-            return res
-                .status(404)
-                .send("Attendance record for user at event not found");
-        }
-
-        // Delete the attendance record
-        await pool.query(
-            "DELETE FROM ATTENDANCE_RECORD WHERE eventId = ? AND userId = ?",
-            [eventId, userId]
-        );
-
-        return res.status(200).send("Attendance record deleted successfully");
-    } catch (err) {
-        return handleApiError(
-            err,
-            res,
-            "An error occurred while deleting the attendance record"
-        );
-    }
-});
+}
 
 /**
  * Checks if a user and event exist before assigning a user to an event

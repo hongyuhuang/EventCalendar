@@ -8,6 +8,65 @@ info:
 servers:
   - url: 'http://localhost:3000'
 paths:
+  /event:
+    post:
+      summary: Creates a new event
+      operationId: delete-event
+      responses:
+        '201':
+          description: Event created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventId:
+                    type: string
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+      description: |-
+        Creates a new event.
+
+        Returns the ID of the newly created event
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+      tags:
+        - Event
+    delete:
+      summary: Deletes old events
+      operationId: delete-event
+      responses:
+        '200':
+          description: OK
+      description: Deletes old events with past endDates
+      tags:
+        - Event
+    get:
+      summary: Gets all events
+      operationId: get-event
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+      description: Gets all events
+      tags:
+        - Event
   '/event/{eventId}':
     parameters:
       - schema:
@@ -72,35 +131,32 @@ paths:
       description: Deletes an event with the given ID
       tags:
         - Event
-  /event:
-    post:
-      summary: Creates a new event
-      operationId: delete-event
+  '/event/{eventId}/assign':
+    parameters:
+      - schema:
+          type: string
+        name: eventId
+        in: path
+        required: true
+    get:
+      summary: Gets all the user's assigned to an event
+      tags:
+        - Event
       responses:
-        '201':
-          description: Event created
+        '200':
+          description: OK
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  eventId:
-                    type: string
+                $ref: '#/components/schemas/User'
         '401':
           $ref: '#/components/responses/401'
         '403':
           $ref: '#/components/responses/403'
-      description: |-
-        Creates a new event.
-
-        Returns the ID of the newly created event
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Event'
-      tags:
-        - Event
+        '404':
+          description: Event not found
+      operationId: get-event-eventId-assign
+      description: Gets users assigned to an event
   '/event/{eventId}/assign/{userId}':
     parameters:
       - schema:
@@ -156,32 +212,71 @@ paths:
       tags:
         - Event
         - User
-  '/event/{eventId}/assign':
-    parameters:
-      - schema:
-          type: string
-        name: eventId
-        in: path
-        required: true
-    get:
-      summary: Gets all the user's assigned to an event
+  /user:
+    post:
+      summary: Creates a new user
+      operationId: post-user
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+      description: 'Creates a new user, returns an ID of the newly created user'
       tags:
-        - Event
+        - User
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                isAdmin:
+                  type: string
+                email:
+                  type: string
+                'password ':
+                  type: string
+    get:
+      summary: Get all users
+      operationId: get-user
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
         '401':
           $ref: '#/components/responses/401'
         '403':
           $ref: '#/components/responses/403'
-        '404':
-          description: Event not found
-      operationId: get-event-eventId-assign
-      description: Gets users assigned to an event
+      description: |-
+        Gets all users
+
+        By default only returns users that aren't admins, can be specified in query params if needed
+      tags:
+        - User
+      parameters:
+        - schema:
+            type: boolean
+          in: query
+          name: includeAdmins
+          description: Whether system administrators should be included in results or not. Default is false
   '/user/{userId}':
     parameters:
       - schema:
@@ -292,71 +387,6 @@ paths:
           description: User not found
       operationId: get-user-userId-events
       description: Gets all the events that are assigned to a user with the given ID
-  /user:
-    post:
-      summary: Creates a new user
-      operationId: post-user
-      responses:
-        '201':
-          description: User created
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  userId:
-                    type: string
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-      description: 'Creates a new user, returns an ID of the newly created user'
-      tags:
-        - User
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                firstName:
-                  type: string
-                lastName:
-                  type: string
-                isAdmin:
-                  type: string
-                email:
-                  type: string
-                'password ':
-                  type: string
-    get:
-      summary: Get all users
-      operationId: get-user
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-      description: |-
-        Gets all users
-
-        By default only returns users that aren't admins, can be specified in query params if needed
-      tags:
-        - User
-      parameters:
-        - schema:
-            type: boolean
-          in: query
-          name: includeAdmins
-          description: Whether system administrators should be included in results or not. Default is false
   '/user/{userId}/photo':
     parameters:
       - schema:
@@ -426,6 +456,39 @@ paths:
           Haven't tested it! - you will need to have a `handleSubmit()` handler to add things such as auth etc.
       tags:
         - User
+  '/user/{userId}/password':
+    patch:
+      summary: Changes a user password
+      operationId: patch-user-password
+      responses:
+        '200':
+          description: OK
+      description: |-
+        Changes the password of a user. 
+
+        Changes the password of a user found in the auth header, once it passes auth - user is allowed to change their own password
+
+        Admins have access to change any password. Otherwise, if it's a user, the id specified in the path param must match the one found in authorization.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPassword:
+                  type: string
+                  description: String value for the new password
+        description: ''
+      tags:
+        - User
+    parameters:
+      - schema:
+          type: string
+        name: userId
+        in: path
+        required: true
+        description: Id of the user who's password is to be changed
   /login:
     get:
       summary: Handle Login of user
@@ -487,39 +550,6 @@ paths:
                   type: string
         description: 'Just the same as a normal user, without the isAdmin attribute'
     parameters: []
-  '/user/{userId}/password':
-    patch:
-      summary: Changes a user password
-      operationId: patch-user-password
-      responses:
-        '200':
-          description: OK
-      description: |-
-        Changes the password of a user. 
-
-        Changes the password of a user found in the auth header, once it passes auth - user is allowed to change their own password
-
-        Admins have access to change any password. Otherwise, if it's a user, the id specified in the path param must match the one found in authorization.
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                newPassword:
-                  type: string
-                  description: String value for the new password
-        description: ''
-      tags:
-        - User
-    parameters:
-      - schema:
-          type: string
-        name: userId
-        in: path
-        required: true
-        description: Id of the user who's password is to be changed
 components:
   schemas:
     User:
