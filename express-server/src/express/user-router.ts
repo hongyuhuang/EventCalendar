@@ -34,6 +34,29 @@ const upload = multer({
 });
 
 /**
+ * Get all users
+ */
+userRouter.get("/", async (req, res) => {
+    try {
+        const includeAdmins = Boolean(req.query.includeAdmins);
+
+        const [results] = await pool.query<User[]>(
+            `SELECT *
+             FROM USER
+             WHERE isAdmin = ? OR isAdmin = 0`,
+            [includeAdmins]
+        );
+        res.send(results);
+    } catch (err) {
+        return handleApiError(
+            err,
+            res,
+            "An internal error occurred while getting the users"
+        );
+    }
+});
+
+/**
  * Creates a new user
  */
 userRouter.post("/", async (req, res) => {
@@ -56,29 +79,6 @@ userRouter.post("/", async (req, res) => {
             err,
             res,
             "An internal error occurred while creating a user"
-        );
-    }
-});
-
-/**
- * Get all users
- */
-userRouter.get("/", async (req, res) => {
-    try {
-        const includeAdmins = Boolean(req.query.includeAdmins);
-
-        const [results] = await pool.query<User[]>(
-            `SELECT *
-             FROM USER
-             WHERE isAdmin = ? OR isAdmin = 0`,
-            [includeAdmins]
-        );
-        res.send(results);
-    } catch (err) {
-        return handleApiError(
-            err,
-            res,
-            "An internal error occurred while getting the users"
         );
     }
 });
@@ -181,6 +181,9 @@ userRouter.delete("/:userId", async (req, res) => {
  */
 userRouter.get("/:userId/events", async (req, res) => {
     const userId = req.params.userId;
+
+    await checkUserPermissions(req.role, userId, req.auth.user);
+
     const afterDateTime = req.query.afterDateTime as string;
 
     let query = `SELECT e.eventId, e.title, e.location, e.startDate, e.endDate, e.description
