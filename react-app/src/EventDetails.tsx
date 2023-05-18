@@ -81,7 +81,7 @@ function EventDetails() {
         const retrieveData = async () => {
             try {
                 const userIdResponse = await axios.get(
-                    `/event/${event.eventId}/users`,
+                    `/event/${event.eventId}/assign`,
                     {
                         headers: {
                             Authorization: authHeader(username, password),
