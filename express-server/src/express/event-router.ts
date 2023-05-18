@@ -181,16 +181,7 @@ eventRouter.patch("/:eventId", async (req, res) => {
             "yyyy-MM-dd HH:mm:ss"
         );
 
-        const findResults = await pool.query<Event[]>(
-            `SELECT *
-             FROM EVENT
-             WHERE eventId = ?`,
-            [eventId]
-        );
-
-        if ((findResults as RowDataPacket[]).length === 0) {
-            return res.status(404).send("Event not found");
-        }
+        await checkEventExists(eventId);
 
         await pool.query<OkPacket>(
             `UPDATE EVENT
@@ -229,19 +220,17 @@ eventRouter.patch("/:eventId", async (req, res) => {
  */
 eventRouter.get("/:eventId/assign", async (req, res) => {
     try {
+        const eventId = req.params.eventId;
         // Checks if the event exists
-        const eventResults = await pool.query<Event[]>(
-            `SELECT * FROM EVENT WHERE eventId = ?`
+
+        await checkEventExists(eventId);
+        const [userResults] = await pool.query<User[]>(
+            `SELECT u.userId, firstName, lastName
+                FROM ATTENDANCE_RECORD ar JOIN USER u on u.userId = ar.userId
+                WHERE ar.eventId = ?`,
+            [eventId]
         );
-        if ((eventResults as RowDataPacket[])[0].length === 0) {
-            return res.status(404).send("Event not found");
-        }
-        const userResults = pool.query<User[]>(
-            `SELECT U.userId, firstName, lastName
-                FROM ATTENDANCE_RECORD ar JOIN USER U on U.userId = ar.userId
-                WHERE eventId = ?`,
-            [req.params.eventId]
-        );
+
         return res.send(userResults);
     } catch (err) {
         return handleApiError(
@@ -260,10 +249,10 @@ eventRouter.post("/:eventId/assign/:userId", async (req, res) => {
         const eventId = req.params.eventId;
         const userId = req.params.userId;
 
-        await checkEventAndUserExists(eventId, userId, res);
+        await checkEventAndUserExists(eventId, userId);
 
         // had to comment this out for route to work, not sure why but its getting passed the userId thats
-        // trying to be assigend to an event, and then checking if its admin, which doesn't matter for asignee's
+        // trying to be assigned to an event, and then checking if its admin, which doesn't matter for asignee's
 
         await checkUserPermissions(req.role, userId, res.auth.user);
 
@@ -305,10 +294,10 @@ eventRouter.delete("/:eventId/assign/:userId", async (req, res) => {
         const { eventId, userId } = req.params;
         await checkUserPermissions(req.role, userId, res.auth.user);
 
-        await checkEventAndUserExists(eventId, userId, res);
+        await checkEventAndUserExists(eventId, userId);
         await attendanceRecordExists(eventId, userId);
 
-        const [results] = await pool.query(
+        await pool.query(
             "DELETE FROM ATTENDANCE_RECORD WHERE eventId = ? AND userId = ?",
             [eventId, userId]
         );
@@ -348,7 +337,26 @@ async function attendanceRecordExists(eventId: string, userId: string) {
  * @param eventId string for an event id
  * @param userId string for a user id
  */
-async function checkEventAndUserExists(eventId: string, userId: string, res) {
+async function checkEventAndUserExists(eventId: string, userId: string) {
+    await checkEventExists(eventId);
+    await checkUserExists(userId);
+    return;
+}
+
+async function checkUserExists(userId: string) {
+    const userResults = await pool.query<User[]>(
+        `SELECT *
+                     FROM USER
+                     WHERE userId = ?`,
+        [userId]
+    );
+
+    if ((userResults as RowDataPacket[]).length === 0) {
+        throw new createHttpError(404, "User not found");
+    }
+}
+
+async function checkEventExists(eventId: string) {
     // Check if the event exists
     const [eventResults] = await pool.query<Event[]>(
         `SELECT *
@@ -360,19 +368,6 @@ async function checkEventAndUserExists(eventId: string, userId: string, res) {
     if ((eventResults as RowDataPacket[]).length === 0) {
         throw new createHttpError(404, "Event not found");
     }
-
-    // Check if the user exists
-    const userResults = await pool.query<User[]>(
-        `SELECT *
-                     FROM USER
-                     WHERE userId = ?`,
-        [userId]
-    );
-
-    if ((userResults as RowDataPacket[]).length === 0) {
-        throw new createHttpError(404, "User not found");
-    }
-    return;
 }
 
 async function checkEventIsValid(eventLoc, eventStart, eventEnd) {
