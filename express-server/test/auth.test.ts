@@ -41,7 +41,7 @@ afterAll(() => {
 
 describe("Testing login route", () => {
     test("Test with admin user", async () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         /*
         TODO:
@@ -59,10 +59,11 @@ describe("Testing login route", () => {
 
         expect(response.status).toBe(200);
         expect(response.body.isAdmin).toBe(true);
+        expect(response.body.userId).toBe(1);
     });
 
     test("Test with a regular user", async () => {
-        expect.assertions(4);
+        expect.assertions(5);
 
         /*
         Steps:
@@ -104,6 +105,7 @@ describe("Testing login route", () => {
 
             expect(loginResponse.status).toBe(200);
             expect(loginResponse.body.isAdmin).toBe(false);
+            expect(loginResponse.body.userId).toBe(userId);
         } finally {
             const deleteResponse = await agent
                 .delete(`/user/${userId}`)

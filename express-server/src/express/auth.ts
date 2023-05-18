@@ -6,7 +6,10 @@ import { User } from "../entities";
 const bodyParser = require("body-parser");
 
 const pool: Pool = require("../helpers").pool;
+const handleApiError = require("../helpers").handleApiError;
 const authRouter = require("express").Router();
+
+const createHttpError = require("http-errors");
 
 // Set up reCaptcha for login
 const ReCaptcha = require("express-recaptcha").RecaptchaV2;
@@ -136,10 +139,30 @@ authRouter.get(
         }
         return next();
     },
-    (req, res) => {
+    async (req, res) => {
+        // Get id of user
+        let results;
+        try {
+            [results] = await pool.query<User[]>(
+                `SELECT userId
+                 FROM USER
+                 WHERE email = ?`,
+                [req.auth.user]
+            );
+            if (results.length == 0) {
+                throw createHttpError(404, "User not found");
+            }
+        } catch (e) {
+            return handleApiError(
+                e,
+                res,
+                "An error occurred while getting a user ID"
+            );
+        }
         return res.status(200).json({
             // @ts-ignore
             isAdmin: req.role === "admin",
+            userId: results[0].userId,
         });
     }
 );
