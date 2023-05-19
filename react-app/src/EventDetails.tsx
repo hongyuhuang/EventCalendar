@@ -51,6 +51,7 @@ const Button = styled.button`
 function EventDetails() {
     const location = useLocation();
     const event: Event = location.state.event;
+    const isRecurring: boolean = location.state.isRecurring;
     const navigate = useNavigate();
     const [user, setUsers] = useState<User[]>([]);
 
@@ -141,7 +142,7 @@ function EventDetails() {
             {isAdmin && (
                 <>
                     <ButtonContainer>
-                        <Button onClick={editEvent}>EDIT EVENT</Button>
+                        {!isRecurring && (<Button onClick={editEvent}>EDIT EVENT</Button>)}
                         <Button onClick={deleteEvent}>DELETE EVENT</Button>
                     </ButtonContainer>
                 </>

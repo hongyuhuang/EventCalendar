@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -11,6 +11,8 @@ const localizer = momentLocalizer(moment);
 function EventCalendar() {
     const [events, setEvents] = useState<Event[]>([]);
     const [showAssignedEvents, setShowAssignedEvents] = useState(false); // State for the toggle
+    // var recurringEventIds: number[] = []
+    const recurringEventIdsRef = useRef<number[]>([]);
 
     const userData = sessionStorage.getItem("userData");
     const password = sessionStorage.getItem("password") || "";
@@ -35,19 +37,64 @@ function EventCalendar() {
     const navigate = useNavigate();
 
     const handleSelectEvent = (event: Event) => {
-        navigate("/event-details", { state: { event } });
-    };
-
+        console.log(recurringEventIdsRef.current);
+        const isRecurring = recurringEventIdsRef.current.includes(event.eventId);
+        console.log(isRecurring);
+        navigate("/event-details", { state: { event, isRecurring } });
+      };
     const fetchEvents = async () => {
         try {
-            const response = await axios.get("/event", {
+            
+            const suffix_response = await axios.get("http://localhost:3001/event/retrieve-recurring-suffixes", {
                 headers: headers,
             });
+            
+            const recurringEventIds = suffix_response.data.map((suffix: any) => suffix.eventId);
+            recurringEventIdsRef.current = recurringEventIds;
+
+            console.log(recurringEventIds)
+            
+            const response = await axios.get("http://localhost:3001/event", {
+                headers: headers,
+            });
+
+            let recurring_events = [];
+
+
+            if (recurringEventIds.length > 0) {
+                const recurring_response = await axios.get("http://localhost:3001/event/retrieve-recurring-events", {
+                  params: {
+                    recurringEventIds: recurringEventIds.join(',')
+                  },
+                  headers: headers
+                });
+              
+                recurring_events = recurring_response.data;
+              }
+            
             const parsedEvents = response.data.map((event: Event) => ({
                 ...event,
                 startDate: new Date(event.startDate),
                 endDate: new Date(event.endDate),
             }));
+    
+            // so gross
+            for (const repeatEvent of recurring_events) {
+                const eventId = repeatEvent.eventId;
+                const originalEvent = parsedEvents.find((event: Event) => event.eventId === eventId);
+                
+                if (originalEvent) {
+                    const repeatStartDate = repeatEvent.startDate;
+                    const repeatEndDate = repeatEvent.endDate;
+    
+                    const repeatEventCopy = { ...originalEvent }; // Create a shallow copy of the original event
+                    repeatEventCopy.startDate = new Date(repeatStartDate);
+                    repeatEventCopy.endDate = new Date(repeatEndDate);
+              
+                    parsedEvents.push(repeatEventCopy);
+                }
+            }
+    
             setEvents(parsedEvents);
         } catch (error) {
             console.log(error);
