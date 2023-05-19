@@ -28,9 +28,10 @@ eventRouter.get(`/retrieve-recurring-suffixes`, async (req, res) => {
     }
 });
 
-eventRouter.post('/retrieve-recurring-events', async (req, res) => {
+eventRouter.get('/retrieve-recurring-events', async (req, res) => {
     try {
-      const eventIds = req.body;
+    //   const eventIds = req.body;
+      const eventIds = req.query.recurringEventIds.split(',');
       const placeholders = eventIds.map(() => '?').join(',');
   
       const [response] = await pool.query(`

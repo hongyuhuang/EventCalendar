@@ -54,14 +54,18 @@ function EventCalendar({
             });
 
             let recurring_events = [];
-            
+
+
             if (recurringEventIds.length > 0) {
-                const recurring_response = await axios.post("http://localhost:3001/event/retrieve-recurring-events", 
-                recurringEventIds,
-                { headers: headers });
-    
+                const recurring_response = await axios.get("http://localhost:3001/event/retrieve-recurring-events", {
+                  params: {
+                    recurringEventIds: recurringEventIds.join(',')
+                  },
+                  headers: headers
+                });
+              
                 recurring_events = recurring_response.data;
-            }
+              }
             
             const parsedEvents = response.data.map((event: Event) => ({
                 ...event,
