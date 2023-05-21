@@ -291,6 +291,7 @@ function CreateEventForm() {
       <Select
         value={selectedUser}
         onChange={(e) => setSelectedUser(e.target.value)}
+        required
       >
         <option value="">Select a user</option>
         {users.map((user) => (
@@ -304,7 +305,7 @@ function CreateEventForm() {
     <Label>
       Repeat:
       <Checkbox
-        name="repeat"
+        name="Repeat"
         checked={repeatData.repeat}
         onChange={handleChange}
       />
