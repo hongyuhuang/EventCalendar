@@ -370,7 +370,7 @@ eventRouter.post("/:eventId/assign/:userId", async (req, res) => {
 eventRouter.delete("/:eventId/assign/:userId", async (req, res) => {
     try {
         const { eventId, userId } = req.params;
-        await checkUserPermissions(req.role, userId, res.auth.user);
+        await checkUserPermissions(req.role, userId, req.auth.user);
 
         await checkEventAndUserExists(eventId, userId);
         await attendanceRecordExists(eventId, userId);
