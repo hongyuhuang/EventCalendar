@@ -175,7 +175,7 @@ function EditEventForm() {
             //try catch is definetly not the way to go about this. but its 8pm and ive been working all day
             try {
                 const response2 = await axios.delete(
-                    `/event/${event.eventId}/assign/${assignedUserId}`,
+                    `/event/${event.eventId}/assign/${assignedUserId}`, // assignedUserId and selectedUser seems to be empty in console error
                     { headers: headers }
                 );
                 // console.log(response2.data);

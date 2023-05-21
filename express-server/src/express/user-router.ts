@@ -260,7 +260,7 @@ userRouter.patch("/:userId/password", async (req, res) => {
  * Returns a photo for a particular user.
  */
 userRouter.get("/:userId/photo", async (req, res) => {
-    await checkUserPermissions(req.role, req.params.userId, res.auth.user);
+    await checkUserPermissions(req.role, req.params.userId, req.auth.user);
     const photoDir = userPhotoDir(req.params.userId);
 
     // Check if file exists
@@ -274,7 +274,7 @@ userRouter.get("/:userId/photo", async (req, res) => {
  * Uploads a photo for a particular user, covers cases of updating and creating
  */
 userRouter.post("/:userId/photo", upload.single("photo"), async (req, res) => {
-    await checkUserPermissions(req.role, req.params.userId, res.auth.user);
+    await checkUserPermissions(req.role, req.params.userId, req.auth.user);
 
     fs.renameSync(req.file.path, userPhotoDir(req.params.userId));
 
