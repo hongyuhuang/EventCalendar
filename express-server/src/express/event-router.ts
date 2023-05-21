@@ -6,7 +6,7 @@ import { OkPacket, ResultSetHeader } from "mysql2";
 import PoolCluster from "mysql2/typings/mysql/lib/PoolCluster";
 const express = require("express");
 const eventRouter = express.Router();
-const eventCleaner = require('./event-cleaner');
+const eventCleaner = require("./event-cleaner");
 const recurringHandler = require("./repeat-event-handler");
 
 const { pool, handleApiError, checkUserPermissions } =
@@ -21,39 +21,46 @@ eventCleaner.startCronJob();
 
 eventRouter.get(`/retrieve-recurring-suffixes`, async (req, res) => {
     try {
-        const [result] = await pool.query(`SELECT * FROM RECURRING_EVENT_SUFFIX`, []);
+        const [result] = await pool.query(
+            `SELECT * FROM RECURRING_EVENT_SUFFIX`,
+            []
+        );
 
-        return res.status(201).send(result)
+        return res.status(201).send(result);
     } catch (error) {
         console.log(error);
-        res.status(500).send("An error occurred while retrieving recurring suffixes");
+        res.status(500).send(
+            "An error occurred while retrieving recurring suffixes"
+        );
     }
 });
 
-eventRouter.get('/retrieve-recurring-events', async (req, res) => {
+eventRouter.get("/retrieve-recurring-events", async (req, res) => {
     try {
-    //   const eventIds = req.body;
-      const eventIds = req.query.recurringEventIds.split(',');
-      const placeholders = eventIds.map(() => '?').join(',');
-  
-      const [response] = await pool.query(`
+        //   const eventIds = req.body;
+        const eventIds = req.query.recurringEventIds.split(",");
+        const placeholders = eventIds.map(() => "?").join(",");
+
+        const [response] = await pool.query(
+            `
         SELECT e.*, re.startDate, re.endDate
         FROM RECURRING_EVENT_SUFFIX AS res
         JOIN RECURRING_EVENT AS re ON res.recurringEventSuffixId = re.recurringEventSuffixId
         JOIN EVENT AS e ON res.eventId = e.eventId
-        WHERE res.eventId IN (${placeholders})`, 
-        eventIds);
+        WHERE res.eventId IN (${placeholders})`,
+            eventIds
+        );
 
         // console.log(response)
-  
-      return res.status(201).send(response);
-    } catch (error) {
-      console.log(error);
-      res.status(500).send("An error occurred while retrieving recurring events");
-    }
-  });
-  
 
+        return res.status(201).send(response);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(
+            "An error occurred while retrieving recurring events"
+        );
+    }
+});
 
 /*
  * Route to return event with a given id
@@ -77,8 +84,6 @@ eventRouter.get("/:id", async (req, res) => {
         res.redirect("/404");
     }
 });
-
-
 
 /**
  * Route to get all events
@@ -139,9 +144,6 @@ eventRouter.delete("/", async (req, res) => {
         );
     }
 });
-
-
-
 
 /**
  * Creates a new event
@@ -213,15 +215,16 @@ eventRouter.get("/:eventId", async (req, res) => {
     }
 });
 
-eventRouter.post("/:eventId/repeat", async (req, res) => {    
-    const response = recurringHandler.createRecurringEventSuffix(req.body.eventId, req.body.startDate, req.body.endDate, req.body.repeatData.repeatInterval, req.body.repeatData.repeatEndDate);
-    return res.status(201).send("Recurring event created.")
+eventRouter.post("/:eventId/repeat", async (req, res) => {
+    const response = recurringHandler.createRecurringEventSuffix(
+        req.body.eventId,
+        req.body.startDate,
+        req.body.endDate,
+        req.body.repeatData.repeatInterval,
+        req.body.repeatData.repeatEndDate
+    );
+    return res.status(201).send("Recurring event created.");
 });
-
-
-
-
-
 
 /**
  * Deletes an event by ID
@@ -329,7 +332,7 @@ eventRouter.post("/:eventId/assign/:userId", async (req, res) => {
         // had to comment this out for route to work, not sure why but its getting passed the userId thats
         // trying to be assigned to an event, and then checking if its admin, which doesn't matter for asignee's
 
-        await checkUserPermissions(req.role, userId, res.auth.user);
+        await checkUserPermissions(req.role, userId, req.auth.user);
 
         // If both event and user exist, check if attendance record already exists
         const attendanceResults = await pool.query(

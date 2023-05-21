@@ -122,7 +122,7 @@ function EditEventForm() {
         const retrieveData = async () => {
             try {
                 const userIdResponse = await axios.get(
-                    `/event/${event.eventId}/users`,
+                    `/event/${event.eventId}/assign`,
                     {
                         headers: {
                             Authorization: authHeader(username, password),
@@ -173,9 +173,13 @@ function EditEventForm() {
             // console.log(response.data);
 
             //try catch is definetly not the way to go about this. but its 8pm and ive been working all day
+
+            console.log(`Assigned user: ${assignedUserId}`);
+            console.log(`Selected user: ${selectedUser}`);
+
             try {
                 const response2 = await axios.delete(
-                    `/event/${event.eventId}/attendance/${assignedUserId}`,
+                    `/event/${event.eventId}/assign/${assignedUserId}`, // assignedUserId and selectedUser seems to be empty in console error
                     { headers: headers }
                 );
                 // console.log(response2.data);
