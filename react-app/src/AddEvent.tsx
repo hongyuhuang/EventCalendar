@@ -305,7 +305,7 @@ function CreateEventForm() {
     <Label>
       Repeat:
       <Checkbox
-        name="Repeat"
+        name="repeat"
         checked={repeatData.repeat}
         onChange={handleChange}
       />
