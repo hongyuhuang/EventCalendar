@@ -9,6 +9,7 @@
     "start": "cd express-server && npm start",
     "build" : "npm run install-deps && cd react-app && npm run build",
     "install-deps": "npm install && cd react-app && npm install && cd ../express-server && npm install",
+    "dev-start": "concurrently \"cd express-server && npm start\" \"cd react-app && npm start\"",
     "clear-cache": "npm cache clean --force && cd react-app && npm cache clean --force && cd ../express-server && npm cache clean --force"
   },
   "dependencies": {

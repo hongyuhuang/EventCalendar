@@ -2,8 +2,9 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { User } from "./types";
+import { useNavigate } from "react-router-dom";
 
 const Wrapper = styled.div`
     background-color: #ffffff;
@@ -34,6 +35,10 @@ const Heading = styled.h2`
 `;
 
 const TrashIcon = styled(FontAwesomeIcon)`
+    margin-right: 8px;
+`;
+
+const EditIcon = styled(FontAwesomeIcon)`
     margin-right: 8px;
 `;
 
@@ -106,6 +111,12 @@ function UserList() {
         fetchEventCounts();
     }, [users]);
 
+    const navigate = useNavigate();
+
+    const handleEditUser = (user: User) => {
+        navigate("/edit-user", { state: { user: user } });
+    };
+
     const handleDeleteUser = (userId: number) => {
         axios
             .delete(`/user/${userId}`, {
@@ -131,7 +142,8 @@ function UserList() {
                         <th>Last Name</th>
                         <th>Email</th>
                         <th>Number of Events</th>
-                        <th></th>
+                        <th>Edit</th>
+                        <th>Delete</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -142,6 +154,16 @@ function UserList() {
                                 <td>{user.lastName}</td>
                                 <td>{user.email}</td>
                                 <td>{eventCounts[user.userId]}</td>
+
+                                <td>
+                                    <IconWrapper>
+                                        <EditIcon
+                                            icon={faEdit}
+                                            onClick={() => handleEditUser(user)}
+                                        />
+                                    </IconWrapper>
+                                </td>
+
                                 <td>
                                     <IconWrapper>
                                         <TrashIcon
