@@ -9,9 +9,9 @@
 - Spreadsheet for user requirements and sprint documentation: https://docs.google.com/spreadsheets/d/12fd1EtadMfiQKqN7ivZ8u01FkupfF1lQtW6gjt7gezk/edit?pli=1#gid=1687718450
 
 ## Running the app
-- First install dependencies (installs dependencies in sub modules)
+- First build the app and install dependencies, use:
 ```shell
-npm run install-deps
+npm run build
 ```
 
 - To run the app, use:
