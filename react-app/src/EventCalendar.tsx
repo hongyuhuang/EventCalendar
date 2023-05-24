@@ -24,7 +24,7 @@ function EventCalendar() {
 
     let username = "";
     let userId = 0;
-    if(userData) {
+    if (userData) {
         const user: User = JSON.parse(userData);
         username = user.email;
         userId = user.userId;
@@ -38,63 +38,73 @@ function EventCalendar() {
 
     const handleSelectEvent = (event: Event) => {
         console.log(recurringEventIdsRef.current);
-        const isRecurring = recurringEventIdsRef.current.includes(event.eventId);
+        const isRecurring = recurringEventIdsRef.current.includes(
+            event.eventId
+        );
         console.log(isRecurring);
         navigate("/event-details", { state: { event, isRecurring } });
-      };
+    };
     const fetchEvents = async () => {
         try {
-            
-            const suffix_response = await axios.get("http://localhost:3001/event/retrieve-recurring-suffixes", {
-                headers: headers,
-            });
-            
-            const recurringEventIds = suffix_response.data.map((suffix: any) => suffix.eventId);
+            const suffix_response = await axios.get(
+                "/event/retrieve-recurring-suffixes",
+                {
+                    headers: headers,
+                }
+            );
+
+            const recurringEventIds = suffix_response.data.map(
+                (suffix: any) => suffix.eventId
+            );
             recurringEventIdsRef.current = recurringEventIds;
 
-            console.log(recurringEventIds)
-            
-            const response = await axios.get("http://localhost:3001/event", {
+            console.log(recurringEventIds);
+
+            const response = await axios.get("/event", {
                 headers: headers,
             });
 
             let recurring_events = [];
 
-
             if (recurringEventIds.length > 0) {
-                const recurring_response = await axios.get("http://localhost:3001/event/retrieve-recurring-events", {
-                  params: {
-                    recurringEventIds: recurringEventIds.join(',')
-                  },
-                  headers: headers
-                });
-              
+                const recurring_response = await axios.get(
+                    "/event/retrieve-recurring-events",
+                    {
+                        params: {
+                            recurringEventIds: recurringEventIds.join(","),
+                        },
+                        headers: headers,
+                    }
+                );
+
                 recurring_events = recurring_response.data;
-              }
-            
+            }
+
             const parsedEvents = response.data.map((event: Event) => ({
                 ...event,
                 startDate: new Date(event.startDate),
                 endDate: new Date(event.endDate),
             }));
-    
+
             // so gross
             for (const repeatEvent of recurring_events) {
                 const eventId = repeatEvent.eventId;
-                const originalEvent = parsedEvents.find((event: Event) => event.eventId === eventId);
-                
+                const originalEvent = parsedEvents.find(
+                    (event: Event) => event.eventId === eventId
+                );
+
                 if (originalEvent) {
                     const repeatStartDate = repeatEvent.startDate;
                     const repeatEndDate = repeatEvent.endDate;
-    
+
                     const repeatEventCopy = { ...originalEvent }; // Create a shallow copy of the original event
                     repeatEventCopy.startDate = new Date(repeatStartDate);
                     repeatEventCopy.endDate = new Date(repeatEndDate);
-              
+
                     parsedEvents.push(repeatEventCopy);
                 }
             }
-    
+
             setEvents(parsedEvents);
         } catch (error) {
             console.log(error);
