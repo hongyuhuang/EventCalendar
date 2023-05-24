@@ -47,7 +47,7 @@ function EventCalendar() {
     const fetchEvents = async () => {
         try {
             const suffix_response = await axios.get(
-                "event/retrieve-recurring-suffixes",
+                "/event/retrieve-recurring-suffixes",
                 {
                     headers: headers,
                 }

@@ -223,7 +223,7 @@ function CreateEventForm() {
                     eventId: response.data.eventId,
                 };
 
-                await axios.post(`s/event/${eventId}/repeat`, repeatPayload, {
+                await axios.post(`/event/${eventId}/repeat`, repeatPayload, {
                     headers: headers,
                 });
             }
