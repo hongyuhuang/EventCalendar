@@ -123,17 +123,15 @@ userRouter.get("/:userId", async (req, res) => {
  */
 userRouter.patch("/:userId", async (req, res) => {
     try {
-        const { firstName, lastName, email, password } = req.body;
+        const { firstName, lastName, email } = req.body;
 
         console.log(`${req.role} ${req.params.userId} ${req.auth.user}`);
 
         await checkUserPermissions(req.role, req.params.userId, req.auth.user);
 
-        const passwordHashSalt = bcrypt.hashSync(password, 10);
-
         const result = await pool.query<ResultSetHeader>(
-            "UPDATE USER SET firstName = ?, lastName = ?, email = ?, password = ? WHERE userId = ?",
-            [firstName, lastName, email, passwordHashSalt, req.params.userId]
+            "UPDATE USER SET firstName = ?, lastName = ?, email = ? WHERE userId = ?",
+            [firstName, lastName, email, req.params.userId]
         );
 
         if (result[0].affectedRows === 0) {
@@ -220,18 +218,24 @@ userRouter.get("/:userId/events", async (req, res) => {
  */
 userRouter.patch("/:userId/password", async (req, res) => {
     try {
-        await checkUserPermissions(req.role, req.params.userId, res.auth.user);
+        await checkUserPermissions(req.role, req.params.userId, req.auth.user);
 
+        console.log(`new Password ${req.body.newPassword}`);
         const passwordHashSalt = bcrypt.hashSync(req.body.newPassword, 10);
 
-        const whereClause = `WHERE userId = ?`;
-        const queryParams: string[] = [passwordHashSalt, req.params.id];
+        let queryParams;
+        let whereClause;
 
         if (req.role !== "admin") {
             // Need to check value of email too, if user is not an admin
-            queryParams.push(req.auth.user);
-            whereClause.concat(`AND email = ?`);
+            whereClause = `WHERE userId = ? and email = ?`;
+            queryParams = [passwordHashSalt, req.params.userId, req.auth.user];
+        } else {
+            whereClause = `WHERE userId = ?`;
+            queryParams = [passwordHashSalt, req.params.userId];
         }
+
+        console.log(`whereClause ${whereClause}`);
 
         const results = (
             await pool.query<ResultSetHeader>(
@@ -249,8 +253,8 @@ userRouter.patch("/:userId/password", async (req, res) => {
         }
     } catch (err) {
         return handleApiError(
-            res,
             err,
+            res,
             "An error occurred while updating a user's password"
         );
     }
