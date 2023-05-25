@@ -60,7 +60,7 @@ function EventCalendar() {
             recurringEventIdsRef.current = recurringEventIds;
 
             // Retrieve non-recurring events
-            const response = await axios.get("http://localhost:3001/event", {
+            const response = await axios.get("/event", {
                 headers: headers,
             });
 

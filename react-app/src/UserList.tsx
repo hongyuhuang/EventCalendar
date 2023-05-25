@@ -6,7 +6,9 @@ import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { User } from "./types";
 import { useNavigate } from "react-router-dom";
 
+// Wrapper for the entire page
 const Wrapper = styled.div`
+// Styling for the wrapper
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
@@ -14,7 +16,9 @@ const Wrapper = styled.div`
     width: 960px;
 `;
 
+// Table for the user list
 const Table = styled.table`
+// Styling for the table
     border-collapse: collapse;
     width: 100%;
     margin-top: 20px;
@@ -30,18 +34,23 @@ const Table = styled.table`
     }
 `;
 
+// Heading for the page
 const Heading = styled.h2`
+// Styling for the heading
     color: var(--otago-blue-dark);
 `;
 
+// Trash icon
 const TrashIcon = styled(FontAwesomeIcon)`
     margin-right: 8px;
 `;
 
+// Edit icon
 const EditIcon = styled(FontAwesomeIcon)`
     margin-right: 8px;
 `;
 
+// Wrapper for the icon
 const IconWrapper = styled.div`
     display: flex;
     align-items: center;
@@ -77,9 +86,9 @@ function UserList() {
 
     useEffect(() => {
         axios
-            .get("/user", { headers: headers })
+            .get("/user", { headers: headers }) // Fetching user data
             .then((response) => {
-                setUsers(response.data);
+                setUsers(response.data); // Update users state with fetched data
             })
             .catch((error) => {
                 console.log(error);
@@ -93,16 +102,16 @@ function UserList() {
                 for (const user of users) {
                     try {
                         const response = await axios.get(
-                            `/user/${user.userId}/events`,
+                            `/user/${user.userId}/events`, // Fetching events for each user
                             { headers: headers }
                         );
                         const events = response.data;
-                        counts[user.userId] = events.length;
+                        counts[user.userId] = events.length; // Storing the number of events for each user
                     } catch (error) {
                         console.log(error);
                     }
                 }
-                setEventCounts(counts);
+                setEventCounts(counts); // Update eventCounts state with the fetched event counts
             } catch (error) {
                 console.log(error);
             }
@@ -114,17 +123,17 @@ function UserList() {
     const navigate = useNavigate();
 
     const handleEditUser = (user: User) => {
-        navigate("/edit-user", { state: { user: user } });
+        navigate("/edit-user", { state: { user: user } }); // Navigate to the edit user page with the selected user data
     };
 
     const handleDeleteUser = (userId: number) => {
         axios
             .delete(`/user/${userId}`, {
                 headers: headers,
-            })
+            }) // Delete user by user ID
             .then(() => {
                 setUsers((prevUsers) =>
-                    prevUsers.filter((user) => user.userId !== userId)
+                    prevUsers.filter((user) => user.userId !== userId) // Update the users state by removing the deleted user
                 );
             })
             .catch((error) => {
@@ -159,7 +168,7 @@ function UserList() {
                                     <IconWrapper>
                                         <EditIcon
                                             icon={faEdit}
-                                            onClick={() => handleEditUser(user)}
+                                            onClick={() => handleEditUser(user)} // Trigger handleEditUser function on icon click
                                         />
                                     </IconWrapper>
                                 </td>
@@ -169,7 +178,7 @@ function UserList() {
                                         <TrashIcon
                                             icon={faTrashAlt}
                                             onClick={() =>
-                                                handleDeleteUser(user.userId)
+                                                handleDeleteUser(user.userId) // Trigger handleDeleteUser function on icon click
                                             }
                                         />
                                     </IconWrapper>
