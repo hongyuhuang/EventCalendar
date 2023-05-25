@@ -48,7 +48,7 @@ function EventCalendar() {
         try {
             // Retrieve recurring event suffixes
             const suffix_response = await axios.get(
-                "http://localhost:3001/event/retrieve-recurring-suffixes",
+                "/retrieve-recurring-suffixes",
                 {
                     headers: headers,
                 }
@@ -69,7 +69,7 @@ function EventCalendar() {
             // Retrieve recurring events if any exist
             if (recurringEventIds.length > 0) {
                 const recurring_response = await axios.get(
-                    "http://localhost:3001/event/retrieve-recurring-events",
+                    "/event/retrieve-recurring-events",
                     {
                         params: {
                             recurringEventIds: recurringEventIds.join(","),
