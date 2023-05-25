@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 // Wrapper for the entire page
 const Wrapper = styled.div`
-// Styling for the wrapper
+    // Styling for the wrapper
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
@@ -18,7 +18,7 @@ const Wrapper = styled.div`
 
 // Table for the user list
 const Table = styled.table`
-// Styling for the table
+    // Styling for the table
     border-collapse: collapse;
     width: 100%;
     margin-top: 20px;
@@ -36,7 +36,7 @@ const Table = styled.table`
 
 // Heading for the page
 const Heading = styled.h2`
-// Styling for the heading
+    // Styling for the heading
     color: var(--otago-blue-dark);
 `;
 
@@ -132,8 +132,9 @@ function UserList() {
                 headers: headers,
             }) // Delete user by user ID
             .then(() => {
-                setUsers((prevUsers) =>
-                    prevUsers.filter((user) => user.userId !== userId) // Update the users state by removing the deleted user
+                setUsers(
+                    (prevUsers) =>
+                        prevUsers.filter((user) => user.userId !== userId) // Update the users state by removing the deleted user
                 );
             })
             .catch((error) => {
@@ -177,8 +178,11 @@ function UserList() {
                                     <IconWrapper>
                                         <TrashIcon
                                             icon={faTrashAlt}
-                                            onClick={() =>
-                                                handleDeleteUser(user.userId) // Trigger handleDeleteUser function on icon click
+                                            onClick={
+                                                () =>
+                                                    handleDeleteUser(
+                                                        user.userId
+                                                    ) // Trigger handleDeleteUser function on icon click
                                             }
                                         />
                                     </IconWrapper>
