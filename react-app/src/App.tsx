@@ -17,14 +17,19 @@ import UserList from "./UserList";
 import EditEventForm from "./EditEvent";
 import EditUserForm from "./EditUser";
 
+// Wrapper component for the entire app
 const Wrapper = styled.div`
+    // Styling for the wrapper
     display: flex;
     flex-direction: column;
     font-family: "Open Sans", sans-serif;
 `;
 
+// Header component
 const Header = styled.header`
+    // Styling for the header
     &::before {
+        // Styling for the top border
         content: "";
         display: block;
         position: absolute;
@@ -47,15 +52,21 @@ const Header = styled.header`
     z-index: 9999;
 `;
 
+// Logo component for the university logo
 const Logo = styled.img`
+    // Styling for the logo
     height: 70px;
 `;
 
+// Title component for the app title
 const Title = styled.span`
+    // Styling for the title
     padding-left: 10px;
 `;
 
+// Navigation component
 const Nav = styled.nav`
+    // Styling for the navigation
     position: fixed;
     background: var(--otago-grey-dark);
     width: 100%;
@@ -63,16 +74,20 @@ const Nav = styled.nav`
     left: 0;
 `;
 
+// NavLink component for navigation links
 const NavItem = styled(NavLink)`
+    // Styling for the navigation item
     color: var(--otago-blue);
     text-decoration: none;
     font-size: 15px;
     padding: 10px;
     &.active {
+        // Styling for the active link
         background-color: white;
         color: var(--otago-blue-dark);
     }
     &:hover {
+        // Styling for the hovered link
         background: var(--otago-blue);
         color: white;
     }
@@ -80,7 +95,9 @@ const NavItem = styled(NavLink)`
     float: left;
 `;
 
+// Main component for the main content area
 const Main = styled.main`
+    // Styling for the main content
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -90,7 +107,9 @@ const Main = styled.main`
     margin-top: 108.5px;
 `;
 
+// SignOutButton component for the sign out button
 const SignOutButton = styled.button`
+    // Styling for the sign out button
     color: white;
     background-color: transparent;
     border: none;
@@ -100,32 +119,39 @@ const SignOutButton = styled.button`
     margin-right: 10px;
 
     &:hover {
+        // Styling for the hovered button
         text-decoration: underline;
     }
 `;
 
 const App: React.FC = () => {
+    // Check if user is logged in and if the user is an admin
     const userData = sessionStorage.getItem("userData");
     const isLoggedIn = sessionStorage.getItem("loggedIn") === "true";
     const isAdmin = userData ? JSON.parse(userData).isAdmin : false;
     const navigate = useNavigate();
 
+    // Get the current location
     const location = useLocation();
     const currentPath = location.pathname;
 
+    // Function to check if a link is active
     const isLinkActive = (linkPath: string) => {
         return linkPath === "/"
             ? currentPath === linkPath
             : currentPath.startsWith(linkPath);
     };
 
+    // Handle sign out action
     const handleSignOut = () => {
+        // Clear session storage and navigate to the login page
         sessionStorage.removeItem("userData");
         sessionStorage.removeItem("password");
         sessionStorage.removeItem("loggedIn");
         navigate("/");
     };
 
+    // Clear session storage on component unmount
     useEffect(() => {
         const handleBeforeUnload = () => {
             sessionStorage.clear();
@@ -140,6 +166,7 @@ const App: React.FC = () => {
 
     return (
         <Wrapper>
+            {/* Header */}
             <Header>
                 <Logo
                     src={"/images/university-of-otago-logo.png"}
@@ -147,6 +174,7 @@ const App: React.FC = () => {
                 />
                 <Title>Event Calendar</Title>
                 {isLoggedIn && (
+                    // Display sign out button if user is logged in
                     <>
                         <SignOutButton onClick={handleSignOut}>
                             Sign Out
@@ -154,9 +182,11 @@ const App: React.FC = () => {
                     </>
                 )}
             </Header>
+            {/* Navigation */}
             <Nav>
                 {isLoggedIn && (
                     <>
+                        {/* Events link */}
                         <NavItem
                             to={"/events"}
                             className={isLinkActive("/events") ? "active" : ""}
@@ -165,6 +195,7 @@ const App: React.FC = () => {
                         </NavItem>
                         {isAdmin && (
                             <>
+                                {/* Add Event link */}
                                 <NavItem
                                     to={"/add-event"}
                                     className={
@@ -175,6 +206,7 @@ const App: React.FC = () => {
                                 >
                                     Add Event
                                 </NavItem>
+                                {/* Manage Users link */}
                                 <NavItem
                                     to={"/user-list"}
                                     className={
@@ -185,6 +217,7 @@ const App: React.FC = () => {
                                 >
                                     Manage Users
                                 </NavItem>
+                                {/* Add User link */}
                                 <NavItem
                                     to={"/add-user"}
                                     className={
@@ -200,36 +233,40 @@ const App: React.FC = () => {
                     </>
                 )}
             </Nav>
+            {/* Main Content */}
             <Main>
                 <Routes>
+                    {/* Login route */}
                     <Route path="/" element={<Login />} />
                     {isLoggedIn && (
                         <>
+                            {/* Event Calendar route */}
                             <Route path="/events" element={<EventCalendar />} />
                             {isAdmin && (
                                 <>
+                                    {/* Add User route */}
                                     <Route
                                         path="/add-user"
                                         element={<SignupForm />}
                                     />
+                                    {/* Add Event route */}
                                     <Route
                                         path="/add-event"
                                         element={<CreateEventForm />}
                                     />
+                                    {/* User List route */}
                                     <Route
                                         path="/user-list"
                                         element={<UserList />}
                                     />
-                                    <Route
-                                        path="/edit-user"
-                                        element={<EditUserForm />}
-                                    />
                                 </>
                             )}
+                            {/* Event Details route */}
                             <Route
                                 path="/event-details"
                                 element={<EventDetails />}
                             />
+                            {/* Edit Event route */}
                             <Route
                                 path="/edit-event"
                                 element={<EditEventForm />}

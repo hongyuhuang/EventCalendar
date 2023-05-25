@@ -5,7 +5,9 @@ import styled from "styled-components";
 import { format } from "date-fns";
 import { Event, User } from "./types";
 
+// Wrapper component for the form
 const Wrapper = styled.div`
+    // Styling for the wrapper
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
@@ -13,24 +15,32 @@ const Wrapper = styled.div`
     width: 960px;
 `;
 
+// Heading component for the form heading
 const Heading = styled.h2`
+    // Styling for the heading
     color: var(--otago-blue-dark);
 `;
 
+// Form component for the form
 const Form = styled.form`
+    // Styling for the form
     display: flex;
     flex-direction: column;
     align-items: flex-start;
 `;
 
+// Label component for form labels
 const Label = styled.label`
+    // Styling for the label
     display: flex;
     flex-direction: column;
     margin-bottom: 1rem;
     width: 100%;
 `;
 
+// Input component for form inputs
 const Input = styled.input`
+    // Styling for the input
     padding: 0.5rem;
     margin-top: 0.5rem;
     border: 1px solid #ccc;
@@ -38,7 +48,9 @@ const Input = styled.input`
     font-size: 1rem;
 `;
 
+// Textarea component for form textarea
 const Textarea = styled.textarea`
+    // Styling for the textarea
     padding: 0.5rem;
     margin-top: 0.5rem;
     border: 1px solid #ccc;
@@ -46,7 +58,9 @@ const Textarea = styled.textarea`
     resize: vertical;
 `;
 
+// Button component for form button
 const Button = styled.button`
+    // Styling for the button
     padding: 0.5rem;
     background-color: #f9c003;
     color: black;
@@ -61,7 +75,9 @@ const Button = styled.button`
     }
 `;
 
+// Select component for form select
 const Select = styled.select`
+    // Styling for the select
     padding: 0.5rem;
     margin-top: 0.5rem;
     border: 1px solid #ccc;
@@ -69,6 +85,7 @@ const Select = styled.select`
     font-size: 1rem;
 `;
 
+// Interface for the event form data
 interface EventFormData {
     title: string;
     location: string;
@@ -92,6 +109,7 @@ function EditEventForm() {
         description: event.description,
     });
 
+    // Get user data from session storage
     const userData = sessionStorage.getItem("userData");
     const password = sessionStorage.getItem("password") || "";
 
@@ -101,6 +119,7 @@ function EditEventForm() {
         username = user.email;
     }
 
+    // Fetch users data from the server
     useEffect(() => {
         const fetchUsers = async () => {
             try {
@@ -118,6 +137,7 @@ function EditEventForm() {
         fetchUsers();
     }, [username, password]);
 
+    // Retrieve assigned user data for the event
     useEffect(() => {
         const retrieveData = async () => {
             try {
@@ -140,6 +160,7 @@ function EditEventForm() {
         retrieveData();
     }, [event]);
 
+    // Handle form input changes
     const handleChange = (
         event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
@@ -150,6 +171,7 @@ function EditEventForm() {
         });
     };
 
+    // Generate authorization header
     const authHeader = (username: string, password: string) => {
         const base64Credentials = btoa(`${username}:${password}`);
         return `Basic ${base64Credentials}`;
@@ -159,6 +181,7 @@ function EditEventForm() {
         Authorization: authHeader(username, password),
     };
 
+    // Handle form submission
     const handleSubmit = async (
         eventForm: React.FormEvent<HTMLFormElement>
     ) => {
@@ -170,15 +193,12 @@ function EditEventForm() {
                 formData,
                 { headers: headers }
             );
-            // console.log(response.data);
 
-            //try catch is definetly not the way to go about this. but its 8pm and ive been working all day
             try {
                 const response2 = await axios.delete(
-                    `/event/${event.eventId}/assign/${assignedUserId}`, // assignedUserId and selectedUser seems to be empty in console error
+                    `/event/${event.eventId}/assign/${assignedUserId}`,
                     { headers: headers }
                 );
-                // console.log(response2.data);
             } catch (err) {}
 
             const response3 = await axios.post(
@@ -186,7 +206,6 @@ function EditEventForm() {
                 {},
                 { headers: headers }
             );
-            // console.log(response3.data);
 
             navigate("/events");
         } catch (error) {
@@ -196,8 +215,10 @@ function EditEventForm() {
 
     return (
         <Wrapper>
+            {/* Form heading */}
             <Heading>Event Details</Heading>
             <Form onSubmit={handleSubmit}>
+                {/* Title input */}
                 <Label>
                     Title:
                     <Input
@@ -207,6 +228,7 @@ function EditEventForm() {
                         onChange={handleChange}
                     />
                 </Label>
+                {/* Location input */}
                 <Label>
                     Location:
                     <Input
@@ -216,6 +238,7 @@ function EditEventForm() {
                         onChange={handleChange}
                     />
                 </Label>
+                {/* Start Date input */}
                 <Label>
                     Start Date:
                     <Input
@@ -225,6 +248,7 @@ function EditEventForm() {
                         onChange={handleChange}
                     />
                 </Label>
+                {/* End Date input */}
                 <Label>
                     End Date:
                     <Input
@@ -234,6 +258,7 @@ function EditEventForm() {
                         onChange={handleChange}
                     />
                 </Label>
+                {/* Description textarea */}
                 <Label>
                     Description:
                     <Textarea
@@ -242,6 +267,7 @@ function EditEventForm() {
                         onChange={handleChange}
                     />
                 </Label>
+                {/* User select */}
                 <Label>
                     User:
                     <Select
@@ -250,6 +276,7 @@ function EditEventForm() {
                         required
                     >
                         <option value="">Select a user</option>
+                        {/* Map over users and generate options */}
                         {users.map((user) => (
                             <option key={user.userId} value={user.userId}>
                                 {user.firstName} {user.lastName}
@@ -257,6 +284,7 @@ function EditEventForm() {
                         ))}
                     </Select>
                 </Label>
+                {/* Submit button */}
                 <Button type="submit">UPDATE EVENT</Button>
             </Form>
         </Wrapper>
