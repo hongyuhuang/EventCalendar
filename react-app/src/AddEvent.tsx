@@ -254,7 +254,7 @@ function CreateEventForm() {
 
                 // Create repeating event
                 await axios.post(
-                    `http://localhost:3001/event/${eventId}/repeat`,
+                    `/event/${eventId}/repeat`,
                     repeatPayload,
                     { headers: headers }
                 );

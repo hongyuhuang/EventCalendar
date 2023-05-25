@@ -271,6 +271,11 @@ const App: React.FC = () => {
                                 path="/edit-event"
                                 element={<EditEventForm />}
                             />
+                            {/* Edit User route */}
+                            <Route
+                                path="/edit-user"
+                                element={<EditUserForm />}
+                            />
                         </>
                     )}
                 </Routes>
