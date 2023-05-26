@@ -202,8 +202,8 @@ function EditUserForm() {
                         onChange={handleChange}
                     />
                 </Label>
-                <ErrorMessage>{errorMessage}</ErrorMessage> // Display the error
-                message if present
+                <ErrorMessage>{errorMessage}</ErrorMessage> 
+                {/* {Display the error message if present} */}
                 <Button type="submit">Update User</Button>
             </Form>
         </Wrapper>
