@@ -148,8 +148,7 @@ function EventDetails() {
                     {user[0]
                         ? user[0].firstName + " " + user[0].lastName
                         : "None"}{" "}
-                    // Display the assigned user's full name or "None" if not
-                    assigned
+                    {/* {Display the assigned user's full name or "None" if not assigned*/}
                 </Text>
             </Label>
 
@@ -159,8 +158,7 @@ function EventDetails() {
                         {!isRecurring && (
                             <Button onClick={editEvent}>EDIT EVENT</Button>
                         )}{" "}
-                        // Show the "EDIT EVENT" button only if the event is not
-                        recurring
+                        {/* {Show the "EDIT EVENT" button only if the event is not recurring} */}
                         <Button onClick={deleteEvent}>DELETE EVENT</Button>
                     </ButtonContainer>
                 </>
