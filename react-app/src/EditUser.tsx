@@ -6,7 +6,9 @@ import { User } from "./types";
 
 const header = require("basic-auth-header");
 
+// Wrapper for the entire page
 const Wrapper = styled.div`
+    // Styling for the wrapper
     background-color: #ffffff;
     border-radius: 8px;
     -webkit-box-shadow: 0 4px 6px rgba(0, 0, 0, 0.7);
@@ -16,25 +18,33 @@ const Wrapper = styled.div`
     width: 960px;
 `;
 
+// Heading for the page
 const Heading = styled.h2`
+    // Styling for the heading
     color: var(--otago-blue-dark);
 `;
 
+// Form for editing user details
 const Form = styled.form`
+    // Styling for the form
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
 `;
 
+// Label for the form
 const Label = styled.label`
+    // Styling for the label
     display: flex;
     flex-direction: column;
     margin-bottom: 1rem;
     width: 100%;
 `;
 
+// Input for the form
 const Input = styled.input`
+    // Styling for the input
     padding: 0.5rem;
     margin-top: 0.5rem;
     border: 1px solid #ccc;
@@ -42,7 +52,9 @@ const Input = styled.input`
     font-size: 1rem;
 `;
 
+// Button for submitting the form
 const Button = styled.button`
+    // Styling for the button
     padding: 0.5rem;
     background-color: #f9c003;
     color: black;
@@ -57,7 +69,9 @@ const Button = styled.button`
     }
 `;
 
+// Error message for the form
 const ErrorMessage = styled.span`
+    // Styling for the error message
     color: red;
 `;
 
@@ -71,7 +85,7 @@ interface UserFormData {
 
 function EditUserForm() {
     const location = useLocation();
-    const user: User = location.state.user;
+    const user: User = location.state.user; // Get the user object from the location state
 
     const [formData, setFormData] = useState<UserFormData>({
         firstName: user.firstName,
@@ -82,13 +96,13 @@ function EditUserForm() {
     });
     const navigate = useNavigate();
 
-    const [errorMessage, setErrorMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState(""); // State for displaying error messages
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({
             ...formData,
             [event.target.name]: event.target.value,
-        });
+        }); // Update form data when input values change
     };
     const userData = sessionStorage.getItem("userData");
     const password = sessionStorage.getItem("password") || "";
@@ -96,18 +110,18 @@ function EditUserForm() {
     let username = "";
     if (userData) {
         const loggedInUser: User = JSON.parse(userData);
-        username = loggedInUser.email;
+        username = loggedInUser.email; // Get the username from logged-in user data
     }
 
     const headers = {
-        Authorization: header(username, password),
+        Authorization: header(username, password), // Set the authorization header using basic-auth-header
     };
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         if (formData.password !== formData.confirmPassword) {
-            setErrorMessage("Passwords do not match");
+            setErrorMessage("Passwords do not match"); // Display an error message if passwords don't match
             return;
         }
 
@@ -119,7 +133,7 @@ function EditUserForm() {
                     lastName: formData.lastName,
                     email: formData.email,
                 },
-                { headers: headers }
+                { headers: headers } // Send a PATCH request to update user details
             );
 
             if (formData.password.length > 0) {
@@ -129,11 +143,11 @@ function EditUserForm() {
                     {
                         newPassword: formData.password,
                     },
-                    { headers: headers }
+                    { headers: headers } // Send a PATCH request to update the user's password if a new password is provided
                 );
             }
 
-            navigate("/user-list");
+            navigate("/user-list"); // Navigate to the user list page after successful update
         } catch (error) {
             console.error(error);
         }
@@ -188,7 +202,8 @@ function EditUserForm() {
                         onChange={handleChange}
                     />
                 </Label>
-                <ErrorMessage>{errorMessage}</ErrorMessage>
+                <ErrorMessage>{errorMessage}</ErrorMessage> 
+                {/* {Display the error message if present} */}
                 <Button type="submit">Update User</Button>
             </Form>
         </Wrapper>

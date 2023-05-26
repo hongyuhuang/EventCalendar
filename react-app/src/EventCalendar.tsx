@@ -11,8 +11,7 @@ const localizer = momentLocalizer(moment);
 function EventCalendar() {
     const [events, setEvents] = useState<Event[]>([]);
     const [showAssignedEvents, setShowAssignedEvents] = useState(false); // State for the toggle
-    // var recurringEventIds: number[] = []
-    const recurringEventIdsRef = useRef<number[]>([]);
+    const recurringEventIdsRef = useRef<number[]>([]); // Ref for storing recurring event IDs
 
     const userData = sessionStorage.getItem("userData");
     const password = sessionStorage.getItem("password") || "";
@@ -36,16 +35,18 @@ function EventCalendar() {
 
     const navigate = useNavigate();
 
+    // Handle event selection
     const handleSelectEvent = (event: Event) => {
-        console.log(recurringEventIdsRef.current);
         const isRecurring = recurringEventIdsRef.current.includes(
             event.eventId
         );
-        console.log(isRecurring);
         navigate("/event-details", { state: { event, isRecurring } });
     };
+
+    // Fetch all events
     const fetchEvents = async () => {
         try {
+            // Retrieve recurring event suffixes
             const suffix_response = await axios.get(
                 "/event/retrieve-recurring-suffixes",
                 {
@@ -58,14 +59,14 @@ function EventCalendar() {
             );
             recurringEventIdsRef.current = recurringEventIds;
 
-            console.log(recurringEventIds);
-
+            // Retrieve non-recurring events
             const response = await axios.get("/event", {
                 headers: headers,
             });
 
             let recurring_events = [];
 
+            // Retrieve recurring events if any exist
             if (recurringEventIds.length > 0) {
                 const recurring_response = await axios.get(
                     "/event/retrieve-recurring-events",
@@ -86,7 +87,7 @@ function EventCalendar() {
                 endDate: new Date(event.endDate),
             }));
 
-            // so gross
+            // Add recurring events to the list
             for (const repeatEvent of recurring_events) {
                 const eventId = repeatEvent.eventId;
                 const originalEvent = parsedEvents.find(
@@ -111,6 +112,7 @@ function EventCalendar() {
         }
     };
 
+    // Fetch assigned events for the current user
     const getAssignedEvents = async (username: string) => {
         try {
             const response = await axios.get(`/user/${userId}/events`, {
@@ -124,6 +126,7 @@ function EventCalendar() {
     };
 
     useEffect(() => {
+        // Fetch events based on the selected mode (assigned or all events)
         if (showAssignedEvents) {
             getAssignedEvents(username);
         } else {
@@ -133,6 +136,7 @@ function EventCalendar() {
 
     return (
         <div>
+            {/* Toggle for showing assigned events */}
             <label>
                 Show Assigned Events:
                 <input
@@ -142,6 +146,7 @@ function EventCalendar() {
                 />
             </label>
 
+            {/* Calendar component */}
             <Calendar
                 localizer={localizer}
                 events={events}

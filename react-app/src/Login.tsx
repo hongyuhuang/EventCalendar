@@ -8,7 +8,9 @@ import { User } from "./types";
 const dotenv = require("dotenv");
 dotenv.config();
 
+// Wrapper for the entire page
 const Wrapper = styled.div`
+    // Styling for the wrapper
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
@@ -16,30 +18,40 @@ const Wrapper = styled.div`
     width: 960px;
 `;
 
+// Label for the form
 const Label = styled.label`
+    // Styling for the label
     display: flex;
     flex-direction: column;
     margin-bottom: 1rem;
     width: 100%;
 `;
 
+// Title for the page
 const Title = styled.h1`
+    // Styling for the title
     color: var(--otago-blue-dark);
     font-size: 2em;
 `;
 
+// Heading for the page
 const LoginHeading = styled.h2`
+    // Styling for the heading
     color: var(--otago-blue-dark);
 `;
 
+// Container for the form
 const Form = styled.form`
+    // Styling for the form
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
 `;
 
+// Input for the form
 const Input = styled.input`
+    // Styling for the input
     padding: 0.5rem;
     margin-top: 0.5rem;
     border: 1px solid #ccc;
@@ -47,7 +59,9 @@ const Input = styled.input`
     font-size: 1rem;
 `;
 
+// Button for submitting the form
 const Button = styled.button`
+    // Styling for the button
     padding: 0.5rem;
     background-color: #f9c003;
     color: black;
@@ -62,7 +76,9 @@ const Button = styled.button`
     }
 `;
 
+// Error message for the form
 const ErrorMessage = styled.span`
+    // Styling for the error message
     color: red;
 `;
 
@@ -76,7 +92,7 @@ const initialFormData: LoginFormData = {
     password: "",
 };
 
-const Login = () =>{
+const Login = () => {
     const [formData, setFormData] = useState<LoginFormData>(initialFormData);
     const navigate = useNavigate();
 

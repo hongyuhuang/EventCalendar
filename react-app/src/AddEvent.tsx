@@ -5,7 +5,9 @@ import styled from "styled-components";
 import { format } from "date-fns";
 import { EventFormData, User, RepeatFormData } from "./types";
 
+// Wrapper component for the entire page
 const Wrapper = styled.div`
+    // Styling for the wrapper
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
@@ -13,24 +15,32 @@ const Wrapper = styled.div`
     width: 960px;
 `;
 
+// Heading component for the page heading
 const Heading = styled.h2`
+    // Styling for the heading
     color: var(--otago-blue-dark);
 `;
 
+// Form component for the form
 const Form = styled.form`
+    // Styling for the form
     display: flex;
     flex-direction: column;
     align-items: flex-start;
 `;
 
+// Label component for the form labels
 const Label = styled.label`
+    // Styling for the form labels
     display: flex;
     flex-direction: column;
     margin-bottom: 1rem;
     width: 100%;
 `;
 
+// Input component for the input fields
 const Input = styled.input`
+    // Styling for the input fields
     padding: 0.5rem;
     margin-top: 0.5rem;
     border: 1px solid #ccc;
@@ -38,7 +48,9 @@ const Input = styled.input`
     font-size: 1rem;
 `;
 
+// Textarea component for the text area
 const Textarea = styled.textarea`
+    // Styling for the text area
     padding: 0.5rem;
     margin-top: 0.5rem;
     border: 1px solid #ccc;
@@ -46,7 +58,9 @@ const Textarea = styled.textarea`
     resize: vertical;
 `;
 
+// Select component for the select dropdown
 const Select = styled.select`
+    // Styling for the select dropdown
     padding: 0.5rem;
     margin-top: 0.5rem;
     border: 1px solid #ccc;
@@ -54,7 +68,9 @@ const Select = styled.select`
     font-size: 1rem;
 `;
 
+// Button component for the submit button
 const Button = styled.button`
+    // Styling for the submit button
     padding: 0.5rem;
     background-color: #f9c003;
     color: black;
@@ -69,11 +85,15 @@ const Button = styled.button`
     }
 `;
 
+// Error component for the error message
 const RepeatSection = styled.div`
+    //  Styling for the repeat section
     margin-top: 1rem;
 `;
 
+// Dropdown component for the repeat section heading
 const Dropdown = styled.select`
+    // Styling for the repeat section heading
     padding: 0.5rem;
     margin-top: 0.5rem;
     border: 1px solid #ccc;
@@ -81,12 +101,16 @@ const Dropdown = styled.select`
     font-size: 1rem;
 `;
 
+// Wrapper component for the checkboxes
 const CheckboxWrapper = styled.div`
+    // Styling for the repeat section heading
     display: flex;
     align-items: center;
 `;
 
+// Label component for the checkboxes
 const CheckboxLabel = styled.span`
+    // Styling for the repeat section heading
     margin-left: 0.5rem;
 `;
 
@@ -132,6 +156,7 @@ function CreateEventForm() {
     const [users, setUsers] = useState<User[]>([]);
     const [selectedUser, setSelectedUser] = useState("");
 
+    // Get user data from session storage
     const userData = sessionStorage.getItem("userData");
     const password = sessionStorage.getItem("password") || "";
 
@@ -141,6 +166,7 @@ function CreateEventForm() {
         username = user.email;
     }
 
+    // Authorization header for API requests
     const authHeader = (username: string, password: string) => {
         const base64Credentials = btoa(`${username}:${password}`);
         return `Basic ${base64Credentials}`;
@@ -151,6 +177,7 @@ function CreateEventForm() {
     };
 
     useEffect(() => {
+        // Fetch users from the server
         const fetchUsers = async () => {
             try {
                 const response = await axios.get("/user", {
@@ -204,12 +231,14 @@ function CreateEventForm() {
         eventForm.preventDefault();
 
         try {
+            // Create event
             const response = await axios.post("/event", formData, {
                 headers: headers,
             });
             const eventId = response.data.eventId;
             const userId = selectedUser;
 
+            // Assign event to user
             await axios.post(
                 `/event/${eventId}/assign/${userId}`,
                 {},
@@ -223,9 +252,12 @@ function CreateEventForm() {
                     eventId: response.data.eventId,
                 };
 
-                await axios.post(`/event/${eventId}/repeat`, repeatPayload, {
-                    headers: headers,
-                });
+                // Create repeating event
+                await axios.post(
+                    `/event/${eventId}/repeat`,
+                    repeatPayload,
+                    { headers: headers }
+                );
             }
 
             navigate("/events");
@@ -238,6 +270,7 @@ function CreateEventForm() {
         <Wrapper>
             <Heading>Event Details</Heading>
             <Form onSubmit={handleSubmit}>
+                {/* Title */}
                 <Label>
                     Title:
                     <Input
@@ -247,6 +280,7 @@ function CreateEventForm() {
                         onChange={handleChange}
                     />
                 </Label>
+                {/* Location */}
                 <Label>
                     Location:
                     <Input
@@ -256,6 +290,7 @@ function CreateEventForm() {
                         onChange={handleChange}
                     />
                 </Label>
+                {/* Start Date */}
                 <Label>
                     Start Date:
                     <Input
@@ -265,6 +300,7 @@ function CreateEventForm() {
                         onChange={handleChange}
                     />
                 </Label>
+                {/* End Date */}
                 <Label>
                     End Date:
                     <Input
@@ -275,6 +311,7 @@ function CreateEventForm() {
                     />
                 </Label>
 
+                {/* Description */}
                 <Label>
                     Description:
                     <Textarea
@@ -283,6 +320,7 @@ function CreateEventForm() {
                         onChange={handleChange}
                     />
                 </Label>
+                {/* User */}
                 <Label>
                     User:
                     <Select
@@ -299,6 +337,7 @@ function CreateEventForm() {
                     </Select>
                 </Label>
 
+                {/* Repeat Checkbox */}
                 <Label>
                     Repeat:
                     <Checkbox
@@ -307,8 +346,10 @@ function CreateEventForm() {
                         onChange={handleChange}
                     />
                 </Label>
+                {/* Repeat Section */}
                 {repeatData.repeat && (
                     <RepeatSection>
+                        {/* Repeat Interval */}
                         <Label>
                             Repeat Interval:
                             <Dropdown
@@ -323,6 +364,7 @@ function CreateEventForm() {
                                 <option value="yearly">Yearly</option>
                             </Dropdown>
                         </Label>
+                        {/* Repeat End Date */}
                         <Label>
                             Repeat End Date:
                             <Input
@@ -335,6 +377,7 @@ function CreateEventForm() {
                     </RepeatSection>
                 )}
 
+                {/* Submit Button */}
                 <Button type="submit">CREATE EVENT</Button>
             </Form>
         </Wrapper>
