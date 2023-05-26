@@ -118,7 +118,11 @@ function EventCalendar() {
             const response = await axios.get(`/user/${userId}/events`, {
                 headers: headers,
             });
-            const assignedEvents = response.data;
+            const assignedEvents = response.data.map((event: Event) => ({
+                ...event,
+                startDate: new Date(event.startDate),
+                endDate: new Date(event.endDate),
+            }));
             setEvents(assignedEvents);
         } catch (error) {
             console.log(error);
